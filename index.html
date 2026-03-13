@@ -636,20 +636,33 @@ function renderTabs() {
   const c=document.getElementById('tabs'); c.innerHTML='';
   TABS.forEach(t=>{
     if(t.id==='love' && !loveVisible) return;
-    if(t.id==='birthday') return; // タブバーには常に非表示（期間中もホームカードからのみアクセス）
     const ul=unlocked.includes(t.id);
     const b=document.createElement('button');
+
+    if(t.id==='birthday'){
+      if(isBirthdayVisible()){
+        b.className='tab-btn'+(activeTab===t.id?' active':'')+(ul?'':' locked');
+        b.innerHTML='🎂 Birthday'+(ul?'':' <span class="lk">🔒</span>');
+        b.style.cssText=activeTab==='birthday'?'color:#ffe066;border-bottom-color:#ffcc00;font-weight:600;':'color:rgba(255,210,80,0.8);';
+        b.onclick=()=>openTab('birthday');
+      } else {
+        b.className='tab-btn locked';
+        b.textContent='？？？';
+        b.style.cssText='color:rgba(240,232,208,0.2);cursor:default;pointer-events:none;letter-spacing:0.05em;';
+        b.disabled=true;
+      }
+      c.appendChild(b);
+      return;
+    }
+
     b.className='tab-btn'+(activeTab===t.id?' active':'')+(ul?'':' locked');
     let lbl;
     if(t.id==='admin') lbl='管理';
     else if(t.id==='love') lbl='💕 恋愛2510';
-    else if(t.id==='birthday') lbl='🎂 Birthday';
     else lbl=tabDisplayLabel(t.id);
     b.innerHTML=lbl+(ul?'':' <span class="lk">🔒</span>');
     if(t.id==='love') b.style.cssText='color:rgba(240,160,180,0.7);';
     if(t.id==='love'&&activeTab==='love') b.style.cssText='color:#ffb0c8;border-bottom-color:#e8406a;font-weight:600;';
-    if(t.id==='birthday') b.style.cssText='color:rgba(255,210,80,0.8);';
-    if(t.id==='birthday'&&activeTab==='birthday') b.style.cssText='color:#ffe066;border-bottom-color:#ffcc00;font-weight:600;';
     b.onclick=()=>openTab(t.id);
     c.appendChild(b);
   });
@@ -661,7 +674,7 @@ function renderTabs() {
 function goHome() { activeTab=null; renderTabs(); renderHome(); }
 
 function renderHome() {
-  const cards=TABS.filter(t=>t.id!=='admin'&&t.id!=='love').map(t=>{
+  const cards=TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday').map(t=>{
     const ul=unlocked.includes(t.id);
     const sn=snCache[t.id]||'';
     return`<div class="tab-card${ul?' unlocked':''}" onclick="openTab('${t.id}')">
