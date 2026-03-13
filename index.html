@@ -283,7 +283,34 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
 .love-lightbox img{max-width:92vw;max-height:88vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);}
 .love-lightbox-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:white;font-size:1.4rem;width:38px;height:38px;border-radius:50%;cursor:pointer;}
 
-/* LOVE STAGE BANNER */
+/* BIRTHDAY TAB */
+.tab-btn.birthday{color:rgba(255,210,100,0.7);}
+.tab-btn.birthday.active{color:#ffe066;border-bottom-color:#ffcc00;font-weight:600;}
+.birthday-bg{
+  background:linear-gradient(160deg,#fffbea,#fff3e0);
+  min-height:100%;padding:0 0 40px;
+}
+.birthday-hero{
+  text-align:center;padding:32px 20px 20px;
+  background:linear-gradient(135deg,#fff9e0,#ffe8b0);
+  border-bottom:2px solid rgba(255,180,0,0.15);
+  position:relative;overflow:hidden;
+}
+.birthday-hero::before{
+  content:'🎂🎉🎈🎁🎊';
+  position:absolute;top:8px;left:0;right:0;
+  font-size:1.2rem;letter-spacing:8px;opacity:0.3;
+}
+.birthday-hero-title{
+  font-family:'Shippori Mincho',serif;
+  font-size:1.8rem;color:#c07800;font-weight:700;
+  letter-spacing:0.1em;position:relative;
+}
+.birthday-sec{padding:16px 16px 0;}
+.birthday-sec-hd{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.birthday-sec-hd h2{font-family:'Shippori Mincho',serif;font-size:1rem;color:#8a5500;letter-spacing:0.06em;}
+.birthday-sec-line{flex:1;height:1px;background:rgba(200,140,0,0.2);}
+
 .love-stage-banner{
   display:flex;align-items:center;justify-content:center;gap:10px;
   padding:10px 20px;
@@ -517,11 +544,17 @@ function expireSession() {
 // ============================================================
 // CONFIG
 // ============================================================
-const TABS = [{id:'A'},{id:'B'},{id:'C'},{id:'D'},{id:'E'},{id:'F'},{id:'love'},{id:'admin'}];
+const TABS = [{id:'A'},{id:'B'},{id:'C'},{id:'D'},{id:'E'},{id:'F'},{id:'love'},{id:'birthday'},{id:'admin'}];
+
+// 3月30日かどうか判定
+function isBirthdayDay() {
+  const now = new Date();
+  return now.getMonth() === 2 && now.getDate() === 30; // 月は0始まり
+}
 
 // Default passwords stored as SHA-256 hashes (computed at runtime on first use)
 const DEFAULT_PWS_PLAIN = {
-  A:'aaa1',B:'bbb2',C:'ccc3',D:'ddd4',E:'eee5',F:'fff6',love:'love2510',admin:'13240622Ko'
+  A:'aaa1',B:'bbb2',C:'ccc3',D:'ddd4',E:'eee5',F:'fff6',love:'love2510',birthday:'birthday',admin:'13240622Ko'
 };
 
 async function getTabPwHash(id) {
@@ -598,17 +631,21 @@ function setSyncStatus(live) {
 function renderTabs() {
   const c=document.getElementById('tabs'); c.innerHTML='';
   TABS.forEach(t=>{
-    if(t.id==='love' && !loveVisible) return; // 非表示時はスキップ
+    if(t.id==='love' && !loveVisible) return;
+    if(t.id==='birthday' && !isBirthdayDay()) return; // 3/30以外は非表示
     const ul=unlocked.includes(t.id);
     const b=document.createElement('button');
     b.className='tab-btn'+(activeTab===t.id?' active':'')+(ul?'':' locked');
     let lbl;
     if(t.id==='admin') lbl='管理';
     else if(t.id==='love') lbl='💕 恋愛2510';
+    else if(t.id==='birthday') lbl='🎂 Birthday';
     else lbl=tabDisplayLabel(t.id);
     b.innerHTML=lbl+(ul?'':' <span class="lk">🔒</span>');
     if(t.id==='love') b.style.cssText='color:rgba(240,160,180,0.7);';
     if(t.id==='love'&&activeTab==='love') b.style.cssText='color:#ffb0c8;border-bottom-color:#e8406a;font-weight:600;';
+    if(t.id==='birthday') b.style.cssText='color:rgba(255,210,80,0.8);';
+    if(t.id==='birthday'&&activeTab==='birthday') b.style.cssText='color:#ffe066;border-bottom-color:#ffcc00;font-weight:600;';
     b.onclick=()=>openTab(t.id);
     c.appendChild(b);
   });
@@ -639,10 +676,20 @@ function renderHome() {
         ${unlocked.includes('love')?'🔓 解錠済み':'🔒 ロック中'}
       </div>
     </div>` : '';
+  const birthdayCard = isBirthdayDay() ? `
+    <div onclick="openTab('birthday')" style="cursor:pointer;background:linear-gradient(135deg,#fffbe0,#fff0b0);border:1px solid rgba(255,180,0,0.3);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden;transition:all 0.18s;grid-column:1/-1;"
+      onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffcc00,#ff9900);"></div>
+      <div style="font-size:1.8rem;">🎂</div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#a06000;font-weight:700;letter-spacing:0.1em;">Birthday</div>
+      <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(255,180,0,0.15);color:#a06000;border:1px solid rgba(255,180,0,0.3);">
+        ${unlocked.includes('birthday')?'🔓 解錠済み':'🔒 ロック中'}
+      </div>
+    </div>` : '';
   document.getElementById('main').innerHTML=`
     <div class="home-view">
       <div class="home-greeting"><h2>イベントページ</h2><p>アクセスするタブを選んでください</p></div>
-      <div class="tab-cards">${cards}${loveCard}</div>
+      <div class="tab-cards">${cards}${loveCard}${birthdayCard}</div>
       <button class="home-admin-btn" onclick="openTab('admin')">⚙️ 管理パネル</button>
     </div>`;
 }
@@ -716,6 +763,7 @@ window.tryUnlock = async function(id) {
 async function renderPanel(id) {
   if(id==='admin'){ await renderAdmin(); return; }
   if(id==='love'){ await renderLovePanel(); return; }
+  if(id==='birthday'){ await renderBirthdayPanel(); return; }
   attachListeners(id);
   document.getElementById('main').innerHTML=`
     <div class="sec">
@@ -947,6 +995,75 @@ window.delEv=async function(id,fbKey){if(!confirm('削除しますか？'))retur
 // LOVE PANEL
 // ============================================================
 // ============================================================
+// BIRTHDAY PANEL
+// ============================================================
+async function renderBirthdayPanel() {
+  document.getElementById('main').innerHTML=`
+    <div class="birthday-bg">
+      <div class="birthday-hero">
+        <div class="birthday-hero-title">🎂 Happy Birthday 🎉</div>
+      </div>
+      <div class="birthday-sec">
+        <div class="birthday-sec-hd"><h2>📋 掲示板</h2><div class="birthday-sec-line"></div></div>
+        <div id="birthday-posts"><div style="text-align:center;color:#b08000;padding:20px;font-size:0.85rem">読み込み中...</div></div>
+      </div>
+      <div class="birthday-sec" style="margin-top:12px;">
+        <div class="birthday-sec-hd"><h2>🖼 フォト</h2><div class="birthday-sec-line"></div></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="birthday-gallery">
+          <div style="color:#b08000;font-size:0.85rem;padding:8px;text-align:center;">読み込み中...</div>
+        </div>
+      </div>
+    </div>`;
+
+  const [posts, imgs] = await Promise.all([
+    fbGet('birthday/posts'), fbGet('birthday/images')
+  ]);
+  renderBirthdayPosts(posts);
+  renderBirthdayGallery(imgs);
+
+  if(!listeners['birthday']){
+    listeners['birthday']=[];
+    listeners['birthday'].push(fbListen('birthday/posts', val=>renderBirthdayPosts(val)));
+    listeners['birthday'].push(fbListen('birthday/images', val=>renderBirthdayGallery(val)));
+  }
+}
+
+function renderBirthdayPosts(val){
+  const el=document.getElementById('birthday-posts'); if(!el)return;
+  if(!val||!Object.keys(val).length){
+    el.innerHTML='<div style="text-align:center;color:#b08000;padding:20px;font-size:0.85rem">🎈 まだ投稿がありません</div>';return;
+  }
+  const posts=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts);
+  el.innerHTML=posts.map(p=>`
+    <div style="background:white;border:1px solid rgba(255,180,0,0.2);border-radius:12px;padding:12px 14px;margin-bottom:8px;animation:up 0.2s;">
+      <div style="font-size:0.72rem;color:#b08000;margin-bottom:6px;">🎉 ${p.time}</div>
+      <div style="font-size:0.92rem;color:#3a2800;line-height:1.6;word-break:break-word;">${esc(p.text)}</div>
+      ${p.img?`<img src="${p.img}" style="margin-top:8px;max-width:100%;border-radius:8px;display:block;max-height:260px;object-fit:cover;" alt="">`:''}
+    </div>`).join('');
+}
+
+function renderBirthdayGallery(val){
+  const el=document.getElementById('birthday-gallery'); if(!el)return;
+  if(!val||!Object.keys(val).length){
+    el.innerHTML='<div style="color:#b08000;font-size:0.85rem;padding:8px;text-align:center;grid-column:1/-1;">📷 写真がありません</div>';return;
+  }
+  const imgs=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts);
+  window._bdImgs=imgs;
+  el.innerHTML=imgs.map(img=>`
+    <div style="aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid rgba(255,180,0,0.2);" onclick="openBdLightbox('${img.fbKey}')">
+      <img src="${img.dataUrl}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" alt="">
+    </div>`).join('');
+}
+
+window.openBdLightbox = function(key){
+  const imgs=window._bdImgs||[];
+  const img=imgs.find(i=>i.fbKey===key); if(!img)return;
+  const lb=document.getElementById('love-lightbox');
+  const li=document.getElementById('love-lightbox-img');
+  if(lb&&li){li.src=img.dataUrl;lb.classList.add('open');}
+};
+
+// ============================================================
 // LOVE PANEL — 閲覧のみ（掲示板＋フォト）
 // ============================================================
 async function renderLovePanel() {
@@ -993,6 +1110,7 @@ async function initBgm(){
   const titleEl = document.getElementById('love-bgm-title');
   if(!bgmData||!audio) return;
   audio.src = bgmData.dataUrl;
+  audio.volume = 0.25;
   if(titleEl) titleEl.textContent = bgmData.name||'BGM';
   if(bar) bar.classList.add('show');
   try {
@@ -1105,10 +1223,13 @@ async function renderAdmin() {
     <div class="sec admin-content-wrap">
       <div class="sec-hd"><h2>📝 コンテンツ編集</h2><div class="sec-line"></div></div>
       <div class="admin-tab-switcher" id="admin-tab-switcher">
-        ${TABS.filter(t=>t.id!=='admin'&&t.id!=='love').map(t=>`
+        ${TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday').map(t=>`
           <button class="admin-ts-btn${adminActiveTab===t.id?' active':''}" onclick="switchAdminTab('${t.id}')">
             ${tabDisplayLabel(t.id)}
           </button>`).join('')}
+        <button class="admin-ts-btn${adminActiveTab==='birthday'?' active':''}" onclick="switchAdminTab('birthday')"
+          style="border-color:rgba(255,180,0,0.3);color:${adminActiveTab==='birthday'?'white':'#a06000'};${adminActiveTab==='birthday'?'background:linear-gradient(135deg,#ffcc00,#ff9900);border-color:transparent;':''}"
+        >🎂 Birthday</button>
         <button class="admin-ts-btn${adminActiveTab==='love'?' active':''}" onclick="switchAdminTab('love')"
           style="border-color:rgba(220,60,100,0.3);color:${adminActiveTab==='love'?'white':'#c06080'};${adminActiveTab==='love'?'background:linear-gradient(135deg,#e8406a,#c0305a);border-color:transparent;':''}"
         >💕 【特別】恋愛2510</button>
@@ -1125,29 +1246,116 @@ async function renderAdminContent(id) {
     b.classList.toggle('active', b.textContent.trim().startsWith(id==='love'?'💕':id));
   });
   const panel = document.getElementById('admin-content-panel');
-  if(!panel) return;
-  panel.innerHTML = '<div class="empty-msg">読み込み中…</div>';
+  if(!panel){ console.error('admin-content-panel not found'); return; }
+  panel.innerHTML = '<div class="empty-msg" style="padding:20px;text-align:center;">読み込み中...</div>';
+
+  // Birthday専用UI
+  if(id==='birthday'){
+    let bdPosts = null, bdImgs = null;
+    try {
+      bdPosts = await fbGet('birthday/posts');
+      bdImgs  = await fbGet('birthday/images');
+    } catch(e) {
+      panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
+      return;
+    }
+
+    let postItems = '';
+    if(bdPosts && Object.keys(bdPosts).length > 0){
+      const sorted = Object.entries(bdPosts).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts);
+      postItems = sorted.map(p=>`
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:white;border:1px solid rgba(255,180,0,0.2);border-radius:8px;margin-bottom:6px;">
+          <div style="flex:1;font-size:0.85rem;color:#3a2800;line-height:1.5;word-break:break-word;">
+            <div>${esc(p.text)}</div>
+            ${p.img?'<span style="font-size:0.72rem;color:#b08000;">🖼 画像あり</span>':''}
+            <div style="font-size:0.7rem;color:#b08000;margin-top:2px;">${p.time}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+            <button style="background:none;border:none;color:#b08000;cursor:pointer;font-size:0.9rem;padding:3px 6px;border-radius:5px;" onclick="adminDelBdPost('${p.fbKey}')">🗑</button>
+          </div>
+        </div>`).join('');
+    } else {
+      postItems = '<div style="padding:12px;color:#b08000;font-size:0.85rem;text-align:center;">投稿がありません</div>';
+    }
+
+    let imgItems = '';
+    if(bdImgs && Object.keys(bdImgs).length > 0){
+      imgItems = Object.entries(bdImgs).map(([k,v])=>`
+        <div style="aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;border:2px solid rgba(255,180,0,0.2);">
+          <img src="${v.dataUrl}" style="width:100%;height:100%;object-fit:cover;" alt="">
+          <button style="position:absolute;top:3px;right:3px;width:20px;height:20px;background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;font-size:0.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="adminDelBdImg('${k}')">✕</button>
+        </div>`).join('');
+    } else {
+      imgItems = '<div style="font-size:0.85rem;color:#b08000;padding:8px;grid-column:1/-1;text-align:center;">写真がありません</div>';
+    }
+
+    panel.innerHTML=`
+      <div style="background:linear-gradient(135deg,#fffbe0,#fff3c0);border:1px solid rgba(255,180,0,0.3);border-radius:10px;overflow:hidden;">
+        <div style="padding:10px 16px;background:linear-gradient(90deg,rgba(255,180,0,0.2),rgba(255,180,0,0.05));border-bottom:1px solid rgba(255,180,0,0.2);font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#a06000;letter-spacing:0.06em;">
+          🎂 Birthday コンテンツ編集
+        </div>
+
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,180,0,0.15);">
+          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">📋 掲示板（追加・削除）</div>
+          <div style="margin-bottom:10px;">${postItems}</div>
+          <div style="background:white;border:1.5px solid rgba(255,180,0,0.25);border-radius:10px;padding:12px;">
+            <div style="font-size:0.78rem;color:#b08000;margin-bottom:6px;">＋ 新規投稿</div>
+            <textarea id="bd-adm-post" style="width:100%;min-height:72px;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:0.9rem;color:#3a2800;background:#fffbe0;resize:vertical;outline:none;line-height:1.6;box-sizing:border-box;" placeholder="投稿内容を入力..."></textarea>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(255,180,0,0.25);border-radius:8px;font-size:0.82rem;color:#a06000;cursor:pointer;background:#fffbe0;white-space:nowrap;">
+                📷 画像添付
+                <input type="file" accept="image/*" style="display:none" onchange="onBdAdmImg(this)">
+              </label>
+              <span id="bd-adm-img-name" style="font-size:0.75rem;color:#ff9900;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+              <button style="padding:8px 18px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;box-shadow:0 2px 8px rgba(255,180,0,0.3);" onclick="adminPostBirthday()">投稿する</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:12px 16px;">
+          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🖼 フォト管理</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">${imgItems}</div>
+          <label style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;background:white;border:2px dashed rgba(255,180,0,0.3);border-radius:10px;cursor:pointer;font-size:0.85rem;color:#a06000;">
+            📷 写真を追加（3MB以下）
+            <input type="file" accept="image/*" style="display:none" onchange="adminUploadBdImg(this)">
+          </label>
+        </div>
+      </div>`;
+    return;
+  }
 
   // 恋愛2510専用UI
   if(id==='love'){
-    const [posts, bgm] = await Promise.all([
-      fbGet('love/posts'), fbGet('love/bgm')
-    ]);
+    let posts = null, bgm = null;
+    try {
+      posts = await fbGet('love/posts');
+      bgm   = await fbGet('love/bgm');
+    } catch(e) {
+      panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
+      return;
+    }
 
-    const postItems = posts
-      ? Object.entries(posts).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts).map(p=>`
-        <div class="love-post-admin-row" id="lpa-${p.fbKey}">
+    // 投稿一覧HTML生成
+    let postItems = '';
+    if(posts && Object.keys(posts).length > 0){
+      const sorted = Object.entries(posts).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts);
+      postItems = sorted.map(p=>{
+        const safeText = (p.text||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
+        return `<div class="love-post-admin-row" id="lpa-${p.fbKey}">
           <div class="love-post-admin-body">
             <div class="love-post-admin-text" id="lpa-text-${p.fbKey}">${esc(p.text)}</div>
-            ${p.img?`<img src="${p.img}" style="margin-top:6px;max-width:100%;max-height:120px;object-fit:cover;border-radius:6px;" alt="">`:'' }
+            ${p.img ? '<img src="'+p.img+'" style="margin-top:6px;max-width:100%;max-height:100px;object-fit:cover;border-radius:6px;" alt="">' : ''}
             <div class="love-post-admin-meta">${p.time}</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
-            <button class="love-post-admin-edit" onclick="lovePostEditMode('${p.fbKey}',${JSON.stringify(p.text).replace(/'/g,"&#39;")})">✏️</button>
+            <button class="love-post-admin-edit" onclick="lovePostEditMode('${p.fbKey}')">✏️</button>
             <button class="love-post-admin-del" onclick="adminDelLovePost('${p.fbKey}')">🗑</button>
           </div>
-        </div>`).join('')
-      : '<div class="empty-msg" style="padding:8px;color:#d090a8;">投稿がありません</div>';
+        </div>`;
+      }).join('');
+    } else {
+      postItems = '<div style="padding:12px;color:#d090a8;font-size:0.85rem;text-align:center;">投稿がありません</div>';
+    }
 
     const bgmName = bgm ? bgm.name : null;
     const bgmCurrentHtml = bgmName
@@ -1367,6 +1575,59 @@ window.resetAll=async function(){
   await renderAdmin();renderTabs();
 };
 
+// Birthday admin functions
+let bdAdmImgBuf = null;
+window.onBdAdmImg = function(inp){
+  const f=inp.files[0]; if(!f)return;
+  if(f.size>3*1024*1024){showToast('画像は3MB以下にしてください');inp.value='';return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    bdAdmImgBuf={dataUrl:e.target.result};
+    const el=document.getElementById('bd-adm-img-name');
+    if(el)el.textContent=f.name;
+  };
+  r.readAsDataURL(f);
+};
+
+window.adminPostBirthday = async function(){
+  const ta=document.getElementById('bd-adm-post');
+  const text=ta?ta.value.trim():'';
+  if(!text&&!bdAdmImgBuf){showToast('テキストか画像を入力してください');return;}
+  const t=new Date();
+  const time=`${t.getMonth()+1}/${t.getDate()} ${pad(t.getHours())}:${pad(t.getMinutes())}`;
+  await fbPush('birthday/posts',{text,img:bdAdmImgBuf?bdAdmImgBuf.dataUrl:null,time,ts:Date.now()});
+  if(ta)ta.value=''; bdAdmImgBuf=null;
+  showToast('✓ 投稿しました🎂');
+  await renderAdminContent('birthday');
+};
+
+window.adminDelBdPost = async function(fbKey){
+  if(!confirm('この投稿を削除しますか？'))return;
+  await fbRemove(`birthday/posts/${fbKey}`);
+  showToast('✓ 投稿を削除しました');
+  await renderAdminContent('birthday');
+};
+
+window.adminUploadBdImg = async function(inp){
+  const f=inp.files[0]; if(!f)return;
+  if(f.size>3*1024*1024){showToast('写真は3MB以下にしてください');inp.value='';return;}
+  showToast('アップロード中…');
+  const r=new FileReader();
+  r.onload=async e=>{
+    await fbPush('birthday/images',{dataUrl:e.target.result,ts:Date.now()});
+    showToast('✓ 写真を追加しました🎉');
+    await renderAdminContent('birthday');
+  };
+  r.readAsDataURL(f); inp.value='';
+};
+
+window.adminDelBdImg = async function(fbKey){
+  if(!confirm('この写真を削除しますか？'))return;
+  await fbRemove(`birthday/images/${fbKey}`);
+  showToast('✓ 写真を削除しました');
+  await renderAdminContent('birthday');
+};
+
 // Love admin functions
 let loveAdmImgBuf = null;
 window.onLoveAdmImg = function(inp){
@@ -1381,25 +1642,42 @@ window.onLoveAdmImg = function(inp){
   r.readAsDataURL(f);
 };
 
-window.lovePostEditMode = function(fbKey, currentText){
+window.lovePostEditMode = async function(fbKey){
   const row = document.getElementById('lpa-'+fbKey);
   if(!row) return;
   const textEl = document.getElementById('lpa-text-'+fbKey);
-  if(!textEl) return;
-  // 既に編集中なら戻す
+
+  // 既に編集フォームがあれば閉じる
   const existing = row.querySelector('.love-post-edit-form');
-  if(existing){ existing.remove(); if(textEl)textEl.style.display=''; return; }
-  textEl.style.display='none';
+  if(existing){ existing.remove(); if(textEl) textEl.style.display=''; return; }
+
+  // Firebaseから現在のテキストを取得
+  const postData = await fbGet('love/posts/'+fbKey);
+  const currentText = postData ? (postData.text||'') : '';
+
+  if(textEl) textEl.style.display='none';
   const form = document.createElement('div');
   form.className='love-post-edit-form';
-  form.innerHTML=`
-    <textarea class="love-post-edit-ta" id="lpa-edit-ta-${fbKey}">${currentText.replace(/</g,'&lt;')}</textarea>
-    <div class="love-post-edit-btns">
-      <button class="love-post-edit-save" onclick="adminUpdateLovePost('${fbKey}')">保存</button>
-      <button class="love-post-edit-cancel" onclick="lovePostEditMode('${fbKey}','${currentText.replace(/'/g,"\\'")}')">キャンセル</button>
-    </div>`;
+  const ta = document.createElement('textarea');
+  ta.className='love-post-edit-ta';
+  ta.id='lpa-edit-ta-'+fbKey;
+  ta.value=currentText;
+  const btns = document.createElement('div');
+  btns.className='love-post-edit-btns';
+  const saveBtn = document.createElement('button');
+  saveBtn.className='love-post-edit-save';
+  saveBtn.textContent='保存';
+  saveBtn.onclick=()=>adminUpdateLovePost(fbKey);
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className='love-post-edit-cancel';
+  cancelBtn.textContent='キャンセル';
+  cancelBtn.onclick=()=>{ form.remove(); if(textEl)textEl.style.display=''; };
+  btns.appendChild(saveBtn);
+  btns.appendChild(cancelBtn);
+  form.appendChild(ta);
+  form.appendChild(btns);
   row.querySelector('.love-post-admin-body').appendChild(form);
-  form.querySelector('textarea').focus();
+  ta.focus();
 };
 
 window.adminUpdateLovePost = async function(fbKey){
