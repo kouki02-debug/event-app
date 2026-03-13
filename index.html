@@ -90,6 +90,15 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
 .img-lbl:hover{border-color:var(--accent);color:var(--accent);}
 .img-lbl input{display:none;}
 .img-fname{font-size:0.77rem;color:var(--accent);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.post-pdf-header{margin-top:10px;display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;}
+.post-pdf-icon{font-size:1.2rem;flex-shrink:0;}
+.post-pdf-name{font-size:0.84rem;color:var(--ink2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.post-pdf-btn{padding:4px 10px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:0.78rem;cursor:pointer;white-space:nowrap;transition:background 0.2s;}
+.post-pdf-btn:hover{background:var(--ink);}
+.pdf-canvas-wrap{margin-top:6px;display:none;flex-direction:column;gap:6px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff;}
+.pdf-canvas-wrap.open{display:flex;}
+.pdf-canvas-wrap canvas{width:100%;display:block;}
+.pdf-loading{padding:16px;text-align:center;font-size:0.85rem;color:var(--ink4);}
 .post-sub{margin-left:auto;padding:8px 20px;background:var(--ink);color:#f0e8d0;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;transition:background 0.2s;}
 .post-sub:hover{background:var(--accent);}
 
@@ -193,6 +202,39 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
 .new-pw-val{flex:1;font-family:monospace;font-size:1rem;color:var(--green);font-weight:700;letter-spacing:0.1em;}
 .copy-btn{padding:4px 10px;background:none;border:1px solid #a8d8b0;border-radius:5px;color:var(--green);font-size:0.77rem;cursor:pointer;transition:all 0.15s;}
 .copy-btn:hover{background:#e0f5e0;}
+
+/* ADMIN CONTENT EDITOR */
+.admin-content-wrap{margin-top:20px;}
+.admin-tab-switcher{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.admin-ts-btn{padding:7px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.9rem;color:var(--ink3);cursor:pointer;transition:all 0.18s;}
+.admin-ts-btn:hover{border-color:var(--accent);color:var(--accent);}
+.admin-ts-btn.active{background:var(--ink);color:#f0e8d0;border-color:var(--ink);}
+.admin-content-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.admin-content-hd{padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);font-family:'Shippori Mincho',serif;font-size:0.9rem;color:var(--ink2);display:flex;align-items:center;justify-content:space-between;}
+.admin-subsec{padding:14px 16px;border-bottom:1px solid var(--border);}
+.admin-subsec:last-child{border-bottom:none;}
+.admin-subsec-title{font-size:0.8rem;color:var(--ink4);margin-bottom:10px;font-weight:500;letter-spacing:0.05em;}
+.admin-post-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+.admin-post-row{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;}
+.admin-post-body{flex:1;font-size:0.85rem;color:var(--ink);line-height:1.5;word-break:break-word;}
+.admin-post-meta{font-size:0.72rem;color:var(--ink4);margin-top:2px;}
+.admin-post-del{flex-shrink:0;background:none;border:none;color:var(--ink4);cursor:pointer;font-size:0.85rem;padding:3px 6px;border-radius:5px;transition:all 0.15s;}
+.admin-post-del:hover{color:var(--red);background:#fff0ee;}
+.admin-post-form{display:flex;flex-direction:column;gap:8px;}
+.admin-post-form textarea{width:100%;min-height:60px;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Noto Sans JP',sans-serif;font-size:0.88rem;color:var(--ink);background:var(--bg);resize:vertical;outline:none;transition:border-color 0.2s;}
+.admin-post-form textarea:focus{border-color:var(--accent);}
+.admin-memo-ta{width:100%;min-height:100px;padding:10px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:'Noto Sans JP',sans-serif;font-size:0.88rem;color:var(--ink);background:var(--bg);resize:vertical;outline:none;transition:border-color 0.2s;line-height:1.6;}
+.admin-memo-ta:focus{border-color:var(--accent);}
+.admin-ev-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;}
+.admin-ev-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;}
+.admin-ev-info{flex:1;font-size:0.85rem;color:var(--ink);}
+.admin-ev-del{background:none;border:none;color:var(--ink4);cursor:pointer;font-size:0.84rem;padding:3px 6px;border-radius:5px;transition:all 0.15s;}
+.admin-ev-del:hover{color:var(--red);background:#fff0ee;}
+.admin-ev-form{display:flex;gap:6px;flex-wrap:wrap;}
+.admin-ev-form input{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Noto Sans JP',sans-serif;font-size:0.85rem;color:var(--ink);background:var(--bg);outline:none;transition:border-color 0.2s;}
+.admin-ev-form input:focus{border-color:var(--accent);}
+.admin-btn-sm{padding:7px 14px;background:var(--ink);color:#f0e8d0;border:none;border-radius:7px;font-family:'Shippori Mincho',serif;font-size:0.84rem;cursor:pointer;transition:background 0.2s;white-space:nowrap;}
+.admin-btn-sm:hover{background:var(--accent);}
 
 /* TOAST */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink);color:#f0e8d0;border-radius:8px;padding:9px 20px;font-size:0.85rem;opacity:0;transition:all 0.26s;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
@@ -358,6 +400,7 @@ TABS.forEach(t=>{ const n=new Date(); calSt[t.id]={year:n.getFullYear(),month:n.
 const imgBuf = {};
 const snCache = {};
 let newPws = null;
+let adminActiveTab = 'A';
 const listeners = {};
 
 // ============================================================
@@ -514,7 +557,7 @@ async function renderPanel(id) {
       <div class="post-form">
         <textarea id="pt-${id}" placeholder="投稿を入力…"></textarea>
         <div class="post-form-ft">
-          <label class="img-lbl">📷 画像<input type="file" accept="image/*" onchange="onImg('${id}',this)"></label>
+          <label class="img-lbl">📎 画像・PDF<input type="file" accept="image/*,application/pdf" onchange="onImg('${id}',this)"></label>
           <span class="img-fname" id="ifn-${id}"></span>
           <button class="post-sub" onclick="submitPost('${id}')">投稿</button>
         </div>
@@ -552,21 +595,42 @@ function renderPostsFromData(id,val) {
   const el=document.getElementById('pl-'+id); if(!el)return;
   if(!val){el.innerHTML='<div class="empty-msg">まだ投稿がありません</div>';return;}
   const posts=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts);
-  el.innerHTML=posts.map(p=>`
-    <div class="post-card">
+  el.innerHTML=posts.map(p=>{
+    const key=`${p.fbKey}-${id}`;
+    let mediaHtml='';
+    if(p.img){
+      if(p.isPdf){
+        mediaHtml=`
+          <div class="post-pdf-header">
+            <div class="post-pdf-icon">📄</div>
+            <div class="post-pdf-name">${esc(p.fileName||'document.pdf')}</div>
+            <button class="post-pdf-btn" onclick="togglePdfView('${key}')">プレビュー</button>
+          </div>
+          <div class="pdf-canvas-wrap" id="pdfwrap-${key}">
+            <div class="pdf-loading" id="pdfload-${key}">読み込み中…</div>
+          </div>`;
+      } else {
+        mediaHtml=`<img class="post-img" src="${p.img}" alt="">`;
+      }
+    }
+    return`<div class="post-card" data-pdf-key="${key}" data-pdf-src="${p.isPdf?p.img:''}">
       <div class="post-hdr"><span class="post-badge">タブ ${id}</span><span class="post-time">${p.time}</span></div>
       <div class="post-body">${esc(p.text)}</div>
-      ${p.img?`<img class="post-img" src="${p.img}" alt="">`:'' }
+      ${mediaHtml}
       <button class="post-del" onclick="delPost('${id}','${p.fbKey}')">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 window.onImg = function(id,inp) {
   const f=inp.files[0]; if(!f)return;
-  if(f.size>2*1024*1024){showToast('画像は2MB以下にしてください');inp.value='';return;}
+  const isPdf=f.type==='application/pdf';
+  const limit=isPdf?10*1024*1024:2*1024*1024;
+  const limitMsg=isPdf?'PDFは10MB以下にしてください':'画像は2MB以下にしてください';
+  if(f.size>limit){showToast(limitMsg);inp.value='';return;}
   const r=new FileReader();
-  r.onload=e=>{imgBuf[id]={name:f.name,dataUrl:e.target.result};
-    const el=document.getElementById('ifn-'+id);if(el)el.textContent=f.name;};
+  r.onload=e=>{imgBuf[id]={name:f.name,dataUrl:e.target.result,isPdf};
+    const el=document.getElementById('ifn-'+id);if(el)el.textContent=(isPdf?'📄 ':'🖼 ')+f.name;};
   r.readAsDataURL(f);
 };
 
@@ -574,13 +638,49 @@ window.submitPost = async function(id) {
   const ta=document.getElementById('pt-'+id);
   const text=ta?ta.value.trim():'';
   const img=imgBuf[id];
-  if(!text&&!img){showToast('テキストか画像を入力してください');return;}
+  if(!text&&!img){showToast('テキストか画像・PDFを入力してください');return;}
   const t=new Date();
   const time=`${t.getMonth()+1}/${t.getDate()} ${pad(t.getHours())}:${pad(t.getMinutes())}`;
-  await fbPush(`tabs/${id}/posts`,{text,img:img?img.dataUrl:null,time,ts:Date.now()});
+  await fbPush(`tabs/${id}/posts`,{
+    text, time, ts:Date.now(),
+    img: img?img.dataUrl:null,
+    isPdf: img?!!img.isPdf:false,
+    fileName: img?img.name:null
+  });
   if(ta)ta.value=''; imgBuf[id]=null;
   const fn=document.getElementById('ifn-'+id);if(fn)fn.textContent='';
   showToast('✓ 投稿しました');
+};
+
+window.togglePdfView = async function(key) {
+  const wrap = document.getElementById('pdfwrap-'+key);
+  if(!wrap) return;
+  const isOpen = wrap.classList.contains('open');
+  if(isOpen){ wrap.classList.remove('open'); return; }
+  // find src from data attribute
+  const card = wrap.closest('[data-pdf-key="'+key+'"]');
+  const src = card ? card.getAttribute('data-pdf-src') : null;
+  if(!src){ showToast('PDFデータが見つかりません'); return; }
+  wrap.classList.add('open');
+  const loadEl = document.getElementById('pdfload-'+key);
+  if(loadEl) loadEl.textContent = '読み込み中…';
+  try {
+    const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+    const pdfDoc = await pdfjsLib.getDocument(src).promise;
+    wrap.innerHTML = '';
+    for(let p=1; p<=pdfDoc.numPages; p++){
+      const page = await pdfDoc.getPage(p);
+      const vp = page.getViewport({scale: wrap.clientWidth / page.getViewport({scale:1}).width});
+      const canvas = document.createElement('canvas');
+      canvas.width = vp.width; canvas.height = vp.height;
+      canvas.style.width = '100%';
+      wrap.appendChild(canvas);
+      await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
+    }
+  } catch(e) {
+    wrap.innerHTML = '<div class="pdf-loading">PDFの読み込みに失敗しました</div>';
+  }
 };
 
 window.delPost = async function(id,fbKey) {
@@ -702,6 +802,11 @@ async function renderAdmin() {
       </div>`).join('')
     :'';
 
+  const tabBtns = TABS.filter(t=>t.id!=='admin').map(t=>`
+    <button class="admin-ts-btn${adminActiveTab===t.id?' active':''}" onclick="switchAdminTab('${t.id}')">
+      ${tabDisplayLabel(t.id)}
+    </button>`).join('');
+
   document.getElementById('main').innerHTML=`
     <div class="sec">
       <div class="sec-hd"><h2>⚙️ 管理パネル</h2><div class="sec-line"></div></div>
@@ -716,7 +821,150 @@ async function renderAdmin() {
         <div class="new-pw-hd">✅ 新しいパスワード — 各自に伝えてください</div>
         <div id="nplist">${npRows}</div>
       </div>
+    </div>
+    <div class="sec admin-content-wrap">
+      <div class="sec-hd"><h2>📝 コンテンツ編集</h2><div class="sec-line"></div></div>
+      <div class="admin-tab-switcher" id="admin-tab-switcher">${tabBtns}</div>
+      <div id="admin-content-panel"></div>
     </div>`;
+
+  await renderAdminContent(adminActiveTab);
+}
+
+async function renderAdminContent(id) {
+  adminActiveTab = id;
+  // update switcher buttons
+  document.querySelectorAll('.admin-ts-btn').forEach(b=>{
+    b.classList.toggle('active', b.textContent.trim().startsWith(id));
+  });
+  const panel = document.getElementById('admin-content-panel');
+  if(!panel) return;
+  panel.innerHTML = '<div class="empty-msg">読み込み中…</div>';
+
+  const [pv, mv, ev] = await Promise.all([
+    fbGet(`tabs/${id}/posts`),
+    fbGet(`tabs/${id}/memo`),
+    fbGet(`tabs/${id}/events`)
+  ]);
+
+  // Posts
+  const posts = pv ? Object.entries(pv).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts) : [];
+  const postRows = posts.length
+    ? posts.map(p=>`
+      <div class="admin-post-row">
+        <div class="admin-post-body">
+          ${esc(p.text)}
+          ${p.isPdf?'<br><span style="font-size:0.75rem;color:var(--accent)">📄 '+esc(p.fileName||'PDF')+'</span>':p.img?'<br><span style="font-size:0.75rem;color:var(--accent)">🖼 画像あり</span>':''}
+          <div class="admin-post-meta">${p.time}</div>
+        </div>
+        <button class="admin-post-del" onclick="adminDelPost('${id}','${p.fbKey}')">✕</button>
+      </div>`).join('')
+    : '<div class="empty-msg" style="padding:8px">投稿がありません</div>';
+
+  // Memo
+  const memoText = mv ? (mv.text||'') : '';
+  const memoTs = mv && mv.ts ? '最終保存: '+new Date(mv.ts).toLocaleString('ja-JP') : '';
+
+  // Events
+  const DOW=['日','月','火','水','木','金','土'];
+  const todayS = ds(new Date());
+  const evts = ev ? Object.entries(ev).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>a.date.localeCompare(b.date)) : [];
+  const evRows = evts.length
+    ? evts.map(e=>{
+        const d=new Date(e.date+'T00:00:00');
+        const lbl=`${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`;
+        const past = e.date < todayS;
+        return`<div class="admin-ev-row">
+          <div class="admin-ev-info" style="${past?'color:var(--ink4)':''}">
+            ${lbl} ${esc(e.title)}${past?' <span style="font-size:0.72rem">(過去)</span>':''}
+          </div>
+          <button class="admin-ev-del" onclick="adminDelEv('${id}','${e.fbKey}')">✕</button>
+        </div>`;
+      }).join('')
+    : '<div class="empty-msg" style="padding:8px">予定がありません</div>';
+
+  panel.innerHTML=`
+    <div class="admin-content-panel">
+      <div class="admin-content-hd">
+        タブ ${tabDisplayLabel(id)} のコンテンツ
+      </div>
+
+      <div class="admin-subsec">
+        <div class="admin-subsec-title">📋 掲示板</div>
+        <div class="admin-post-list">${postRows}</div>
+        <div class="admin-post-form">
+          <textarea id="adm-pt-${id}" placeholder="管理者として投稿…"></textarea>
+          <button class="admin-btn-sm" onclick="adminPost('${id}')">📢 管理者として投稿</button>
+        </div>
+      </div>
+
+      <div class="admin-subsec">
+        <div class="admin-subsec-title">📝 メモ</div>
+        <textarea class="admin-memo-ta" id="adm-memo-${id}">${memoText}</textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+          <span style="font-size:0.74rem;color:var(--ink4)">${memoTs}</span>
+          <button class="admin-btn-sm" onclick="adminSaveMemo('${id}')">保存</button>
+        </div>
+      </div>
+
+      <div class="admin-subsec">
+        <div class="admin-subsec-title">📅 カレンダー予定</div>
+        <div class="admin-ev-list">${evRows}</div>
+        <div class="admin-ev-form">
+          <input type="date" id="adm-ed-${id}">
+          <input type="text" id="adm-et-${id}" placeholder="予定の内容" maxlength="30" style="flex:1;min-width:140px;">
+          <button class="admin-btn-sm" onclick="adminAddEv('${id}')">追加</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+window.switchAdminTab = async function(id) {
+  await renderAdminContent(id);
+};
+
+window.adminPost = async function(id) {
+  const ta = document.getElementById('adm-pt-'+id);
+  const text = ta ? ta.value.trim() : '';
+  if(!text){ showToast('テキストを入力してください'); return; }
+  const t = new Date();
+  const time = `${t.getMonth()+1}/${t.getDate()} ${pad(t.getHours())}:${pad(t.getMinutes())} [管理]`;
+  await fbPush(`tabs/${id}/posts`, {text, time, ts:Date.now(), img:null, isPdf:false});
+  if(ta) ta.value = '';
+  showToast('✓ 管理者として投稿しました');
+  await renderAdminContent(id);
+};
+
+window.adminDelPost = async function(id, fbKey) {
+  if(!confirm('この投稿を削除しますか？')) return;
+  await fbRemove(`tabs/${id}/posts/${fbKey}`);
+  showToast('✓ 投稿を削除しました');
+  await renderAdminContent(id);
+};
+
+window.adminSaveMemo = async function(id) {
+  const ta = document.getElementById('adm-memo-'+id);
+  if(!ta) return;
+  await fbSet(`tabs/${id}/memo`, {text:ta.value, ts:Date.now()});
+  showToast('✓ メモを保存しました');
+  await renderAdminContent(id);
+};
+
+window.adminAddEv = async function(id) {
+  const date = document.getElementById('adm-ed-'+id).value;
+  const title = document.getElementById('adm-et-'+id).value.trim();
+  if(!date||!title){ showToast('日付と内容を入力してください'); return; }
+  await fbPush(`tabs/${id}/events`, {date, title});
+  showToast('✓ 予定を追加しました');
+  await renderAdminContent(id);
+};
+
+window.adminDelEv = async function(id, fbKey) {
+  if(!confirm('この予定を削除しますか？')) return;
+  await fbRemove(`tabs/${id}/events/${fbKey}`);
+  showToast('✓ 予定を削除しました');
+  await renderAdminContent(id);
+};
 }
 
 window.saveSubname=async function(id){
