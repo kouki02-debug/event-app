@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>イベントページ</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f4ef;--bg2:#efe9df;--surface:#fff;--surface2:#f9f6f1;
+  --border:#ddd5c8;--border2:#c8bfb0;
+  --ink:#2a2218;--ink2:#5a4e3e;--ink3:#9a8e7e;--ink4:#bdb5aa;
+  --accent:#2d5a8e;--accent-light:#e8f0f8;--accent2:#7a5c3a;
+  --gold:#b8982a;--red:#c04040;--green:#3a7a50;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+
+/* LOADING */
+#loading-screen{position:fixed;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999;transition:opacity 0.4s;}
+#loading-screen.hide{opacity:0;pointer-events:none;}
+.loading-logo{font-family:'Shippori Mincho',serif;font-size:1.4rem;color:#f0e8d0;letter-spacing:0.15em;}
+.loading-dot{display:flex;gap:6px;}
+.loading-dot span{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:bounce 1.2s ease-in-out infinite;}
+.loading-dot span:nth-child(2){animation-delay:0.2s;}
+.loading-dot span:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-8px);}}
+
+/* HEADER */
+header{background:var(--ink);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.18);}
+.header-bar{display:flex;align-items:center;gap:10px;padding:11px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.header-bar h1{font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#f0e8d0;letter-spacing:0.12em;font-weight:600;cursor:pointer;}
+.hd-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);}
+.hd-sync{font-size:0.72rem;color:rgba(240,232,208,0.4);display:flex;align-items:center;gap:4px;}
+.hd-sync.live{color:#6db88a;}
+.sync-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.sync-dot.pulse{animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* TABS */
+.tabs-wrap{display:flex;overflow-x:auto;scrollbar-width:none;}
+.tabs-wrap::-webkit-scrollbar{display:none;}
+.tab-btn{flex-shrink:0;padding:10px 20px;background:none;border:none;font-family:'Shippori Mincho',serif;font-size:0.95rem;color:rgba(240,232,208,0.4);cursor:pointer;transition:all 0.18s;border-bottom:2px solid transparent;display:flex;align-items:center;gap:5px;letter-spacing:0.05em;}
+.tab-btn:hover{color:rgba(240,232,208,0.75);}
+.tab-btn.active{color:#f0e8d0;border-bottom-color:var(--gold);font-weight:600;}
+.tab-btn.locked{color:rgba(240,232,208,0.18);}
+.tab-btn.locked:hover{color:rgba(240,232,208,0.45);}
+.lk{font-size:0.68rem;}
+
+/* MAIN */
+main{max-width:760px;margin:0 auto;padding:22px 16px;}
+@keyframes up{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* LOCKED */
+.locked-view{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;gap:18px;animation:up 0.22s ease;}
+.lock-ring{width:78px;height:78px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:2.1rem;box-shadow:0 4px 18px rgba(0,0,0,0.07);}
+.lock-lbl{font-family:'Shippori Mincho',serif;font-size:1.05rem;color:var(--ink3);letter-spacing:0.1em;}
+.pw-row{display:flex;gap:8px;}
+.pw-in{padding:10px 16px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-family:'Noto Sans JP',sans-serif;font-size:1rem;color:var(--ink);letter-spacing:0.2em;outline:none;width:158px;transition:border-color 0.2s;}
+.pw-in:focus{border-color:var(--accent);}
+.pw-in.err{border-color:var(--red);animation:shake 0.3s;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.pw-btn{padding:10px 20px;background:var(--ink);color:#f0e8d0;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.95rem;cursor:pointer;transition:background 0.2s;letter-spacing:0.05em;}
+.pw-btn:hover{background:var(--accent2);}
+.pw-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.pw-hint{font-size:0.77rem;color:var(--ink4);text-align:center;max-width:280px;line-height:1.5;}
+.pw-hint.warn{color:var(--red);}
+
+/* SECTION */
+.sec{margin-bottom:26px;}
+.sec-hd{display:flex;align-items:center;gap:10px;margin-bottom:13px;}
+.sec-hd h2{font-family:'Shippori Mincho',serif;font-size:0.96rem;color:var(--ink2);letter-spacing:0.08em;font-weight:600;white-space:nowrap;}
+.sec-line{flex:1;height:1px;background:var(--border);}
+
+/* POSTS */
+.post-list{display:flex;flex-direction:column;gap:10px;margin-bottom:10px;}
+.post-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;animation:up 0.2s;position:relative;}
+.post-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.post-badge{font-size:0.7rem;padding:2px 8px;background:var(--bg2);border-radius:20px;color:var(--ink3);border:1px solid var(--border);font-family:'Shippori Mincho',serif;letter-spacing:0.05em;}
+.post-time{font-size:0.71rem;color:var(--ink4);margin-left:auto;}
+.post-body{font-size:0.92rem;line-height:1.65;color:var(--ink);word-break:break-word;}
+.post-img{margin-top:10px;max-width:100%;border-radius:8px;display:block;max-height:280px;object-fit:cover;}
+.post-del{position:absolute;top:9px;right:9px;background:none;border:none;color:var(--ink4);cursor:pointer;font-size:0.85rem;padding:3px 7px;border-radius:5px;transition:all 0.15s;}
+.post-del:hover{color:var(--red);background:#fff0ee;}
+.post-form{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.post-form textarea{width:100%;min-height:76px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:0.92rem;color:var(--ink);background:var(--surface2);resize:vertical;outline:none;transition:border-color 0.2s;line-height:1.6;}
+.post-form textarea:focus{border-color:var(--accent);}
+.post-form-ft{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.img-lbl{display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.84rem;color:var(--ink3);cursor:pointer;transition:all 0.15s;background:var(--surface2);}
+.img-lbl:hover{border-color:var(--accent);color:var(--accent);}
+.img-lbl input{display:none;}
+.img-fname{font-size:0.77rem;color:var(--accent);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.post-sub{margin-left:auto;padding:8px 20px;background:var(--ink);color:#f0e8d0;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;transition:background 0.2s;}
+.post-sub:hover{background:var(--accent);}
+
+/* MEMO */
+.memo-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.memo-ta{width:100%;min-height:150px;padding:14px 16px;border:none;outline:none;font-family:'Noto Sans JP',sans-serif;font-size:0.92rem;color:var(--ink);background:transparent;resize:vertical;line-height:1.7;}
+.memo-ft{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--border);background:var(--surface2);}
+.memo-ts{font-size:0.74rem;color:var(--ink4);}
+.memo-ok{font-size:0.77rem;color:var(--green);opacity:0;transition:opacity 0.3s;}
+.memo-ok.show{opacity:1;}
+.memo-save{padding:6px 16px;background:var(--ink);color:#f0e8d0;border:none;border-radius:6px;font-family:'Shippori Mincho',serif;font-size:0.84rem;cursor:pointer;transition:background 0.2s;}
+.memo-save:hover{background:var(--accent);}
+
+/* CALENDAR */
+.cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.cal-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.cal-nav{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 12px;color:var(--ink3);cursor:pointer;font-size:1rem;transition:all 0.15s;}
+.cal-nav:hover{border-color:var(--accent);color:var(--accent);}
+.cal-month{font-family:'Shippori Mincho',serif;font-size:1rem;color:var(--ink);letter-spacing:0.06em;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-dn{text-align:center;font-size:0.71rem;color:var(--ink4);padding:5px 0;font-weight:500;}
+.cal-dn.sun{color:#b04040;}.cal-dn.sat{color:var(--accent);}
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;font-size:0.84rem;position:relative;color:var(--ink2);transition:all 0.12s;}
+.cal-day:hover:not(.empty){background:var(--accent-light);}
+.cal-day.today{background:var(--ink);color:#f0e8d0;font-weight:700;}
+.cal-day.today:hover{background:var(--accent);}
+.cal-day.has-ev::after{content:'';width:4px;height:4px;background:var(--green);border-radius:50%;position:absolute;bottom:3px;}
+.cal-day.today.has-ev::after{background:rgba(240,232,208,0.8);}
+.cal-day.empty{pointer-events:none;}
+.cal-day.sun{color:#b04040;}.cal-day.sat{color:var(--accent);}
+.cal-day.today.sun,.cal-day.today.sat{color:#f0e8d0;}
+.ev-list{margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+.ev-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:7px;border:1px solid var(--border);}
+.ev-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.ev-info{flex:1;}
+.ev-dl{font-size:0.71rem;color:var(--ink4);}
+.ev-tt{font-size:0.9rem;color:var(--ink);}
+.ev-del{background:none;border:none;color:var(--ink4);cursor:pointer;font-size:0.84rem;padding:3px 6px;border-radius:5px;transition:all 0.15s;}
+.ev-del:hover{color:var(--red);background:#fff0ee;}
+.add-ev-btn{width:100%;margin-top:10px;padding:9px;background:none;border:1.5px dashed var(--border);border-radius:8px;color:var(--ink4);font-family:'Noto Sans JP',sans-serif;font-size:0.85rem;cursor:pointer;transition:all 0.2s;}
+.add-ev-btn:hover{border-color:var(--accent);color:var(--accent);}
+.add-ev-form{margin-top:8px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:none;flex-direction:column;gap:8px;}
+.add-ev-form.open{display:flex;animation:up 0.2s;}
+.add-ev-form input{padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:'Noto Sans JP',sans-serif;font-size:0.9rem;color:var(--ink);background:var(--surface);outline:none;transition:border-color 0.2s;}
+.add-ev-form input:focus{border-color:var(--accent);}
+.form-row{display:flex;gap:8px;}
+.btn-save{flex:1;padding:9px;background:var(--ink);color:#f0e8d0;border:none;border-radius:7px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;transition:background 0.2s;}
+.btn-save:hover{background:var(--accent);}
+.btn-cancel{padding:9px 14px;background:var(--bg2);color:var(--ink3);border:1px solid var(--border);border-radius:7px;font-family:'Noto Sans JP',sans-serif;font-size:0.88rem;cursor:pointer;}
+.empty-msg{text-align:center;padding:14px;color:var(--ink4);font-size:0.85rem;}
+
+/* HOME */
+.home-view{animation:up 0.25s ease;}
+.home-greeting{text-align:center;padding:32px 0 28px;}
+.home-greeting h2{font-family:'Shippori Mincho',serif;font-size:1.4rem;color:var(--ink);letter-spacing:0.12em;font-weight:600;margin-bottom:6px;}
+.home-greeting p{font-size:0.85rem;color:var(--ink3);}
+.tab-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;}
+.tab-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 16px;cursor:pointer;transition:all 0.18s;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden;}
+.tab-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--border);transition:background 0.18s;}
+.tab-card:hover{border-color:var(--border2);box-shadow:0 4px 16px rgba(0,0,0,0.07);transform:translateY(-2px);}
+.tab-card:hover::before{background:var(--gold);}
+.tab-card.unlocked::before{background:var(--green);}
+.tab-card-id{font-family:'Shippori Mincho',serif;font-size:1.6rem;font-weight:700;color:var(--ink);line-height:1;}
+.tab-card-sub{font-size:0.85rem;color:var(--ink3);min-height:1.2em;}
+.tab-card-status{font-size:0.75rem;padding:3px 10px;border-radius:20px;background:var(--bg2);color:var(--ink4);border:1px solid var(--border);}
+.tab-card.unlocked .tab-card-status{background:#edf7f0;color:var(--green);border-color:#b0dfc0;}
+.home-admin-btn{width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:'Shippori Mincho',serif;font-size:0.9rem;color:var(--ink3);cursor:pointer;letter-spacing:0.06em;transition:all 0.18s;}
+.home-admin-btn:hover{border-color:var(--ink2);color:var(--ink2);}
+
+/* SESSION TIMEOUT BANNER */
+.timeout-banner{
+  background:var(--red);color:white;
+  padding:10px 20px;text-align:center;
+  font-size:0.85rem;font-family:'Shippori Mincho',serif;
+  letter-spacing:0.05em;display:none;
+}
+.timeout-banner.show{display:block;animation:up 0.2s;}
+
+/* ADMIN */
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.admin-card-hd{padding:11px 16px;background:var(--bg2);border-bottom:1px solid var(--border);font-family:'Shippori Mincho',serif;font-size:0.93rem;color:var(--ink2);letter-spacing:0.06em;}
+.admin-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);}
+.admin-row:last-child{border-bottom:none;}
+.admin-tab-nm{font-family:'Shippori Mincho',serif;font-size:0.95rem;color:var(--ink);width:28px;}
+.admin-sn-input{width:84px;padding:5px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:'Noto Sans JP',sans-serif;font-size:0.88rem;color:var(--ink);background:var(--surface2);outline:none;transition:border-color 0.2s;}
+.admin-sn-input:focus{border-color:var(--accent);}
+.admin-pw-input{flex:1;font-family:monospace;font-size:0.9rem;color:var(--ink);background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:5px 10px;outline:none;transition:border-color 0.2s;}
+.admin-pw-input:focus{border-color:var(--accent);}
+.admin-pw-save{padding:5px 12px;background:var(--accent2);color:white;border:none;border-radius:6px;font-size:0.8rem;cursor:pointer;white-space:nowrap;transition:background 0.2s;}
+.admin-pw-save:hover{background:var(--ink);}
+.reset-one{padding:6px 12px;background:none;border:1.5px solid var(--border);border-radius:6px;color:var(--ink3);font-family:'Noto Sans JP',sans-serif;font-size:0.8rem;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.reset-one:hover{border-color:var(--red);color:var(--red);}
+.reset-all-btn{width:100%;padding:12px;background:var(--red);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:1rem;cursor:pointer;letter-spacing:0.08em;transition:background 0.2s;}
+.reset-all-btn:hover{background:#a03030;}
+.new-pw-box{margin-top:16px;background:var(--surface);border:1px solid #a8d8b0;border-radius:10px;overflow:hidden;display:none;}
+.new-pw-box.show{display:block;animation:up 0.25s;}
+.new-pw-hd{padding:10px 16px;background:#f0fff4;border-bottom:1px solid #c0e8c8;font-family:'Shippori Mincho',serif;font-size:0.9rem;color:var(--green);letter-spacing:0.06em;}
+.new-pw-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid #dff0df;}
+.new-pw-row:last-child{border-bottom:none;}
+.new-pw-tab{font-family:'Shippori Mincho',serif;width:80px;color:var(--ink2);}
+.new-pw-val{flex:1;font-family:monospace;font-size:1rem;color:var(--green);font-weight:700;letter-spacing:0.1em;}
+.copy-btn{padding:4px 10px;background:none;border:1px solid #a8d8b0;border-radius:5px;color:var(--green);font-size:0.77rem;cursor:pointer;transition:all 0.15s;}
+.copy-btn:hover{background:#e0f5e0;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink);color:#f0e8d0;border-radius:8px;padding:9px 20px;font-size:0.85rem;opacity:0;transition:all 0.26s;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="loading-logo">イベントページ</div>
+  <div class="loading-dot"><span></span><span></span><span></span></div>
+</div>
+
+<div class="timeout-banner" id="timeout-banner">
+  ⏰ セッションがタイムアウトしました。再度ログインしてください。
+</div>
+
+<header>
+  <div class="header-bar">
+    <div class="hd-dot"></div>
+    <h1 onclick="goHome()">イベントページ</h1>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:14px;">
+      <div class="hd-sync" id="sync-status">
+        <div class="sync-dot pulse"></div> 接続中…
+      </div>
+      <button onclick="goHome()" style="background:none;border:none;color:rgba(240,232,208,0.5);font-size:0.8rem;cursor:pointer;letter-spacing:0.05em;font-family:'Shippori Mincho',serif;" onmouseover="this.style.color='rgba(240,232,208,0.9)'" onmouseout="this.style.color='rgba(240,232,208,0.5)'">🏠 ホーム</button>
+    </div>
+  </div>
+  <div class="tabs-wrap" id="tabs"></div>
+</header>
+<main id="main"></main>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import {
+  getDatabase, ref, set, get, onValue, remove, push
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+// ============================================================
+// FIREBASE
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDSiZD-Dw1UEoXbxF8heRu9jWHysRK6R50",
+  authDomain: "event-app-eb4a5.firebaseapp.com",
+  databaseURL: "https://event-app-eb4a5-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "event-app-eb4a5",
+  storageBucket: "event-app-eb4a5.firebasestorage.app",
+  messagingSenderId: "214945330996",
+  appId: "1:214945330996:web:0a2edead96f2df9d91d761",
+  measurementId: "G-3PTXJQ6JB2"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+const fbGet    = async p => { const s=await get(ref(db,p)); return s.exists()?s.val():null; };
+const fbSet    = (p,v)   => set(ref(db,p),v);
+const fbRemove = p       => remove(ref(db,p));
+const fbPush   = (p,v)   => push(ref(db,p),v);
+const fbListen = (p,cb)  => onValue(ref(db,p), s=>cb(s.exists()?s.val():null));
+
+// ============================================================
+// SECURITY — SHA-256 hash
+// ============================================================
+async function sha256(text) {
+  const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ============================================================
+// BRUTE-FORCE PROTECTION
+// ============================================================
+const MAX_ATTEMPTS = 5;
+const LOCK_DURATION = 5 * 60 * 1000; // 5分
+
+function bfKey(id)  { return `bf_${id}`; }
+function getBf(id)  { try { return JSON.parse(sessionStorage.getItem(bfKey(id))||'{"attempts":0,"lockedUntil":0}'); } catch { return {attempts:0,lockedUntil:0}; } }
+function saveBf(id,data) { sessionStorage.setItem(bfKey(id), JSON.stringify(data)); }
+
+function isLocked(id) {
+  const bf = getBf(id);
+  if (bf.lockedUntil && Date.now() < bf.lockedUntil) return bf.lockedUntil;
+  return false;
+}
+function recordFailure(id) {
+  const bf = getBf(id);
+  bf.attempts = (bf.attempts||0) + 1;
+  if (bf.attempts >= MAX_ATTEMPTS) bf.lockedUntil = Date.now() + LOCK_DURATION;
+  saveBf(id, bf);
+}
+function clearBf(id) { sessionStorage.removeItem(bfKey(id)); }
+function remainingMs(id) {
+  const until = isLocked(id);
+  return until ? Math.max(0, until - Date.now()) : 0;
+}
+
+// ============================================================
+// SESSION TIMEOUT — 30分
+// ============================================================
+const SESSION_DURATION = 30 * 60 * 1000;
+let sessionTimer = null;
+let lastActivity = Date.now();
+
+function resetSessionTimer() {
+  lastActivity = Date.now();
+  sessionStorage.setItem('lastActivity', lastActivity);
+}
+function checkSession() {
+  const stored = parseInt(sessionStorage.getItem('lastActivity')||'0');
+  if (stored && Date.now() - stored > SESSION_DURATION) {
+    expireSession();
+  }
+}
+function startSessionWatcher() {
+  ['click','keydown','touchstart'].forEach(ev =>
+    document.addEventListener(ev, resetSessionTimer, {passive:true})
+  );
+  sessionTimer = setInterval(() => {
+    if (Date.now() - lastActivity > SESSION_DURATION) expireSession();
+  }, 60000);
+}
+function expireSession() {
+  unlocked = [];
+  sessionStorage.removeItem('ul');
+  sessionStorage.removeItem('lastActivity');
+  document.getElementById('timeout-banner').classList.add('show');
+  setTimeout(()=>document.getElementById('timeout-banner').classList.remove('show'), 5000);
+  activeTab = null;
+  renderTabs();
+  renderHome();
+}
+
+// ============================================================
+// CONFIG
+// ============================================================
+const TABS = [{id:'A'},{id:'B'},{id:'C'},{id:'D'},{id:'E'},{id:'F'},{id:'admin'}];
+
+// Default passwords stored as SHA-256 hashes (computed at runtime on first use)
+const DEFAULT_PWS_PLAIN = {
+  A:'aaa1',B:'bbb2',C:'ccc3',D:'ddd4',E:'eee5',F:'fff6',admin:'13240622Ko'
+};
+
+async function getTabPwHash(id) {
+  const stored = await fbGet(`settings/pw/${id}`);
+  if (stored) return stored; // already hashed
+  // First time: hash the default and store
+  const hash = await sha256(DEFAULT_PWS_PLAIN[id] || '0000');
+  await fbSet(`settings/pw/${id}`, hash);
+  return hash;
+}
+async function setTabPwHash(id, plainPw) {
+  const hash = await sha256(plainPw);
+  await fbSet(`settings/pw/${id}`, hash);
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let unlocked = JSON.parse(sessionStorage.getItem('ul')||'[]');
+let activeTab = null;
+const calSt = {};
+TABS.forEach(t=>{ const n=new Date(); calSt[t.id]={year:n.getFullYear(),month:n.getMonth()}; });
+const imgBuf = {};
+const snCache = {};
+let newPws = null;
+const listeners = {};
+
+// ============================================================
+// SUBNAME
+// ============================================================
+async function preloadSubnames() {
+  const val = await fbGet('settings/subname');
+  if (val) Object.assign(snCache, val);
+}
+async function setSubname(id, name) {
+  await fbSet(`settings/subname/${id}`, name);
+  snCache[id] = name;
+}
+function tabDisplayLabel(id) {
+  const sn = snCache[id]||'';
+  return sn ? `${id}（${sn}）` : id;
+}
+
+// ============================================================
+// REALTIME LISTENERS
+// ============================================================
+function attachListeners(tabId) {
+  if (listeners[tabId]) return;
+  listeners[tabId] = [];
+  listeners[tabId].push(fbListen(`tabs/${tabId}/posts`,   val => { if(activeTab===tabId) renderPostsFromData(tabId,val); }));
+  listeners[tabId].push(fbListen(`tabs/${tabId}/memo`,    val => { if(activeTab===tabId) updateMemoUI(tabId,val); }));
+  listeners[tabId].push(fbListen(`tabs/${tabId}/events`,  val => { if(activeTab===tabId) renderCal(tabId,val); }));
+  listeners[tabId].push(fbListen(`settings/subname/${tabId}`, val => {
+    snCache[tabId]=val||''; renderTabs(); if(!activeTab) renderHome();
+  }));
+}
+
+// ============================================================
+// SYNC STATUS
+// ============================================================
+function setSyncStatus(live) {
+  const el=document.getElementById('sync-status'); if(!el)return;
+  el.className=live?'hd-sync live':'hd-sync';
+  el.innerHTML=`<div class="sync-dot${live?' pulse':''}"></div> ${live?'同期中':'オフライン'}`;
+}
+
+// ============================================================
+// TABS UI
+// ============================================================
+function renderTabs() {
+  const c=document.getElementById('tabs'); c.innerHTML='';
+  TABS.forEach(t=>{
+    const ul=unlocked.includes(t.id);
+    const b=document.createElement('button');
+    b.className='tab-btn'+(activeTab===t.id?' active':'')+(ul?'':' locked');
+    const lbl=t.id==='admin'?'管理':tabDisplayLabel(t.id);
+    b.innerHTML=lbl+(ul?'':' <span class="lk">🔒</span>');
+    b.onclick=()=>openTab(t.id);
+    c.appendChild(b);
+  });
+}
+
+// ============================================================
+// HOME
+// ============================================================
+function goHome() { activeTab=null; renderTabs(); renderHome(); }
+
+function renderHome() {
+  const cards=TABS.filter(t=>t.id!=='admin').map(t=>{
+    const ul=unlocked.includes(t.id);
+    const sn=snCache[t.id]||'';
+    return`<div class="tab-card${ul?' unlocked':''}" onclick="openTab('${t.id}')">
+      <div class="tab-card-id">${t.id}</div>
+      <div class="tab-card-sub">${sn?esc(sn):'—'}</div>
+      <div class="tab-card-status">${ul?'🔓 解錠済み':'🔒 ロック中'}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('main').innerHTML=`
+    <div class="home-view">
+      <div class="home-greeting"><h2>イベントページ</h2><p>アクセスするタブを選んでください</p></div>
+      <div class="tab-cards">${cards}</div>
+      <button class="home-admin-btn" onclick="openTab('admin')">⚙️ 管理パネル</button>
+    </div>`;
+}
+
+// ============================================================
+// OPEN TAB
+// ============================================================
+async function openTab(id) {
+  activeTab=id; renderTabs();
+  unlocked.includes(id) ? await renderPanel(id) : renderLocked(id);
+}
+
+// ============================================================
+// LOCKED
+// ============================================================
+function renderLocked(id) {
+  const locked = isLocked(id);
+  const bf = getBf(id);
+  const remaining = locked ? Math.ceil(remainingMs(id)/1000/60) : 0;
+  const attemptsLeft = Math.max(0, MAX_ATTEMPTS - (bf.attempts||0));
+
+  let hint = 'このタブのパスワードを入力してください';
+  if (locked) hint = `⛔ ${remaining}分後に再試行できます`;
+  else if (bf.attempts > 0) hint = `残り${attemptsLeft}回失敗するとロックされます`;
+
+  document.getElementById('main').innerHTML=`
+    <div class="locked-view">
+      <div class="lock-ring">${locked?'⛔':'🔒'}</div>
+      <div class="lock-lbl">タブ ${tabDisplayLabel(id)} — ロック中</div>
+      <div class="pw-row">
+        <input class="pw-in" id="pw-in" type="password" placeholder="パスワード" maxlength="24"
+          onkeydown="if(event.key==='Enter')tryUnlock('${id}')"
+          ${locked?'disabled':''}>
+        <button class="pw-btn" onclick="tryUnlock('${id}')" ${locked?'disabled':''}>開く</button>
+      </div>
+      <div class="pw-hint${locked?' warn':bf.attempts>0?' warn':''}">${hint}</div>
+    </div>`;
+  if (!locked) document.getElementById('pw-in')?.focus();
+}
+
+window.tryUnlock = async function(id) {
+  if (isLocked(id)) { showToast('⛔ 一時的にロックされています'); return; }
+  const inp=document.getElementById('pw-in');
+  const pw=inp.value.trim(); if(!pw) return;
+  const [inputHash, correctHash] = await Promise.all([sha256(pw), getTabPwHash(id)]);
+  if (inputHash===correctHash) {
+    clearBf(id);
+    if(!unlocked.includes(id)) unlocked.push(id);
+    sessionStorage.setItem('ul',JSON.stringify(unlocked));
+    resetSessionTimer();
+    showToast('🔓 タブ '+tabDisplayLabel(id)+' を開きました');
+    await renderPanel(id); renderTabs();
+  } else {
+    recordFailure(id);
+    inp.classList.add('err');
+    setTimeout(()=>inp.classList.remove('err'),350);
+    inp.value=''; inp.focus();
+    const bf=getBf(id);
+    if(isLocked(id)) {
+      showToast('⛔ 5回失敗しました。5分間ロックします');
+      renderLocked(id);
+    } else {
+      showToast(`パスワードが違います（残り${MAX_ATTEMPTS-bf.attempts}回）`);
+    }
+  }
+};
+
+// ============================================================
+// PANEL
+// ============================================================
+async function renderPanel(id) {
+  if(id==='admin'){ await renderAdmin(); return; }
+  attachListeners(id);
+  document.getElementById('main').innerHTML=`
+    <div class="sec">
+      <div class="sec-hd"><h2>📋 掲示板</h2><div class="sec-line"></div></div>
+      <div class="post-list" id="pl-${id}"><div class="empty-msg">読み込み中…</div></div>
+      <div class="post-form">
+        <textarea id="pt-${id}" placeholder="投稿を入力…"></textarea>
+        <div class="post-form-ft">
+          <label class="img-lbl">📷 画像<input type="file" accept="image/*" onchange="onImg('${id}',this)"></label>
+          <span class="img-fname" id="ifn-${id}"></span>
+          <button class="post-sub" onclick="submitPost('${id}')">投稿</button>
+        </div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-hd"><h2>📝 メモ</h2><div class="sec-line"></div></div>
+      <div class="memo-box">
+        <textarea class="memo-ta" id="mta-${id}" placeholder="メモを入力…"></textarea>
+        <div class="memo-ft">
+          <span class="memo-ts" id="mts-${id}"></span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="memo-ok" id="mok-${id}">✓ 保存</span>
+            <button class="memo-save" onclick="saveMemoBtn('${id}')">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-hd"><h2>📅 カレンダー</h2><div class="sec-line"></div></div>
+      <div class="cal-wrap" id="cal-${id}"><div class="empty-msg">読み込み中…</div></div>
+    </div>`;
+  const [pv,mv,ev]=await Promise.all([
+    fbGet(`tabs/${id}/posts`),
+    fbGet(`tabs/${id}/memo`),
+    fbGet(`tabs/${id}/events`)
+  ]);
+  renderPostsFromData(id,pv); updateMemoUI(id,mv); renderCal(id,ev);
+}
+
+// ============================================================
+// POSTS
+// ============================================================
+function renderPostsFromData(id,val) {
+  const el=document.getElementById('pl-'+id); if(!el)return;
+  if(!val){el.innerHTML='<div class="empty-msg">まだ投稿がありません</div>';return;}
+  const posts=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts);
+  el.innerHTML=posts.map(p=>`
+    <div class="post-card">
+      <div class="post-hdr"><span class="post-badge">タブ ${id}</span><span class="post-time">${p.time}</span></div>
+      <div class="post-body">${esc(p.text)}</div>
+      ${p.img?`<img class="post-img" src="${p.img}" alt="">`:'' }
+      <button class="post-del" onclick="delPost('${id}','${p.fbKey}')">✕</button>
+    </div>`).join('');
+}
+
+window.onImg = function(id,inp) {
+  const f=inp.files[0]; if(!f)return;
+  if(f.size>2*1024*1024){showToast('画像は2MB以下にしてください');inp.value='';return;}
+  const r=new FileReader();
+  r.onload=e=>{imgBuf[id]={name:f.name,dataUrl:e.target.result};
+    const el=document.getElementById('ifn-'+id);if(el)el.textContent=f.name;};
+  r.readAsDataURL(f);
+};
+
+window.submitPost = async function(id) {
+  const ta=document.getElementById('pt-'+id);
+  const text=ta?ta.value.trim():'';
+  const img=imgBuf[id];
+  if(!text&&!img){showToast('テキストか画像を入力してください');return;}
+  const t=new Date();
+  const time=`${t.getMonth()+1}/${t.getDate()} ${pad(t.getHours())}:${pad(t.getMinutes())}`;
+  await fbPush(`tabs/${id}/posts`,{text,img:img?img.dataUrl:null,time,ts:Date.now()});
+  if(ta)ta.value=''; imgBuf[id]=null;
+  const fn=document.getElementById('ifn-'+id);if(fn)fn.textContent='';
+  showToast('✓ 投稿しました');
+};
+
+window.delPost = async function(id,fbKey) {
+  if(!confirm('削除しますか？'))return;
+  await fbRemove(`tabs/${id}/posts/${fbKey}`);
+};
+
+// ============================================================
+// MEMO
+// ============================================================
+function updateMemoUI(id,val) {
+  const ta=document.getElementById('mta-'+id);
+  const ts=document.getElementById('mts-'+id);
+  if(ta&&val){
+    if(document.activeElement!==ta) ta.value=val.text||'';
+    if(ts&&val.ts) ts.textContent='最終保存: '+new Date(val.ts).toLocaleString('ja-JP');
+  }
+}
+window.saveMemoBtn = async function(id) {
+  const ta=document.getElementById('mta-'+id); if(!ta)return;
+  await fbSet(`tabs/${id}/memo`,{text:ta.value,ts:Date.now()});
+  const ts=document.getElementById('mts-'+id);
+  if(ts) ts.textContent='最終保存: '+new Date().toLocaleString('ja-JP');
+  const ok=document.getElementById('mok-'+id);
+  if(ok){ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),2000);}
+  showToast('✓ メモを保存しました');
+};
+
+// ============================================================
+// CALENDAR
+// ============================================================
+function renderCal(id,eventsVal) {
+  const wrap=document.getElementById('cal-'+id); if(!wrap)return;
+  const {year,month}=calSt[id];
+  const todayS=ds(new Date());
+  const DOW=['日','月','火','水','木','金','土'];
+  const firstDow=new Date(year,month,1).getDay();
+  const dim=new Date(year,month+1,0).getDate();
+  const evts=eventsVal?Object.entries(eventsVal).map(([k,v])=>({fbKey:k,...v})):[];
+  let grid=DOW.map((d,i)=>`<div class="cal-dn${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
+  for(let i=0;i<firstDow;i++) grid+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=dim;d++){
+    const dateS=`${year}-${pad2(month+1)}-${pad2(d)}`;
+    const dow=new Date(year,month,d).getDay();
+    let cls='cal-day';
+    if(dow===0)cls+=' sun';if(dow===6)cls+=' sat';
+    if(dateS===todayS)cls+=' today';
+    if(evts.some(e=>e.date===dateS))cls+=' has-ev';
+    grid+=`<div class="${cls}" onclick="clickDay('${id}','${dateS}')">${d}</div>`;
+  }
+  const upcoming=evts.filter(e=>e.date>=todayS).sort((a,b)=>a.date.localeCompare(b.date));
+  const evHTML=upcoming.length
+    ?upcoming.map(ev=>{
+        const d=new Date(ev.date+'T00:00:00');
+        const lbl=`${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`;
+        return`<div class="ev-row"><div class="ev-dot"></div>
+          <div class="ev-info"><div class="ev-dl">${lbl}</div><div class="ev-tt">${esc(ev.title)}</div></div>
+          <button class="ev-del" onclick="delEv('${id}','${ev.fbKey}')">✕</button></div>`;
+      }).join('')
+    :'<div class="empty-msg">予定はありません</div>';
+  wrap.innerHTML=`
+    <div class="cal-nav-row">
+      <button class="cal-nav" onclick="chMonth('${id}',-1)">‹</button>
+      <span class="cal-month">${year}年 ${month+1}月</span>
+      <button class="cal-nav" onclick="chMonth('${id}',1)">›</button>
+    </div>
+    <div class="cal-grid">${grid}</div>
+    <div class="ev-list">${evHTML}</div>
+    <button class="add-ev-btn" onclick="togEvForm('${id}')">＋ 予定を追加</button>
+    <div class="add-ev-form" id="ef-${id}">
+      <input type="date" id="ed-${id}">
+      <input type="text" id="et-${id}" placeholder="内容" maxlength="30">
+      <div class="form-row">
+        <button class="btn-save" onclick="addEv('${id}')">保存</button>
+        <button class="btn-cancel" onclick="togEvForm('${id}')">キャンセル</button>
+      </div>
+    </div>`;
+}
+window.chMonth=async function(id,dir){
+  calSt[id].month+=dir;
+  if(calSt[id].month>11){calSt[id].month=0;calSt[id].year++;}
+  if(calSt[id].month<0){calSt[id].month=11;calSt[id].year--;}
+  const val=await fbGet(`tabs/${id}/events`); renderCal(id,val);
+};
+window.clickDay=function(id,dateS){const el=document.getElementById('ed-'+id);if(el)el.value=dateS;togEvForm(id,true);};
+window.togEvForm=function(id,open){const f=document.getElementById('ef-'+id);if(!f)return;if(open===true)f.classList.add('open');else f.classList.toggle('open');if(f.classList.contains('open')){const t=document.getElementById('et-'+id);if(t)t.focus();}};
+window.addEv=async function(id){
+  const date=document.getElementById('ed-'+id).value;
+  const title=document.getElementById('et-'+id).value.trim();
+  if(!date||!title){showToast('日付と内容を入力してください');return;}
+  await fbPush(`tabs/${id}/events`,{date,title});
+  showToast('✓ 予定を追加しました');
+};
+window.delEv=async function(id,fbKey){if(!confirm('削除しますか？'))return;await fbRemove(`tabs/${id}/events/${fbKey}`);};
+
+// ============================================================
+// ADMIN
+// ============================================================
+async function renderAdmin() {
+  const [pwVal,snVal]=await Promise.all([fbGet('settings/pw'),fbGet('settings/subname')]);
+  if(snVal)Object.assign(snCache,snVal);
+
+  const rows=TABS.filter(t=>t.id!=='admin').map(t=>`
+    <div class="admin-row">
+      <div class="admin-tab-nm">${t.id}</div>
+      <input class="admin-sn-input" id="sn-${t.id}" type="text" value="${esc(snCache[t.id]||'')}"
+        placeholder="サブ名" maxlength="10" onchange="saveSubname('${t.id}')">
+      <input class="admin-pw-input" id="newpw-${t.id}" type="text" placeholder="新パスワード" maxlength="24">
+      <button class="admin-pw-save" onclick="changeTabPw('${t.id}')">変更</button>
+      <button class="reset-one" onclick="resetOne('${t.id}')">リセット</button>
+    </div>`).join('');
+
+  const npRows=newPws
+    ?Object.entries(newPws).map(([id,pw])=>`
+      <div class="new-pw-row">
+        <div class="new-pw-tab">${id}（${snCache[id]||'—'}）</div>
+        <div class="new-pw-val">${pw}</div>
+        <button class="copy-btn" onclick="copyTxt('${pw}')">コピー</button>
+      </div>`).join('')
+    :'';
+
+  document.getElementById('main').innerHTML=`
+    <div class="sec">
+      <div class="sec-hd"><h2>⚙️ 管理パネル</h2><div class="sec-line"></div></div>
+      <div class="admin-card">
+        <div class="admin-card-hd">タブ設定（サブ名・パスワード変更）</div>
+        ${rows}
+      </div>
+      <button class="reset-all-btn" onclick="resetAll()">
+        🔄 全タブをリセット（データ消去＋パスワード再生成）
+      </button>
+      <div class="new-pw-box ${newPws?'show':''}" id="npbox">
+        <div class="new-pw-hd">✅ 新しいパスワード — 各自に伝えてください</div>
+        <div id="nplist">${npRows}</div>
+      </div>
+    </div>`;
+}
+
+window.saveSubname=async function(id){
+  const inp=document.getElementById('sn-'+id);if(!inp)return;
+  await setSubname(id,inp.value.trim());
+  renderTabs();showToast('✓ サブ名を保存しました');
+};
+
+window.changeTabPw=async function(id){
+  const inp=document.getElementById('newpw-'+id);if(!inp)return;
+  const pw=inp.value.trim();
+  if(pw.length<4){showToast('パスワードは4文字以上にしてください');return;}
+  await setTabPwHash(id,pw);
+  inp.value='';
+  showToast(`✓ タブ ${id} のパスワードを変更しました`);
+};
+
+function genPw(){
+  const c='abcdefghjkmnpqrstuvwxyz23456789';
+  return Array.from({length:8},()=>c[Math.floor(Math.random()*c.length)]).join('');
+}
+
+window.resetOne=async function(id){
+  if(!confirm(`タブ ${id} のデータとパスワードをリセットしますか？`))return;
+  await fbRemove(`tabs/${id}`);
+  const pw=genPw();
+  await setTabPwHash(id,pw);
+  unlocked=unlocked.filter(x=>x!==id);
+  sessionStorage.setItem('ul',JSON.stringify(unlocked));
+  if(!newPws)newPws={};
+  newPws[id]=pw;
+  showToast(`✓ タブ ${id} をリセットしました`);
+  await renderAdmin();renderTabs();
+};
+
+window.resetAll=async function(){
+  if(!confirm('全タブ（A〜F）のデータとパスワードをリセットします。よろしいですか？'))return;
+  newPws={};
+  await Promise.all(TABS.filter(t=>t.id!=='admin').map(async t=>{
+    await fbRemove(`tabs/${t.id}`);
+    const pw=genPw();
+    await setTabPwHash(t.id,pw);
+    newPws[t.id]=pw;
+  }));
+  unlocked=unlocked.filter(x=>x==='admin');
+  sessionStorage.setItem('ul',JSON.stringify(unlocked));
+  showToast('✓ 全タブをリセットしました');
+  await renderAdmin();renderTabs();
+};
+
+window.copyTxt=function(t){navigator.clipboard.writeText(t).then(()=>showToast('コピーしました'));};
+
+// ============================================================
+// UTILS
+// ============================================================
+function ds(d){return`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;}
+function pad(n){return String(n).padStart(2,'0');}
+function pad2(n){return String(n).padStart(2,'0');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+window.openTab=openTab;
+window.goHome=goHome;
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  checkSession();
+  try {
+    await preloadSubnames();
+    setSyncStatus(true);
+    fbListen('.info/connected',val=>setSyncStatus(!!val));
+  } catch(e){ setSyncStatus(false); }
+  startSessionWatcher();
+  resetSessionTimer();
+  const ls=document.getElementById('loading-screen');
+  ls.classList.add('hide');
+  setTimeout(()=>ls.remove(),500);
+  goHome();
+}
+init();
+</script>
+</body>
+</html>
