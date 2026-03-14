@@ -700,7 +700,7 @@ function renderTabs() {
     if(t.id==='birthday'){
       if(isBirthdayVisible()){
         b.className='tab-btn'+(activeTab===t.id?' active':'')+(ul?'':' locked');
-        b.innerHTML='🎂 Birthday'+(ul?'':' <span class="lk">🔒</span>');
+        b.innerHTML='🎂 birthday0330'+(ul?'':' <span class="lk">🔒</span>');
         b.style.cssText=activeTab==='birthday'?'color:#ffe066;border-bottom-color:#ffcc00;font-weight:600;':'color:rgba(255,210,80,0.8);';
         b.onclick=()=>openTab('birthday');
       } else {
@@ -765,7 +765,7 @@ function renderHome() {
       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffcc00,#ff9900);"></div>
       <div style="font-size:1.8rem;">🎂</div>
-      <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#a06000;font-weight:700;letter-spacing:0.1em;">Birthday</div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#a06000;font-weight:700;letter-spacing:0.1em;">birthday0330</div>
       <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(255,180,0,0.15);color:#a06000;border:1px solid rgba(255,180,0,0.3);">
         ${unlocked.includes('birthday')?'🔓 解錠済み':'🔒 ロック中'}
       </div>
@@ -859,8 +859,31 @@ async function renderPanel(id) {
   if(id==='birthday'){ await renderBirthdayPanel(); return; }
   if(id==='anniv'){ await renderAnnivPanel(); return; }
   attachListeners(id);
+
+  // A-0316 イベント概要カード
+  const eventCard = (id==='A' && (snCache['A']||'').includes('0316')) ? `
+    <div style="background:linear-gradient(135deg,#f5fff5,#eefaee);border:2px solid rgba(60,160,80,0.25);border-radius:14px;padding:16px 18px;margin-bottom:4px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4a9060,#7ac898,#4a9060);"></div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#4a9060;letter-spacing:0.15em;margin-bottom:12px;">🌸 イベント概要</div>
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid rgba(60,160,80,0.12);">
+          <span style="font-size:0.78rem;color:#6a8a6a;width:80px;flex-shrink:0;letter-spacing:0.04em;">開催時期</span>
+          <span style="font-size:0.92rem;color:#1a3a1a;font-weight:600;font-family:'Shippori Mincho',serif;">2026年3月16日（月）</span>
+        </div>
+        <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid rgba(60,160,80,0.12);">
+          <span style="font-size:0.78rem;color:#6a8a6a;width:80px;flex-shrink:0;letter-spacing:0.04em;">集合時間</span>
+          <span style="font-size:0.92rem;color:#1a3a1a;font-weight:600;font-family:'Shippori Mincho',serif;">09：30</span>
+        </div>
+        <div style="display:flex;align-items:center;padding:10px 0;">
+          <span style="font-size:0.78rem;color:#6a8a6a;width:80px;flex-shrink:0;letter-spacing:0.04em;">集合場所</span>
+          <span style="font-size:0.92rem;color:#1a3a1a;font-weight:600;font-family:'Shippori Mincho',serif;">レオパレス狭山台</span>
+        </div>
+      </div>
+    </div>` : '';
+
   document.getElementById('main').innerHTML=`
     <div class="sec">
+      ${eventCard}
       <div class="sec-hd"><h2>📋 掲示板</h2><div class="sec-line"></div></div>
       <div class="post-list" id="pl-${id}"><div class="empty-msg">読み込み中…</div></div>
       <div class="post-form">
@@ -1151,12 +1174,42 @@ async function renderBirthdayPanel() {
   document.getElementById('main').innerHTML=`
     <div class="birthday-bg">
       <div class="birthday-hero">
-        <div class="birthday-hero-title">🎂 Happy Birthday 🎉</div>
+        <div class="birthday-hero-title">🎂 birthday0330 🎉</div>
       </div>
-      <div class="birthday-sec">
+
+      <!-- イベント概要カード -->
+      <div style="padding:14px 14px 0;">
+        <div style="background:linear-gradient(135deg,#fffbe0,#fff3c0);border:2px solid rgba(255,180,0,0.35);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffcc00,#ff9900,#ffcc00);"></div>
+          <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#a06000;letter-spacing:0.15em;margin-bottom:12px;">🎂 イベント概要</div>
+          <div style="display:flex;flex-direction:column;gap:0;">
+            <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,180,0,0.18);">
+              <span style="font-size:0.78rem;color:#8a6800;width:88px;flex-shrink:0;letter-spacing:0.04em;">開催日時</span>
+              <span style="font-size:0.92rem;color:#3a2800;font-weight:600;font-family:'Shippori Mincho',serif;">2026年3月31日（火）09：30〜</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,180,0,0.18);">
+              <span style="font-size:0.78rem;color:#8a6800;width:88px;flex-shrink:0;letter-spacing:0.04em;padding-top:2px;">集合・解散場所</span>
+              <span style="font-size:0.92rem;color:#3a2800;font-weight:600;font-family:'Shippori Mincho',serif;">セブンイレブン上藤沢北店</span>
+            </div>
+            <div style="display:flex;align-items:center;padding:10px 0;">
+              <span style="font-size:0.78rem;color:#8a6800;width:88px;flex-shrink:0;letter-spacing:0.04em;">終了時刻</span>
+              <span style="font-size:0.92rem;color:#3a2800;font-weight:600;font-family:'Shippori Mincho',serif;">18時解散（予定）</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="birthday-sec" style="margin-top:14px;">
         <div class="birthday-sec-hd"><h2>📋 掲示板</h2><div class="birthday-sec-line"></div></div>
         <div id="birthday-posts"><div style="text-align:center;color:#b08000;padding:20px;font-size:0.85rem">読み込み中...</div></div>
       </div>
+
+      <!-- 音楽プレゼント -->
+      <div class="birthday-sec" style="margin-top:12px;">
+        <div class="birthday-sec-hd"><h2>🎵 音楽プレゼント</h2><div class="birthday-sec-line"></div></div>
+        <div id="bd-music-list"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
+      </div>
+
       <div class="birthday-sec" style="margin-top:12px;">
         <div class="birthday-sec-hd"><h2>🖼 フォト</h2><div class="birthday-sec-line"></div></div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="birthday-gallery">
@@ -1165,18 +1218,107 @@ async function renderBirthdayPanel() {
       </div>
     </div>`;
 
-  const [posts, imgs] = await Promise.all([
-    fbGet('birthday/posts'), fbGet('birthday/images')
+  const [posts, imgs, music] = await Promise.all([
+    fbGet('birthday/posts'), fbGet('birthday/images'), fbGet('birthday/music')
   ]);
   renderBirthdayPosts(posts);
   renderBirthdayGallery(imgs);
+  renderBdMusicList(music);
 
   if(!listeners['birthday']){
     listeners['birthday']=[];
     listeners['birthday'].push(fbListen('birthday/posts', val=>renderBirthdayPosts(val)));
     listeners['birthday'].push(fbListen('birthday/images', val=>renderBirthdayGallery(val)));
+    listeners['birthday'].push(fbListen('birthday/music', val=>renderBdMusicList(val)));
   }
 }
+
+function renderBdMusicList(val){
+  const el=document.getElementById('bd-music-list'); if(!el)return;
+  if(!val||!Object.keys(val).length){
+    el.innerHTML='<div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">🎵 準備中です</div>';
+    return;
+  }
+  const tracks=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
+  el.innerHTML=tracks.map((t,i)=>`
+    <div onclick="openLyricsPage('${t.fbKey}')"
+      style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:linear-gradient(135deg,#fffbe0,#fff3c0);border:1.5px solid rgba(255,180,0,0.3);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;"
+      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(255,180,0,0.2)'"
+      onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,#ffcc00,#ff9900);"></div>
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#ffcc00,#ff9900);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">🎵</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#3a2800;font-weight:600;">${esc(t.title||'曲 '+(i+1))}</div>
+        ${t.artist?'<div style="font-size:0.75rem;color:#b08000;margin-top:2px;">'+esc(t.artist)+'</div>':''}
+      </div>
+      <div style="font-size:0.75rem;color:#b08000;flex-shrink:0;">歌詞を見る →</div>
+    </div>`).join('');
+}
+
+window.openLyricsPage = async function(fbKey){
+  const track = await fbGet('birthday/music/'+fbKey);
+  if(!track){ alert('曲データが見つかりません'); return; }
+
+  const lyrics = (track.lyrics||'（歌詞なし）').replace(/\n/g,'<br>');
+  const title = esc(track.title||'');
+  const artist = esc(track.artist||'');
+  const audioSrc = track.audioDataUrl || '';
+  const fileName = (track.title||'music')+'.mp3';
+
+  const html = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:linear-gradient(160deg,#1a0808,#3a1020,#1a0808);min-height:100vh;font-family:'Hiragino Mincho ProN','Shippori Mincho',serif;color:#f5e8d0;overflow-x:hidden;}
+  .hero{text-align:center;padding:48px 24px 32px;position:relative;}
+  .hero::before{content:'🎂🎵🎉';position:absolute;top:12px;left:0;right:0;font-size:1rem;letter-spacing:8px;opacity:0.15;}
+  .badge{display:inline-block;font-size:0.72rem;letter-spacing:0.2em;color:rgba(255,200,100,0.7);border:1px solid rgba(255,180,0,0.3);padding:3px 14px;border-radius:20px;margin-bottom:12px;background:rgba(255,150,0,0.1);}
+  .title{font-size:1.8rem;color:#ffe4a0;font-weight:700;letter-spacing:0.06em;text-shadow:0 0 30px rgba(255,180,0,0.3);line-height:1.3;}
+  .artist{font-size:0.85rem;color:rgba(255,200,100,0.6);margin-top:8px;letter-spacing:0.1em;}
+  .player{margin:24px auto;max-width:480px;padding:0 20px;}
+  .player audio{width:100%;border-radius:12px;outline:none;}
+  .dl-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px auto 0;max-width:200px;padding:10px 24px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:24px;font-size:0.9rem;font-family:inherit;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(255,150,0,0.35);transition:opacity 0.2s;}
+  .dl-btn:hover{opacity:0.85;}
+  .lyrics-wrap{max-width:560px;margin:32px auto 48px;padding:0 20px;}
+  .lyrics-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,180,0,0.15);border-radius:16px;padding:28px 24px;}
+  .lyrics-hd{font-size:0.75rem;color:rgba(255,200,100,0.5);letter-spacing:0.2em;text-align:center;margin-bottom:20px;}
+  .lyrics-body{font-size:0.95rem;color:#f5e8d0;line-height:2.2;letter-spacing:0.04em;text-align:center;}
+  .note{text-align:center;font-size:0.72rem;color:rgba(255,200,100,0.3);margin-top:32px;padding-bottom:24px;letter-spacing:0.08em;}
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="badge">🎵 Music Present</div>
+    <div class="title">${title}</div>
+    ${artist?'<div class="artist">'+artist+'</div>':''}
+  </div>
+  ${audioSrc ? `
+  <div class="player">
+    <audio id="audio" src="${audioSrc}" autoplay controls></audio>
+    <a class="dl-btn" href="${audioSrc}" download="${fileName}">⬇️ ダウンロード</a>
+  </div>` : '<div style="text-align:center;color:rgba(255,200,100,0.4);font-size:0.85rem;padding:16px;">音楽ファイルは準備中です</div>'}
+  <div class="lyrics-wrap">
+    <div class="lyrics-card">
+      <div class="lyrics-hd">— 歌詞 —</div>
+      <div class="lyrics-body">${lyrics}</div>
+    </div>
+  </div>
+  <div class="note">🎂 birthday0330 より</div>
+  <script>
+    const audio = document.getElementById('audio');
+    if(audio){ audio.volume = 0.7; audio.play().catch(()=>{}); }
+  <\/script>
+</body>
+</html>`;
+
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  window.open(url,'_blank');
+};
 
 function renderBirthdayPosts(val){
   const el=document.getElementById('birthday-posts'); if(!el)return;
@@ -1556,6 +1698,11 @@ async function renderAdmin() {
           <span class="love-toggle-slider"></span>
         </label>
       </div>
+      <div style="margin-bottom:12px;">
+        <button onclick="setupA0316()" style="width:100%;padding:10px 16px;background:linear-gradient(135deg,#4a9060,#2a7040);color:white;border:none;border-radius:10px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;letter-spacing:0.05em;">
+          🌸 タブA を「A-0316」に設定 ＋ おでかけプランを投稿
+        </button>
+      </div>
       <div class="admin-card">
         <div class="admin-card-hd">タブ設定（サブ名・パスワード変更）</div>
         ${rows}
@@ -1580,7 +1727,7 @@ async function renderAdmin() {
         >🌸 20th Anniversary</button>
         <button class="admin-ts-btn${adminActiveTab==='birthday'?' active':''}" onclick="switchAdminTab('birthday')"
           style="border-color:rgba(255,180,0,0.3);color:${adminActiveTab==='birthday'?'white':'#a06000'};${adminActiveTab==='birthday'?'background:linear-gradient(135deg,#ffcc00,#ff9900);border-color:transparent;':''}"
-        >🎂 Birthday</button>
+        >🎂 birthday0330</button>
         <button class="admin-ts-btn${adminActiveTab==='love'?' active':''}" onclick="switchAdminTab('love')"
           style="border-color:rgba(220,60,100,0.3);color:${adminActiveTab==='love'?'white':'#c06080'};${adminActiveTab==='love'?'background:linear-gradient(135deg,#e8406a,#c0305a);border-color:transparent;':''}"
         >💕 【特別】恋愛2510</button>
@@ -1662,10 +1809,11 @@ async function renderAdminContent(id) {
 
   // Birthday専用UI
   if(id==='birthday'){
-    let bdPosts = null, bdImgs = null;
+    let bdPosts = null, bdImgs = null, bdMusic = null;
     try {
       bdPosts = await fbGet('birthday/posts');
       bdImgs  = await fbGet('birthday/images');
+      bdMusic = await fbGet('birthday/music');
     } catch(e) {
       panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
       return;
@@ -1728,6 +1876,42 @@ async function renderAdminContent(id) {
               </label>
               <span id="bd-adm-img-name" style="font-size:0.75rem;color:#ff9900;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
               <button style="padding:8px 18px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;box-shadow:0 2px 8px rgba(255,180,0,0.3);" onclick="adminPostBirthday()">投稿する</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,180,0,0.15);">
+          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🎵 音楽管理（最大4曲）</div>
+          <div id="bd-adm-music-list" style="margin-bottom:10px;">
+            ${bdMusic && Object.keys(bdMusic).length > 0
+              ? Object.entries(bdMusic).map(([k,v])=>`
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:white;border:1px solid rgba(255,180,0,0.2);border-radius:8px;margin-bottom:6px;">
+                  <span style="font-size:1rem;">🎵</span>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.85rem;color:#3a2800;font-weight:500;">${esc(v.title||'（タイトルなし）')}</div>
+                    ${v.artist?'<div style="font-size:0.72rem;color:#b08000;">'+esc(v.artist)+'</div>':''}
+                    <div style="font-size:0.7rem;color:#b08000;">${v.audioDataUrl?'🎵 音楽あり':'🎵 音楽なし'} ${v.lyrics?'/ 📝 歌詞あり':'/ 📝 歌詞なし'}</div>
+                  </div>
+                  <button style="background:none;border:none;color:#b08000;cursor:pointer;font-size:0.9rem;" onclick="adminDelBdMusic('${k}')">🗑</button>
+                </div>`).join('')
+              : '<div style="font-size:0.85rem;color:#b08000;padding:8px;text-align:center;">曲が登録されていません</div>'
+            }
+          </div>
+          <div style="background:white;border:1.5px solid rgba(255,180,0,0.25);border-radius:10px;padding:12px;">
+            <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;">＋ 曲を追加</div>
+            <input type="text" id="bd-music-title" placeholder="曲名 *" maxlength="40"
+              style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <input type="text" id="bd-music-artist" placeholder="アーティスト名（任意）" maxlength="40"
+              style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <textarea id="bd-music-lyrics" placeholder="歌詞（任意）" rows="4"
+              style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;resize:vertical;line-height:1.6;margin-bottom:6px;box-sizing:border-box;"></textarea>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(255,180,0,0.25);border-radius:8px;font-size:0.82rem;color:#a06000;cursor:pointer;background:#fffbe0;white-space:nowrap;">
+                🎵 MP3選択（10MB以下）
+                <input type="file" accept="audio/*" style="display:none" onchange="onBdMusicFile(this)">
+              </label>
+              <span id="bd-music-fname" style="font-size:0.75rem;color:#ff9900;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+              <button style="padding:8px 18px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;white-space:nowrap;" onclick="adminAddBdMusic()">追加</button>
             </div>
           </div>
         </div>
@@ -1947,6 +2131,58 @@ window.adminDelEv = async function(id, fbKey) {
   await renderAdminContent(id);
 };
 
+window.setupA0316 = async function(){
+  if(!confirm('タブAのサブ名を「0316」に設定し、おでかけプランを掲示板に投稿します。よろしいですか？')) return;
+
+  // サブ名設定
+  await fbSet('settings/subname/A', '0316');
+  snCache['A'] = '0316';
+
+  // 投稿テキスト
+  const text = `🌸 3月16日 おでかけプラン【桜メイン】
+集合：狭山台周辺 / 09:30〜17:00
+━━━━━━━━━━━━━━━━━━
+① 09:30〜10:30｜霞川のさくら堤
+📍 入間市高倉1丁目9-22
+川沿いにソメイヨシノが並ぶ入間市の景勝50選スポット。
+川のせせらぎを聞きながら、のんびり桜散歩でスタート🚶
+━━━━━━━━━━━━━━━━━━
+② 10:45〜12:15｜県営狭山稲荷山公園
+📍 狭山市稲荷山1丁目23-1
+元米軍基地跡の広大な公園。桜の木が多く、
+レジャーシートでゆったりお花見ができる穴場スポット🌸
+無料駐車場あり◎
+━━━━━━━━━━━━━━━━━━
+③ 12:15〜13:30｜ランチ｜ハザマダイナー
+📍 入間市豊岡1丁目3-22 2F
+入間市ブランド牛「彩の夢見牛」のステーキ・ハンバーグが人気🥩
+11:00オープンで並ばず入れる。事前予約がおすすめ！
+📞 042-941-2665
+━━━━━━━━━━━━━━━━━━
+④ 13:45〜15:15｜入間川にこにこテラス
+📍 狭山市柏原2910-1
+川沿いの桜並木が絶景の公園。
+園内のスターバックスは大きなガラス張りで、
+店内から桜が目線で楽しめる珍しいつくり☕🌸
+写真映えスポットとしても◎
+━━━━━━━━━━━━━━━━━━
+⑤ 15:30〜17:00｜三井アウトレットパーク入間
+📍 入間市宮寺3169-1（10:00〜20:00）
+ショッピングや休憩をしながら自由に解散🛍️
+━━━━━━━━━━━━━━━━━━
+🌸 開花について
+3月16日はソメイヨシノの「つぼみ〜咲き始め」の見込み。
+3か所の桜スポットを巡るので、どこかで見頃の桜に出会えるはず！`;
+
+  const t = new Date();
+  const time = (t.getMonth()+1)+'/'+t.getDate()+' '+pad(t.getHours())+':'+pad(t.getMinutes())+' [管理]';
+  await fbPush('tabs/A/posts', {text, time, ts:Date.now(), img:null, isPdf:false});
+
+  showToast('✓ A-0316 設定完了 & プランを投稿しました🌸');
+  renderTabs();
+  await renderAdmin();
+};
+
 window.saveSubname=async function(id){
   const inp=document.getElementById('sn-'+id);if(!inp)return;
   await setSubname(id,inp.value.trim());
@@ -2075,6 +2311,47 @@ window.previewAnnivPanel = async function(){
     if(window._annivPreviewBar){window._annivPreviewBar.remove();window._annivPreviewBar=null;}
     activeTab='admin'; await renderAdmin(); await renderAdminContent('anniv');
   };
+};
+
+// Birthday music admin functions
+let bdMusicFileBuf = null;
+window.onBdMusicFile = function(inp){
+  const f=inp.files[0]; if(!f)return;
+  if(f.size>10*1024*1024){showToast('音楽ファイルは10MB以下にしてください');inp.value='';return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    bdMusicFileBuf={dataUrl:e.target.result,name:f.name};
+    const el=document.getElementById('bd-music-fname');
+    if(el)el.textContent=f.name;
+  };
+  r.readAsDataURL(f);
+};
+
+window.adminAddBdMusic = async function(){
+  const title = document.getElementById('bd-music-title')?.value.trim();
+  if(!title){showToast('曲名を入力してください');return;}
+  const artist = document.getElementById('bd-music-artist')?.value.trim()||'';
+  const lyrics = document.getElementById('bd-music-lyrics')?.value.trim()||'';
+  const existing = await fbGet('birthday/music');
+  const count = existing ? Object.keys(existing).length : 0;
+  if(count>=4){showToast('登録できる曲は最大4曲です');return;}
+  showToast('登録中...');
+  await fbPush('birthday/music',{
+    title, artist, lyrics,
+    audioDataUrl: bdMusicFileBuf ? bdMusicFileBuf.dataUrl : null,
+    order: count,
+    ts: Date.now()
+  });
+  bdMusicFileBuf = null;
+  showToast('✓ 曲を追加しました🎵');
+  await renderAdminContent('birthday');
+};
+
+window.adminDelBdMusic = async function(fbKey){
+  if(!confirm('この曲を削除しますか？'))return;
+  await fbRemove('birthday/music/'+fbKey);
+  showToast('✓ 曲を削除しました');
+  await renderAdminContent('birthday');
 };
 
 // Birthday admin functions
