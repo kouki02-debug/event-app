@@ -581,7 +581,7 @@ function expireSession() {
 // ============================================================
 // CONFIG
 // ============================================================
-const TABS = [{id:'A'},{id:'B'},{id:'C'},{id:'D'},{id:'E'},{id:'F'},{id:'love'},{id:'birthday'},{id:'anniv'},{id:'admin'}];
+const TABS = [{id:'A'},{id:'B'},{id:'C'},{id:'D'},{id:'love'},{id:'birthday'},{id:'anniv'},{id:'admin'}];
 
 // 2026年3月30日 08:00〜24:00（JST）のみ一般表示
 function isBirthdayVisible() {
@@ -600,7 +600,7 @@ function isAnnivVisible() {
 
 // Default passwords stored as SHA-256 hashes (computed at runtime on first use)
 const DEFAULT_PWS_PLAIN = {
-  A:'aaa1',B:'bbb2',C:'ccc3',D:'ddd4',E:'eee5',F:'fff6',love:'love2510',birthday:'birthday',admin:'13240622Ko'
+  A:'aaa1',B:'bbb2',C:'ccc3',D:'ddd4',love:'love2510',birthday:'birthday',admin:'13240622Ko'
 };
 
 async function getTabPwHash(id) {
@@ -1215,6 +1215,76 @@ async function renderLovePanel() {
       <div class="love-hero">
         <div class="love-hero-title">💕 恋愛2510 💕</div>
       </div>
+
+      <!-- ステージロードマップ -->
+      <div style="padding:16px 14px 4px;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:12px;">— ステージロードマップ —</div>
+
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <!-- ステージ1 -->
+          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#6a5a54;font-weight:600;">ステージ 1</div>
+              <div style="font-size:0.74rem;color:#9a8880;margin-top:2px;">挨拶・視線が合う程度</div>
+            </div>
+            <div style="font-size:0.75rem;color:#9a8880;font-style:italic;">✓ 完了</div>
+          </div>
+          <div style="width:1px;height:10px;background:#c0b0aa;margin:0 auto;"></div>
+
+          <!-- ステージ2 -->
+          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#6a5a54;font-weight:600;">ステージ 2</div>
+              <div style="font-size:0.74rem;color:#9a8880;margin-top:2px;">笑顔・手振り・短い会話</div>
+            </div>
+            <div style="font-size:0.75rem;color:#9a8880;font-style:italic;">✓ 完了</div>
+          </div>
+          <div style="width:1px;height:10px;background:#c0b0aa;margin:0 auto;"></div>
+
+          <!-- ステージ3 -->
+          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#6a5a54;font-weight:600;">ステージ 3</div>
+              <div style="font-size:0.74rem;color:#9a8880;margin-top:2px;">相手発信の会話・ボディータッチ・個人的な共有</div>
+            </div>
+            <div style="font-size:0.75rem;color:#9a8880;font-style:italic;">✓ 完了</div>
+          </div>
+          <div style="width:1px;height:10px;background:#d090a8;margin:0 auto;"></div>
+
+          <!-- ステージ4（現在地・ハイライト） -->
+          <div style="background:linear-gradient(135deg,#fff0f5,#ffe4ee);border:2px solid #e8406a;border-radius:10px;padding:12px 14px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-family:'Shippori Mincho',serif;font-size:0.92rem;color:#c0305a;font-weight:700;">ステージ 4　← 現在地</div>
+                <div style="font-size:0.74rem;color:#c06080;margin-top:4px;line-height:1.6;">
+                  会話量増加・約束・来てほしい発言・誕生日確認待ち<br>
+                  3/25（水）が重要な確認日
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="width:1px;height:10px;background:#808080;margin:0 auto;"></div>
+
+          <!-- ステージ5 -->
+          <div style="background:#3a3a3a;border:1.5px solid #555;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#aaa;font-weight:600;">ステージ 5</div>
+              <div style="font-size:0.74rem;color:#888;margin-top:2px;">苗字呼び・連絡先交換・プライベートな誘い</div>
+            </div>
+            <div style="font-size:0.75rem;color:#888;font-style:italic;">次の目標</div>
+          </div>
+          <div style="width:1px;height:10px;background:#505050;margin:0 auto;"></div>
+
+          <!-- ステージ6 -->
+          <div style="background:#2a2a2a;border:1.5px solid #444;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#8080c0;font-weight:600;">ステージ 6</div>
+            </div>
+            <div style="font-size:0.75rem;color:#8080c0;font-style:italic;">告白・交際へ</div>
+          </div>
+        </div>
+      </div>
+
       <div class="love-stage-banner">
         <span class="love-stage-label">現在のステージ</span>
         <span class="love-stage-badge" id="love-stage-disp">${esc(loveStage)}</span>
