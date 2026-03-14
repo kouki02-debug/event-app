@@ -729,8 +729,6 @@ function renderTabs() {
 // ============================================================
 // HOME
 // ============================================================
-function goHome() { activeTab=null; renderTabs(); renderHome(); }
-
 function renderHome() {
   const cards=TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday'&&t.id!=='anniv').map(t=>{
     const ul=unlocked.includes(t.id);
@@ -785,7 +783,16 @@ function renderHome() {
 // ============================================================
 async function openTab(id) {
   activeTab=id; renderTabs();
+  // annivはパスワードなし公開
+  if(id==='anniv'){ await renderPanel(id); return; }
   unlocked.includes(id) ? await renderPanel(id) : renderLocked(id);
+}
+
+function goHome() {
+  // プレビューバーが残っていれば削除
+  if(window._bdPreviewBar){ window._bdPreviewBar.remove(); window._bdPreviewBar=null; }
+  if(window._annivPreviewBar){ window._annivPreviewBar.remove(); window._annivPreviewBar=null; }
+  activeTab=null; renderTabs(); renderHome();
 }
 
 // ============================================================
@@ -1128,7 +1135,7 @@ function renderAnnivPosts(val){
     el.innerHTML='<div style="text-align:center;color:rgba(200,160,255,0.4);padding:30px;font-size:0.85rem;">🌸 まだメッセージがありません</div>';
     return;
   }
-  const posts=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts);
+  const posts=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>a.ts-b.ts);
   el.innerHTML=posts.map(p=>`
     <div class="anniv-post">
       <div class="anniv-post-time">🌸 ${p.time}${p.author?' — '+esc(p.author):''}</div>
@@ -2013,7 +2020,7 @@ window.adminInsertAnnivInitPosts = async function(){
   const time = (t.getMonth()+1)+'/'+t.getDate()+' '+pad(t.getHours())+':'+pad(t.getMinutes());
   const baseTs = Date.now();
   showToast('\u6295\u5165\u4e2d...');
-  for(let i=0; i<pages.length; i++){
+  for(let i=pages.length-1; i>=0; i--){
     const p = pages[i];
     await fbPush('anniv/posts', {text:'p.'+p.page+' '+p.title, author:'\u518a\u5b50 '+p.page+'/12', img:p.dataUrl, time:time, ts:baseTs+i*1000});
   }
