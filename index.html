@@ -1128,6 +1128,13 @@ async function renderAnnivPanel() {
         <div class="anniv-sec-hd"><h2>📋 メッセージ・資料</h2><div class="anniv-sec-line"></div></div>
         <div id="anniv-posts"><div style="text-align:center;color:rgba(200,160,255,0.5);padding:20px;font-size:0.85rem">読み込み中...</div></div>
       </div>
+
+      <!-- 音楽プレゼント -->
+      <div class="anniv-sec" style="margin-top:20px;">
+        <div class="anniv-sec-hd"><h2>🎵 音楽プレゼント</h2><div class="anniv-sec-line"></div></div>
+        <div id="anniv-music-list"><div style="text-align:center;color:rgba(200,160,255,0.4);padding:16px;font-size:0.85rem;">読み込み中...</div></div>
+      </div>
+
       <div style="margin:32px 16px 8px;padding:20px;border:1px solid rgba(180,120,255,0.12);border-radius:14px;background:rgba(255,255,255,0.03);">
         <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:rgba(180,120,255,0.5);letter-spacing:0.15em;margin-bottom:12px;text-align:center;">— このページについて —</div>
         <p style="font-size:0.82rem;color:rgba(200,160,255,0.55);line-height:2;letter-spacing:0.04em;text-align:center;">
@@ -1143,14 +1150,101 @@ async function renderAnnivPanel() {
       </div>
     </div>`;
 
-  const posts = await fbGet('anniv/posts');
+  const [posts, music] = await Promise.all([
+    fbGet('anniv/posts'), fbGet('anniv/music')
+  ]);
   renderAnnivPosts(posts);
+  renderAnnivMusicList(music);
 
   if(!listeners['anniv']){
     listeners['anniv']=[];
     listeners['anniv'].push(fbListen('anniv/posts', val=>renderAnnivPosts(val)));
+    listeners['anniv'].push(fbListen('anniv/music', val=>renderAnnivMusicList(val)));
   }
 }
+
+function renderAnnivMusicList(val){
+  const el=document.getElementById('anniv-music-list'); if(!el)return;
+  if(!val||!Object.keys(val).length){
+    el.innerHTML='<div style="text-align:center;color:rgba(200,160,255,0.4);padding:16px;font-size:0.85rem;">🎵 準備中です</div>';
+    return;
+  }
+  const tracks=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
+  el.innerHTML=tracks.map((t,i)=>`
+    <div onclick="openAnnivLyricsPage('${t.fbKey}')"
+      style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(180,120,255,0.2);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;"
+      onmouseover="this.style.transform='translateY(-2px)';this.style.background='rgba(180,120,255,0.08)'"
+      onmouseout="this.style.transform='';this.style.background='rgba(255,255,255,0.04)'">
+      <div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,#9040ff,#e8d0ff);"></div>
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#9040ff,#6020c0);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">🎵</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#e8d0ff;font-weight:600;">${esc(t.title||'曲 '+(i+1))}</div>
+        ${t.artist?'<div style="font-size:0.75rem;color:rgba(200,160,255,0.6);margin-top:2px;">'+esc(t.artist)+'</div>':''}
+      </div>
+      <div style="font-size:0.75rem;color:rgba(200,160,255,0.5);flex-shrink:0;">歌詞を見る →</div>
+    </div>`).join('');
+}
+
+window.openAnnivLyricsPage = async function(fbKey){
+  const track = await fbGet('anniv/music/'+fbKey);
+  if(!track){ alert('曲データが見つかりません'); return; }
+
+  const lyrics = (track.lyrics||'（歌詞なし）').replace(/\n/g,'<br>');
+  const title  = esc(track.title||'');
+  const artist = esc(track.artist||'');
+  const audioSrc = track.audioDataUrl || '';
+
+  const html = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:linear-gradient(160deg,#1a0a2e,#2d1155,#1a0a2e);min-height:100vh;font-family:'Hiragino Mincho ProN','Shippori Mincho',serif;color:#f0e8ff;overflow-x:hidden;}
+  .hero{text-align:center;padding:48px 24px 32px;position:relative;}
+  .hero::before{content:'🌸　🍾　🥂';position:absolute;top:12px;left:0;right:0;font-size:1rem;letter-spacing:8px;opacity:0.12;}
+  .badge{display:inline-block;font-size:0.72rem;letter-spacing:0.2em;color:rgba(200,160,255,0.7);border:1px solid rgba(180,120,255,0.3);padding:3px 14px;border-radius:20px;margin-bottom:12px;background:rgba(120,60,180,0.2);}
+  .title{font-size:1.8rem;color:#e8d0ff;font-weight:700;letter-spacing:0.06em;text-shadow:0 0 30px rgba(180,120,255,0.4);line-height:1.3;}
+  .artist{font-size:0.85rem;color:rgba(200,160,255,0.55);margin-top:8px;letter-spacing:0.1em;}
+  .player{margin:24px auto;max-width:480px;padding:0 20px;}
+  .player audio{width:100%;border-radius:12px;outline:none;}
+  .lyrics-wrap{max-width:560px;margin:32px auto 48px;padding:0 20px;}
+  .lyrics-card{background:rgba(255,255,255,0.04);border:1px solid rgba(180,120,255,0.15);border-radius:16px;padding:28px 24px;}
+  .lyrics-hd{font-size:0.75rem;color:rgba(200,160,255,0.4);letter-spacing:0.2em;text-align:center;margin-bottom:20px;}
+  .lyrics-body{font-size:0.95rem;color:#f0e8ff;line-height:2.2;letter-spacing:0.04em;text-align:center;}
+  .note{text-align:center;font-size:0.72rem;color:rgba(200,160,255,0.25);margin-top:32px;padding-bottom:24px;letter-spacing:0.08em;}
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="badge">🌸 20th Anniversary</div>
+    <div class="title">${title}</div>
+    ${artist?'<div class="artist">'+artist+'</div>':''}
+  </div>
+  ${audioSrc ? `
+  <div class="player">
+    <audio id="audio" src="${audioSrc}" autoplay controls></audio>
+  </div>` : '<div style="text-align:center;color:rgba(200,160,255,0.4);font-size:0.85rem;padding:16px;">音楽ファイルは準備中です</div>'}
+  <div class="lyrics-wrap">
+    <div class="lyrics-card">
+      <div class="lyrics-hd">— 歌詞 —</div>
+      <div class="lyrics-body">${lyrics}</div>
+    </div>
+  </div>
+  <div class="note">🌸 20th Anniversary より</div>
+  <script>
+    const audio = document.getElementById('audio');
+    if(audio){ audio.volume = 0.7; audio.play().catch(()=>{}); }
+  <\/script>
+</body>
+</html>`;
+
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  window.open(url,'_blank');
+};
 
 function renderAnnivPosts(val){
   const el=document.getElementById('anniv-posts'); if(!el)return;
@@ -1495,6 +1589,12 @@ async function renderLovePanel() {
         <div id="love-posts"><div style="text-align:center;color:#d090a8;padding:20px;font-size:0.85rem">読み込み中...</div></div>
       </div>
 
+      <!-- 音楽プレゼント -->
+      <div class="love-sec" style="margin-top:20px;">
+        <div class="love-sec-hd"><h2>🎵 音楽プレゼント</h2><div class="love-sec-line"></div></div>
+        <div id="love-music-list"><div style="text-align:center;color:#d090a8;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
+      </div>
+
       <!-- 発展カレンダー -->
       <div class="love-sec" style="margin-top:24px;padding-bottom:24px;">
         <div class="love-sec-hd"><h2>📅 発展カレンダー</h2><div class="love-sec-line"></div></div>
@@ -1502,18 +1602,101 @@ async function renderLovePanel() {
       </div>
     </div>`;
 
-  const posts = await fbGet('love/posts');
+  const [posts, music] = await Promise.all([
+    fbGet('love/posts'), fbGet('love/music')
+  ]);
   renderLovePosts(posts);
+  renderLoveMusicList(music);
   await renderLoveCal();
   await initBgm();
 
   if(!listeners['love']){
     listeners['love']=[];
-    listeners['love'].push(fbListen('love/posts', val=>renderLovePosts(val)));
-    listeners['love'].push(fbListen('love/stage', val=>{ loveStage=val||'ステージ4-1'; const el=document.getElementById('love-stage-disp'); if(el)el.textContent=loveStage; }));
+    listeners['love'].push(fbListen('love/posts',    val=>renderLovePosts(val)));
+    listeners['love'].push(fbListen('love/music',    val=>renderLoveMusicList(val)));
+    listeners['love'].push(fbListen('love/stage',    val=>{ loveStage=val||'ステージ4-1'; const el=document.getElementById('love-stage-disp'); if(el)el.textContent=loveStage; }));
     listeners['love'].push(fbListen('love/calmarks', val=>{ window._loveCalMarks=val||{}; renderLoveCalGrid(); }));
   }
 }
+
+function renderLoveMusicList(val){
+  const el=document.getElementById('love-music-list'); if(!el)return;
+  if(!val||!Object.keys(val).length){
+    el.innerHTML='<div style="text-align:center;color:#d090a8;padding:16px;font-size:0.85rem;">🎵 準備中です</div>';
+    return;
+  }
+  const tracks=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
+  el.innerHTML=tracks.map((t,i)=>`
+    <div onclick="openLoveLyricsPage('${t.fbKey}')"
+      style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(220,60,100,0.18);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;"
+      onmouseover="this.style.transform='translateY(-2px)';this.style.background='rgba(220,60,100,0.08)'"
+      onmouseout="this.style.transform='';this.style.background='rgba(255,255,255,0.04)'">
+      <div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,#e8406a,#ffb0c8);"></div>
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#e8406a,#c0305a);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">🎵</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#f5e8f0;font-weight:600;">${esc(t.title||'曲 '+(i+1))}</div>
+        ${t.artist?'<div style="font-size:0.75rem;color:#d090a8;margin-top:2px;">'+esc(t.artist)+'</div>':''}
+      </div>
+      <div style="font-size:0.75rem;color:#d090a8;flex-shrink:0;">歌詞を見る →</div>
+    </div>`).join('');
+}
+
+window.openLoveLyricsPage = async function(fbKey){
+  const track = await fbGet('love/music/'+fbKey);
+  if(!track){ alert('曲データが見つかりません'); return; }
+  const lyrics  = (track.lyrics||'（歌詞なし）').replace(/\n/g,'<br>');
+  const title   = esc(track.title||'');
+  const artist  = esc(track.artist||'');
+  const audioSrc = track.audioDataUrl||'';
+
+  const html = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:linear-gradient(160deg,#1a0818,#38102a,#1a0818);min-height:100vh;font-family:'Hiragino Mincho ProN','Shippori Mincho',serif;color:#f5e8f0;overflow-x:hidden;}
+  .hero{text-align:center;padding:48px 24px 32px;position:relative;}
+  .hero::before{content:'💕　💕　💕';position:absolute;top:12px;left:0;right:0;font-size:1rem;letter-spacing:8px;opacity:0.12;}
+  .badge{display:inline-block;font-size:0.72rem;letter-spacing:0.2em;color:rgba(220,140,180,0.7);border:1px solid rgba(220,60,100,0.3);padding:3px 14px;border-radius:20px;margin-bottom:12px;background:rgba(220,60,100,0.1);}
+  .title{font-size:1.8rem;color:#f8d0e0;font-weight:700;letter-spacing:0.06em;text-shadow:0 0 30px rgba(220,60,100,0.3);line-height:1.3;}
+  .artist{font-size:0.85rem;color:rgba(220,140,180,0.6);margin-top:8px;letter-spacing:0.1em;}
+  .player{margin:24px auto;max-width:480px;padding:0 20px;}
+  .player audio{width:100%;border-radius:12px;outline:none;}
+  .lyrics-wrap{max-width:560px;margin:32px auto 48px;padding:0 20px;}
+  .lyrics-card{background:rgba(255,255,255,0.04);border:1px solid rgba(220,60,100,0.15);border-radius:16px;padding:28px 24px;}
+  .lyrics-hd{font-size:0.75rem;color:rgba(220,140,180,0.45);letter-spacing:0.2em;text-align:center;margin-bottom:20px;}
+  .lyrics-body{font-size:0.95rem;color:#f5e8f0;line-height:2.2;letter-spacing:0.04em;text-align:center;}
+  .note{text-align:center;font-size:0.72rem;color:rgba(220,140,180,0.25);margin-top:32px;padding-bottom:24px;letter-spacing:0.08em;}
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="badge">💕 恋愛2510</div>
+    <div class="title">${title}</div>
+    ${artist?'<div class="artist">'+artist+'</div>':''}
+  </div>
+  ${audioSrc?`<div class="player"><audio id="audio" src="${audioSrc}" autoplay controls></audio></div>`
+    :'<div style="text-align:center;color:rgba(220,140,180,0.4);font-size:0.85rem;padding:16px;">音楽ファイルは準備中です</div>'}
+  <div class="lyrics-wrap">
+    <div class="lyrics-card">
+      <div class="lyrics-hd">— 歌詞 —</div>
+      <div class="lyrics-body">${lyrics}</div>
+    </div>
+  </div>
+  <div class="note">💕 恋愛2510 より</div>
+  <script>
+    const a=document.getElementById('audio');
+    if(a){a.volume=0.7;a.play().catch(()=>{});}
+  <\/script>
+</body>
+</html>`;
+
+  const blob=new Blob([html],{type:'text/html'});
+  window.open(URL.createObjectURL(blob),'_blank');
+};
 
 // ============================================================
 // LOVE CALENDAR
@@ -1749,8 +1932,11 @@ async function renderAdminContent(id) {
 
   // 20th Anniversary専用UI
   if(id==='anniv'){
-    let annivPosts = null;
-    try { annivPosts = await fbGet('anniv/posts'); }
+    let annivPosts = null, annivMusic = null;
+    try {
+      annivPosts = await fbGet('anniv/posts');
+      annivMusic = await fbGet('anniv/music');
+    }
     catch(e){ panel.innerHTML='<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>'; return; }
 
     const periodNotice = isAnnivVisible()
@@ -1773,6 +1959,20 @@ async function renderAdminContent(id) {
       postItems = '<div style="padding:12px;color:#9060c0;font-size:0.85rem;text-align:center;">投稿がありません</div>';
     }
 
+    const musicCount = annivMusic ? Object.keys(annivMusic).length : 0;
+    const musicItems = musicCount > 0
+      ? Object.entries(annivMusic).map(([k,v])=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(180,120,255,0.15);border-radius:8px;margin-bottom:6px;">
+            <span style="font-size:1rem;">🎵</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.85rem;color:#e8d0ff;font-weight:500;">${esc(v.title||'（タイトルなし）')}</div>
+              ${v.artist?'<div style="font-size:0.72rem;color:rgba(200,160,255,0.6);">'+esc(v.artist)+'</div>':''}
+              <div style="font-size:0.7rem;color:rgba(200,160,255,0.5);">${v.audioDataUrl?'🎵 音楽あり':'🎵 音楽なし'} ${v.lyrics?'/ 📝 歌詞あり':'/ 📝 歌詞なし'}</div>
+            </div>
+            <button style="background:none;border:none;color:rgba(200,160,255,0.6);cursor:pointer;font-size:0.9rem;" onclick="adminDelAnnivMusic('${k}')">🗑</button>
+          </div>`).join('')
+      : '<div style="font-size:0.85rem;color:rgba(200,160,255,0.5);padding:8px;text-align:center;">曲が登録されていません</div>';
+
     panel.innerHTML=`
       <div style="background:linear-gradient(135deg,#1a0a2e,#2d1155);border:1px solid rgba(180,120,255,0.25);border-radius:10px;overflow:hidden;">
         <div style="padding:10px 16px;background:rgba(120,60,180,0.3);border-bottom:1px solid rgba(180,120,255,0.2);display:flex;align-items:center;justify-content:space-between;">
@@ -1785,6 +1985,31 @@ async function renderAdminContent(id) {
             📥 冊子ページ（5〜12ページ）を一括投入する
           </button>
         </div>
+
+        <!-- 音楽管理 -->
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(180,120,255,0.1);">
+          <div style="font-size:0.78rem;color:rgba(200,160,255,0.7);margin-bottom:8px;font-weight:500;">🎵 音楽管理（最大2曲）</div>
+          <div style="margin-bottom:10px;">${musicItems}</div>
+          ${musicCount < 2 ? `
+          <div style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(180,120,255,0.2);border-radius:10px;padding:12px;">
+            <div style="font-size:0.78rem;color:rgba(200,160,255,0.6);margin-bottom:8px;">＋ 曲を追加</div>
+            <input type="text" id="anniv-music-title" placeholder="曲名 *" maxlength="40"
+              style="width:100%;padding:8px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.88rem;color:#2a1a3a;background:rgba(255,255,255,0.9);outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <input type="text" id="anniv-music-artist" placeholder="アーティスト名（任意）" maxlength="40"
+              style="width:100%;padding:8px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.88rem;color:#2a1a3a;background:rgba(255,255,255,0.9);outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <textarea id="anniv-music-lyrics" placeholder="歌詞（任意）" rows="4"
+              style="width:100%;padding:8px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.88rem;color:#2a1a3a;background:rgba(255,255,255,0.9);outline:none;resize:vertical;line-height:1.6;margin-bottom:6px;box-sizing:border-box;"></textarea>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.82rem;color:#9060c0;cursor:pointer;background:rgba(255,255,255,0.9);white-space:nowrap;">
+                🎵 MP3選択（10MB以下）
+                <input type="file" accept="audio/*" style="display:none" onchange="onAnnivMusicFile(this)">
+              </label>
+              <span id="anniv-music-fname" style="font-size:0.75rem;color:#9040ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+              <button style="padding:8px 18px;background:linear-gradient(135deg,#9040ff,#6020c0);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;white-space:nowrap;" onclick="adminAddAnnivMusic()">追加</button>
+            </div>
+          </div>` : '<div style="font-size:0.82rem;color:rgba(200,160,255,0.5);text-align:center;padding:8px;">最大2曲に達しています</div>'}
+        </div>
+
         <div style="padding:0 16px 12px;border-bottom:1px solid rgba(180,120,255,0.1);">
           <div style="font-size:0.78rem;color:rgba(200,160,255,0.7);margin-bottom:8px;font-weight:500;">📋 メッセージ・資料（追加・削除）</div>
           <div style="margin-bottom:10px;">${postItems}</div>
@@ -1930,10 +2155,11 @@ async function renderAdminContent(id) {
 
   // 恋愛2510専用UI
   if(id==='love'){
-    let posts = null, bgm = null;
+    let posts = null, bgm = null, loveMusic = null;
     try {
       posts = await fbGet('love/posts');
       bgm   = await fbGet('love/bgm');
+      loveMusic = await fbGet('love/music');
     } catch(e) {
       panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
       return;
@@ -1979,6 +2205,44 @@ async function renderAdminContent(id) {
             🎵 ${bgmBtnLabel}
             <input type="file" accept="audio/*" style="display:none" onchange="adminUploadBgm(this)">
           </label>
+        </div>
+
+        <!-- 音楽管理 -->
+        <div class="admin-love-subsec">
+          <div class="admin-love-subsec-title">🎵 音楽プレゼント管理（最大3曲）</div>
+          <div style="margin-bottom:10px;">
+            ${loveMusic && Object.keys(loveMusic).length > 0
+              ? Object.entries(loveMusic).map(([k,v])=>`
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:white;border:1px solid rgba(220,60,100,0.15);border-radius:8px;margin-bottom:6px;">
+                  <span style="font-size:1rem;">🎵</span>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.85rem;color:#3a1a28;font-weight:500;">${esc(v.title||'（タイトルなし）')}</div>
+                    ${v.artist?'<div style="font-size:0.72rem;color:#d090a8;">'+esc(v.artist)+'</div>':''}
+                    <div style="font-size:0.7rem;color:#d090a8;">${v.audioDataUrl?'🎵 音楽あり':'🎵 音楽なし'} ${v.lyrics?'/ 📝 歌詞あり':'/ 📝 歌詞なし'}</div>
+                  </div>
+                  <button style="background:none;border:none;color:#d090a8;cursor:pointer;font-size:0.9rem;" onclick="adminDelLoveMusic('${k}')">🗑</button>
+                </div>`).join('')
+              : '<div style="font-size:0.85rem;color:#d090a8;padding:8px;text-align:center;">曲が登録されていません</div>'
+            }
+          </div>
+          ${!loveMusic || Object.keys(loveMusic).length < 3 ? `
+          <div style="background:white;border:1.5px solid rgba(220,60,100,0.2);border-radius:10px;padding:12px;">
+            <div style="font-size:0.78rem;color:#d090a8;margin-bottom:8px;">＋ 曲を追加</div>
+            <input type="text" id="love-music-title" placeholder="曲名 *" maxlength="40"
+              style="width:100%;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <input type="text" id="love-music-artist" placeholder="アーティスト名（任意）" maxlength="40"
+              style="width:100%;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <textarea id="love-music-lyrics" placeholder="歌詞（任意）" rows="4"
+              style="width:100%;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;resize:vertical;line-height:1.6;margin-bottom:6px;box-sizing:border-box;"></textarea>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#c06080;cursor:pointer;background:#fff8fa;white-space:nowrap;">
+                🎵 MP3選択（10MB以下）
+                <input type="file" accept="audio/*" style="display:none" onchange="onLoveMusicFile(this)">
+              </label>
+              <span id="love-music-fname" style="font-size:0.75rem;color:#e8406a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+              <button class="love-admin-btn" onclick="adminAddLoveMusic()">追加</button>
+            </div>
+          </div>` : '<div style="font-size:0.82rem;color:#d090a8;text-align:center;padding:8px;">最大3曲に達しています</div>'}
         </div>
 
         <!-- 掲示板 -->
@@ -2264,6 +2528,47 @@ window.adminInsertAnnivInitPosts = async function(){
   await renderAdminContent('anniv');
 };
 
+// Anniv music admin functions
+let annivMusicFileBuf = null;
+window.onAnnivMusicFile = function(inp){
+  const f=inp.files[0]; if(!f)return;
+  if(f.size>10*1024*1024){showToast('音楽ファイルは10MB以下にしてください');inp.value='';return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    annivMusicFileBuf={dataUrl:e.target.result,name:f.name};
+    const el=document.getElementById('anniv-music-fname');
+    if(el)el.textContent=f.name;
+  };
+  r.readAsDataURL(f);
+};
+
+window.adminAddAnnivMusic = async function(){
+  const title = document.getElementById('anniv-music-title')?.value.trim();
+  if(!title){showToast('曲名を入力してください');return;}
+  const artist = document.getElementById('anniv-music-artist')?.value.trim()||'';
+  const lyrics = document.getElementById('anniv-music-lyrics')?.value.trim()||'';
+  const existing = await fbGet('anniv/music');
+  const count = existing ? Object.keys(existing).length : 0;
+  if(count>=2){showToast('登録できる曲は最大2曲です');return;}
+  showToast('登録中...');
+  await fbPush('anniv/music',{
+    title, artist, lyrics,
+    audioDataUrl: annivMusicFileBuf ? annivMusicFileBuf.dataUrl : null,
+    order: count,
+    ts: Date.now()
+  });
+  annivMusicFileBuf = null;
+  showToast('✓ 曲を追加しました🌸');
+  await renderAdminContent('anniv');
+};
+
+window.adminDelAnnivMusic = async function(fbKey){
+  if(!confirm('この曲を削除しますか？'))return;
+  await fbRemove('anniv/music/'+fbKey);
+  showToast('✓ 曲を削除しました');
+  await renderAdminContent('anniv');
+};
+
 // Anniv admin functions
 let annivAdmImgBuf = null;
 window.onAnnivAdmImg = function(inp){
@@ -2419,6 +2724,46 @@ window.onLoveAdmImg = function(inp){
     if(el)el.textContent=f.name;
   };
   r.readAsDataURL(f);
+};
+
+// Love music admin functions
+let loveMusicFileBuf = null;
+window.onLoveMusicFile = function(inp){
+  const f=inp.files[0]; if(!f)return;
+  if(f.size>10*1024*1024){showToast('音楽ファイルは10MB以下にしてください');inp.value='';return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    loveMusicFileBuf={dataUrl:e.target.result,name:f.name};
+    const el=document.getElementById('love-music-fname');
+    if(el)el.textContent=f.name;
+  };
+  r.readAsDataURL(f);
+};
+
+window.adminAddLoveMusic = async function(){
+  const title=document.getElementById('love-music-title')?.value.trim();
+  if(!title){showToast('曲名を入力してください');return;}
+  const artist=document.getElementById('love-music-artist')?.value.trim()||'';
+  const lyrics=document.getElementById('love-music-lyrics')?.value.trim()||'';
+  const existing=await fbGet('love/music');
+  const count=existing?Object.keys(existing).length:0;
+  if(count>=3){showToast('登録できる曲は最大3曲です');return;}
+  showToast('登録中...');
+  await fbPush('love/music',{
+    title,artist,lyrics,
+    audioDataUrl:loveMusicFileBuf?loveMusicFileBuf.dataUrl:null,
+    order:count,ts:Date.now()
+  });
+  loveMusicFileBuf=null;
+  showToast('✓ 曲を追加しました💕');
+  await renderAdminContent('love');
+};
+
+window.adminDelLoveMusic = async function(fbKey){
+  if(!confirm('この曲を削除しますか？'))return;
+  await fbRemove('love/music/'+fbKey);
+  showToast('✓ 曲を削除しました');
+  await renderAdminContent('love');
 };
 
 window.lovePostEditMode = async function(fbKey){
