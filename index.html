@@ -710,6 +710,17 @@ function attachListeners(tabId) {
   listeners[tabId].push(fbListen(`settings/subname/${tabId}`, val => {
     snCache[tabId]=val||''; renderTabs(); if(!activeTab) renderHome();
   }));
+  listeners[tabId].push(fbListen(`settings/banners/${tabId}`, bv => {
+    const wrap = document.getElementById('banner-wrap-'+tabId);
+    if(!wrap) return;
+    const html = (bv && bv.text) ? `
+      <div id="banner-${tabId}" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:4px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--ink);"></div>
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:var(--ink3);letter-spacing:0.1em;margin-bottom:8px;">📌 ${esc(bv.title||'イベント概要')}</div>
+        <div style="font-size:0.88rem;color:var(--ink);line-height:1.9;white-space:pre-wrap;word-break:break-word;">${esc(bv.text)}</div>
+      </div>` : '';
+    wrap.innerHTML = html;
+  }));
 }
 
 // ============================================================
@@ -910,30 +921,18 @@ async function renderPanel(id) {
   if(id==='anniv'){ await renderAnnivPanel(); return; }
   attachListeners(id);
 
-  // A-0316 イベント概要カード
-  const eventCard = (id==='A' && (snCache['A']||'').includes('0316')) ? `
-    <div style="background:linear-gradient(135deg,#f5fff5,#eefaee);border:2px solid rgba(60,160,80,0.25);border-radius:14px;padding:16px 18px;margin-bottom:4px;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4a9060,#7ac898,#4a9060);"></div>
-      <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#4a9060;letter-spacing:0.15em;margin-bottom:12px;">🌸 イベント概要</div>
-      <div style="display:flex;flex-direction:column;gap:0;">
-        <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid rgba(60,160,80,0.12);">
-          <span style="font-size:0.78rem;color:#6a8a6a;width:80px;flex-shrink:0;letter-spacing:0.04em;">開催時期</span>
-          <span style="font-size:0.92rem;color:#1a3a1a;font-weight:600;font-family:'Shippori Mincho',serif;">2026年3月16日（月）</span>
-        </div>
-        <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid rgba(60,160,80,0.12);">
-          <span style="font-size:0.78rem;color:#6a8a6a;width:80px;flex-shrink:0;letter-spacing:0.04em;">集合時間</span>
-          <span style="font-size:0.92rem;color:#1a3a1a;font-weight:600;font-family:'Shippori Mincho',serif;">09：30</span>
-        </div>
-        <div style="display:flex;align-items:center;padding:10px 0;">
-          <span style="font-size:0.78rem;color:#6a8a6a;width:80px;flex-shrink:0;letter-spacing:0.04em;">集合場所</span>
-          <span style="font-size:0.92rem;color:#1a3a1a;font-weight:600;font-family:'Shippori Mincho',serif;">レオパレス狭山台</span>
-        </div>
-      </div>
+  // バナー（settings/banners に保存 → リセットで消えない）
+  const bannerVal = await fbGet(`settings/banners/${id}`);
+  const makeBannerHtml = (bv) => (bv && bv.text) ? `
+    <div id="banner-${id}" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:4px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--ink);"></div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:var(--ink3);letter-spacing:0.1em;margin-bottom:8px;">📌 ${esc(bv.title||'イベント概要')}</div>
+      <div style="font-size:0.88rem;color:var(--ink);line-height:1.9;white-space:pre-wrap;word-break:break-word;">${esc(bv.text)}</div>
     </div>` : '';
 
   document.getElementById('main').innerHTML=`
     <div class="sec">
-      ${eventCard}
+      <div id="banner-wrap-${id}">${makeBannerHtml(bannerVal)}</div>
       <div class="sec-hd"><h2>📋 掲示板</h2><div class="sec-line"></div></div>
       <div class="post-list" id="pl-${id}"><div class="empty-msg">読み込み中…</div></div>
       <div class="post-form">
@@ -1999,19 +1998,6 @@ async function renderLovePanel() {
           </div>
         </div>
 
-        <!-- 今週の状況 -->
-        <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:14px 16px;">
-          <div style="font-size:0.8rem;color:#6a5a54;font-weight:600;margin-bottom:10px;">今週の状況</div>
-          <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
-            <div style="width:8px;height:8px;border-radius:50%;border:2px solid #7a9e7e;margin-top:4px;flex-shrink:0;"></div>
-            <span style="font-size:0.82rem;color:#3a2820;line-height:1.6;">火曜：会話多め・来てほしい発言・約束あり</span>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:8px;">
-            <div style="width:8px;height:8px;border-radius:50%;border:2px solid #7a9e7e;margin-top:4px;flex-shrink:0;"></div>
-            <span style="font-size:0.82rem;color:#3a2820;line-height:1.6;">水曜：シフ</span>
-          </div>
-        </div>
-
       </div>
 
       <!-- 恋愛2025 週報 -->
@@ -2901,10 +2887,25 @@ async function renderAdminContent(id) {
       }).join('')
     : '<div class="empty-msg" style="padding:8px">予定がありません</div>';
 
+  // バナー読み込み
+  const bannerVal = await fbGet(`settings/banners/${id}`) || {};
+
   panel.innerHTML=`
     <div class="admin-content-panel">
       <div class="admin-content-hd">
         タブ ${tabDisplayLabel(id)} のコンテンツ
+      </div>
+
+      <div class="admin-subsec">
+        <div class="admin-subsec-title">📌 上部バナー（リセットしても消えません）</div>
+        <input type="text" id="adm-bn-title-${id}" value="${esc(bannerVal.title||'')}" placeholder="タイトル（例：🌸 おでかけプラン）" maxlength="30"
+          style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;margin-bottom:6px;box-sizing:border-box;">
+        <textarea id="adm-bn-text-${id}" placeholder="バナーの内容（空白にすると非表示）" rows="5"
+          style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;resize:vertical;line-height:1.7;box-sizing:border-box;">${esc(bannerVal.text||'')}</textarea>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <button class="admin-btn-sm" onclick="adminSaveBanner('${id}')">保存</button>
+          <button class="admin-btn-sm" style="background:var(--red);" onclick="adminDelBanner('${id}')">削除</button>
+        </div>
       </div>
 
       <div class="admin-subsec">
@@ -2943,6 +2944,20 @@ async function renderAdminContent(id) {
 
   await renderAdminWarikan(id, document.getElementById('wk-adm-'+id));
 }
+
+window.adminSaveBanner = async function(id){
+  const title = document.getElementById('adm-bn-title-'+id)?.value.trim()||'';
+  const text  = document.getElementById('adm-bn-text-'+id)?.value.trim()||'';
+  await fbSet(`settings/banners/${id}`, {title, text, ts: Date.now()});
+  showToast('✓ バナーを保存しました');
+};
+
+window.adminDelBanner = async function(id){
+  if(!confirm('バナーを削除しますか？'))return;
+  await fbRemove(`settings/banners/${id}`);
+  showToast('✓ バナーを削除しました');
+  await renderAdminContent(id);
+};
 
 window.switchAdminTab = async function(id) {
   await renderAdminContent(id);
@@ -3315,7 +3330,7 @@ window.adminDelBdImg = async function(fbKey){
 
 // 恋愛2025 週報管理
 window.adminUploadWeekly = async function(inp){
-  const files = Array.from(inp.files).slice(0, 4);
+  const files = Array.from(inp.files).slice(0, 4).sort((a,b)=>a.name.localeCompare(b.name, 'ja'));
   if(!files.length) return;
   if(Array.from(inp.files).length > 4){ showToast('最大4枚まで選択できます（先頭4枚を使用）'); }
   showToast('アップロード中...');
@@ -3502,37 +3517,6 @@ window.adminUploadBgm = async function(inp){
     await renderAdminContent('love');
   };
   r.readAsDataURL(f); inp.value='';
-};
-
-window.adminUploadWeekly = async function(inp){
-  const f = inp.files[0]; if(!f) return;
-  if(f.size > 15*1024*1024){ showToast('PDFは15MB以下にしてください'); inp.value=''; return; }
-  showToast('PDFを変換中... しばらくお待ちください');
-  try {
-    // PDF.jsで全ページをcanvasに描画→base64画像化
-    const arrayBuf = await f.arrayBuffer();
-    const uint8 = new Uint8Array(arrayBuf);
-    const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
-    const pdfDoc = await pdfjsLib.getDocument({data: uint8}).promise;
-    const pages = [];
-    for(let i = 1; i <= pdfDoc.numPages; i++){
-      const page = await pdfDoc.getPage(i);
-      const scale = 1.8;
-      const viewport = page.getViewport({scale});
-      const canvas = document.createElement('canvas');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
-      pages.push(canvas.toDataURL('image/jpeg', 0.88));
-    }
-    await fbSet('love/weekly', { pages, updatedAt: Date.now(), filename: f.name });
-    showToast(`✓ 週報を登録しました（${pdfDoc.numPages}ページ）📰`);
-    await renderAdminContent('love');
-  } catch(e) {
-    showToast('変換エラー: ' + e.message);
-  }
-  inp.value='';
 };
 
 window.adminDelWeekly = async function(){
