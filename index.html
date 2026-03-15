@@ -320,7 +320,57 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
 .anniv-post-time{font-size:0.7rem;color:rgba(180,120,255,0.5);margin-bottom:6px;}
 .anniv-post-text{font-size:0.92rem;color:rgba(240,220,255,0.9);line-height:1.7;word-break:break-word;}
 
-/* BIRTHDAY TAB */
+/* WARIKAN TOOL (新版) */
+.wk-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.wk-empty{text-align:center;padding:24px;font-size:0.85rem;color:var(--ink4);}
+.wk-shop{background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.wk-shop-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.wk-shop-name{font-family:'Shippori Mincho',serif;font-size:0.95rem;color:var(--ink2);font-weight:600;}
+.wk-shop-total{font-size:0.88rem;color:var(--accent);font-weight:600;}
+.wk-person{padding:10px 14px;border-bottom:1px solid var(--border);}
+.wk-person:last-child{border-bottom:none;}
+.wk-person-name{font-size:0.85rem;color:var(--ink2);font-weight:500;margin-bottom:6px;display:flex;justify-content:space-between;}
+.wk-person-subtotal{font-size:0.82rem;color:var(--accent);}
+.wk-item-row{display:flex;align-items:center;gap:4px;margin-bottom:4px;font-size:0.82rem;color:var(--ink3);}
+.wk-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wk-item-price{color:var(--ink2);font-weight:500;white-space:nowrap;}
+.wk-summary{padding:12px 14px;background:var(--bg2);border-top:1.5px solid var(--border);}
+.wk-summary-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);}
+.wk-summary-row:last-child{border-bottom:none;padding-top:8px;margin-top:4px;}
+.wk-summary-name{font-size:0.88rem;color:var(--ink2);}
+.wk-summary-amount{font-size:1rem;font-weight:600;font-family:'Shippori Mincho',serif;color:var(--ink);}
+.wk-summary-grand{font-size:0.78rem;color:var(--ink4);}
+.wk-dl-btn{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;padding:9px;background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;font-size:0.82rem;color:var(--ink3);cursor:pointer;width:100%;transition:all 0.15s;box-sizing:border-box;}
+.wk-dl-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ADMIN WARIKAN EDITOR */
+.wk-adm-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.wk-adm-hd{padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.wk-adm-hd-title{font-family:'Shippori Mincho',serif;font-size:0.92rem;color:var(--ink2);}
+.wk-adm-shop{border-bottom:1px solid var(--border);padding:12px 14px;}
+.wk-adm-shop:last-of-type{border-bottom:none;}
+.wk-adm-shop-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.wk-adm-label{font-size:0.75rem;color:var(--ink4);width:56px;flex-shrink:0;}
+.wk-adm-input{flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;transition:border-color 0.2s;}
+.wk-adm-input:focus{border-color:var(--accent);}
+.wk-adm-input.sm{width:80px;flex:none;}
+.wk-person-block{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:6px;}
+.wk-person-hd{font-size:0.82rem;color:var(--ink3);font-weight:500;margin-bottom:6px;}
+.wk-item-edit-row{display:flex;gap:4px;margin-bottom:4px;align-items:center;}
+.wk-item-edit-row input{padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:0.82rem;color:var(--ink);background:var(--bg);outline:none;}
+.wk-item-edit-row input:focus{border-color:var(--accent);}
+.wk-item-name-in{flex:1;}
+.wk-item-price-in{width:90px;flex:none;}
+.wk-small-del{background:none;border:none;color:var(--ink4);cursor:pointer;font-size:0.82rem;padding:4px;border-radius:4px;flex-shrink:0;}
+.wk-small-del:hover{color:var(--red);}
+.wk-save-btn{padding:8px 18px;background:var(--accent);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;transition:opacity 0.2s;}
+.wk-save-btn:hover{opacity:0.85;}
+.wk-del-shop-btn{padding:5px 10px;background:none;border:1.5px solid var(--border);border-radius:6px;font-size:0.78rem;color:var(--ink4);cursor:pointer;transition:all 0.15s;}
+.wk-del-shop-btn:hover{border-color:var(--red);color:var(--red);}
+.wk-add-shop-btn{width:100%;padding:10px;background:var(--bg);border:1.5px dashed var(--border);border-radius:8px;font-size:0.85rem;color:var(--ink3);cursor:pointer;transition:all 0.15s;margin-top:8px;}
+.wk-add-shop-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+
 .tab-btn.birthday{color:rgba(255,210,100,0.7);}
 .tab-btn.birthday.active{color:#ffe066;border-bottom-color:#ffcc00;font-weight:600;}
 .birthday-bg{
@@ -911,13 +961,21 @@ async function renderPanel(id) {
     <div class="sec">
       <div class="sec-hd"><h2>📅 カレンダー</h2><div class="sec-line"></div></div>
       <div class="cal-wrap" id="cal-${id}"><div class="empty-msg">読み込み中…</div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-hd"><h2>🧮 割り勘</h2><div class="sec-line"></div></div>
+      <div id="warikan-view-${id}"><div class="empty-msg">読み込み中…</div></div>
     </div>`;
-  const [pv,mv,ev]=await Promise.all([
+  const [pv,mv,ev,wv]=await Promise.all([
     fbGet(`tabs/${id}/posts`),
     fbGet(`tabs/${id}/memo`),
-    fbGet(`tabs/${id}/events`)
+    fbGet(`tabs/${id}/events`),
+    fbGet('warikan')
   ]);
   renderPostsFromData(id,pv); updateMemoUI(id,mv); renderCal(id,ev);
+  renderWarikanView(id, wv);
+  if(!listeners[id]) attachListeners(id);
+  fbListen('warikan', val=>renderWarikanView(id, val));
 }
 
 // ============================================================
@@ -1262,6 +1320,371 @@ function renderAnnivPosts(val){
 }
 
 // ============================================================
+// WARIKAN TOOL (新版)
+// 構造: warikan/{tabId}/shops/{shopKey} = { name, persons:[{name, items:[{name,price}]}] }
+// ============================================================
+
+function wkPath(id){ return id==='birthday' ? 'birthday/warikan' : id==='warikan' ? 'warikan' : `tabs/${id}/warikan`; }
+
+// 新店舗追加（参加人数指定）
+window.wkAdmAddShopWithCount = async function(){
+  const sel = document.getElementById('wk-new-count');
+  const count = parseInt(sel?.value||1);
+  const val = await fbGet('warikan') || {};
+  if(!val.shops) val.shops={};
+  const key = 'shop'+Date.now();
+  val.shops[key]={
+    name:'',
+    persons: Array.from({length:count},()=>({name:'', items:Array.from({length:15},()=>({name:'',price:''}))}) )
+  };
+  await fbSet('warikan', val);
+  showToast('✓ 店舗を追加しました');
+  await renderAdminContent('warikan');
+};
+
+// 既存店舗へメンバー追加
+window.wkAdmAddPersons = async function(id, shopKey){
+  const sel = document.getElementById('wk-add-count-'+shopKey);
+  const count = parseInt(sel?.value||1);
+  const val = await fbGet(wkPath(id)) || {};
+  if(!val.shops||!val.shops[shopKey]) return;
+  for(let i=0;i<count;i++){
+    val.shops[shopKey].persons = val.shops[shopKey].persons||[];
+    val.shops[shopKey].persons.push({name:'',items:Array.from({length:15},()=>({name:'',price:''}))});
+  }
+  await fbSet(wkPath(id), val);
+  showToast(`✓ ${count}人追加しました`);
+  await renderAdminContent(id);
+};
+
+// メンバー削除
+window.wkAdmDelPerson = async function(id, shopKey, pi){
+  if(!confirm('このメンバーを削除しますか？'))return;
+  const val = await fbGet(wkPath(id)) || {};
+  if(!val.shops||!val.shops[shopKey]) return;
+  val.shops[shopKey].persons.splice(pi,1);
+  await fbSet(wkPath(id), val);
+  showToast('✓ 削除しました');
+  await renderAdminContent(id);
+};
+
+// ダウンロード
+window.wkDownload = async function(id){
+  const val = await fbGet(wkPath(id));
+  if(!val||!val.shops){ showToast('データがありません'); return; }
+  const shops = Object.values(val.shops);
+  const lines = ['【割り勘計算結果】',''];
+  const totals = {};
+  shops.forEach(shop=>{
+    const st=(shop.persons||[]).reduce((s,p)=>s+(p.items||[]).reduce((ss,it)=>ss+(parseInt(it.price)||0),0),0);
+    lines.push(`■ ${shop.name||'店舗'}（合計 ¥${st.toLocaleString()}）`);
+    (shop.persons||[]).forEach(p=>{
+      const sub=(p.items||[]).filter(it=>it.name||it.price).reduce((s,it)=>s+(parseInt(it.price)||0),0);
+      const nm=p.name||'名前なし';
+      lines.push(`  ${nm}：¥${sub.toLocaleString()}`);
+      (p.items||[]).filter(it=>it.name||it.price).forEach(it=>{
+        lines.push(`    - ${it.name||''}  ¥${(parseInt(it.price)||0).toLocaleString()}`);
+      });
+      if(!totals[nm])totals[nm]=0;
+      totals[nm]+=sub;
+    });
+    lines.push('');
+  });
+  lines.push('■ 個人別合計');
+  Object.entries(totals).forEach(([n,a])=>lines.push(`  ${n}：¥${a.toLocaleString()}`));
+  lines.push(`  総合計：¥${Object.values(totals).reduce((s,v)=>s+v,0).toLocaleString()}`);
+  lines.push('','出力日時：'+new Date().toLocaleString('ja-JP'));
+  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='割り勘_'+new Date().toLocaleDateString('ja-JP').replace(/\//g,'')+'.txt';
+  a.click();
+};
+
+
+// 一般タブ表示（閲覧のみ）
+function renderWarikan(id, val){
+  const el = document.getElementById('warikan-'+id); if(!el) return;
+  const shops = val && val.shops ? Object.entries(val.shops).map(([k,v])=>({key:k,...v})) : [];
+
+  if(!shops.length){
+    el.innerHTML = '<div class="wk-empty">🧾 まだ割り勘データがありません</div>'; return;
+  }
+
+  // 人物ごとの合計集計
+  const personTotals = {};
+  shops.forEach(shop=>{
+    (shop.persons||[]).forEach(p=>{
+      const nm = p.name||'?';
+      if(!personTotals[nm]) personTotals[nm]=0;
+      (p.items||[]).forEach(it=>{ personTotals[nm]+=(parseInt(it.price)||0); });
+    });
+  });
+
+  const shopHtml = shops.map(shop=>{
+    const shopTotal = (shop.persons||[]).reduce((s,p)=>
+      s+(p.items||[]).reduce((ss,it)=>ss+(parseInt(it.price)||0),0),0);
+    const personsHtml = (shop.persons||[]).map(p=>{
+      const sub = (p.items||[]).reduce((s,it)=>s+(parseInt(it.price)||0),0);
+      const itemsHtml = (p.items||[]).filter(it=>it.name||it.price).map(it=>`
+        <div class="wk-item-row">
+          <span class="wk-item-name">${esc(it.name||'')}</span>
+          <span class="wk-item-price">¥${(parseInt(it.price)||0).toLocaleString()}</span>
+        </div>`).join('');
+      return`<div class="wk-person">
+        <div class="wk-person-name">
+          <span>${esc(p.name||'名前なし')}</span>
+          <span class="wk-person-subtotal">¥${sub.toLocaleString()}</span>
+        </div>
+        ${itemsHtml}
+      </div>`;
+    }).join('');
+    return`<div class="wk-shop">
+      <div class="wk-shop-hd">
+        <span class="wk-shop-name">🏪 ${esc(shop.name||'店舗')}</span>
+        <span class="wk-shop-total">合計 ¥${shopTotal.toLocaleString()}</span>
+      </div>
+      ${personsHtml}
+    </div>`;
+  }).join('');
+
+  const summaryHtml = Object.entries(personTotals).map(([nm,amt])=>`
+    <div class="wk-summary-row">
+      <span class="wk-summary-name">${esc(nm)}</span>
+      <span class="wk-summary-amount">¥${amt.toLocaleString()}</span>
+    </div>`).join('');
+  const grandTotal = Object.values(personTotals).reduce((s,v)=>s+v,0);
+
+  el.innerHTML=`
+    <div style="padding:12px 12px 0;">
+      ${shopHtml}
+      <div class="wk-summary">
+        <div style="font-size:0.75rem;color:var(--ink4);letter-spacing:0.08em;margin-bottom:8px;text-align:center;">— 個人別合計 —</div>
+        ${summaryHtml}
+        <div class="wk-summary-row">
+          <span class="wk-summary-grand">総合計</span>
+          <span style="font-size:0.88rem;color:var(--ink3);">¥${grandTotal.toLocaleString()}</span>
+        </div>
+      </div>
+      <button class="wk-dl-btn" onclick="wkDownload('${id}')">⬇️ テキストでダウンロード</button>
+    </div>`;
+}
+
+// ダウンロード
+window.wkDownload = async function(id){
+  const val = await fbGet(wkPath(id));
+  if(!val||!val.shops){ showToast('データがありません'); return; }
+  const shops = Object.values(val.shops);
+  const lines = ['【割り勘計算結果】',''];
+  const totals = {};
+  shops.forEach(shop=>{
+    const st = (shop.persons||[]).reduce((s,p)=>s+(p.items||[]).reduce((ss,it)=>ss+(parseInt(it.price)||0),0),0);
+    lines.push(`■ ${shop.name||'店舗'}（合計 ¥${st.toLocaleString()}）`);
+    (shop.persons||[]).forEach(p=>{
+      const sub=(p.items||[]).reduce((s,it)=>s+(parseInt(it.price)||0),0);
+      lines.push(`  ${p.name||'?'}：¥${sub.toLocaleString()}`);
+      (p.items||[]).filter(it=>it.name||it.price).forEach(it=>{
+        lines.push(`    - ${it.name||''}  ¥${(parseInt(it.price)||0).toLocaleString()}`);
+      });
+      if(!totals[p.name||'?']) totals[p.name||'?']=0;
+      totals[p.name||'?']+=sub;
+    });
+    lines.push('');
+  });
+  lines.push('■ 個人別合計');
+  Object.entries(totals).forEach(([n,a])=>lines.push(`  ${n}：¥${a.toLocaleString()}`));
+  lines.push(`  総合計：¥${Object.values(totals).reduce((s,v)=>s+v,0).toLocaleString()}`);
+  lines.push('','出力日時：'+new Date().toLocaleString('ja-JP'));
+  const blob = new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '割り勘_'+id+'.txt';
+  a.click();
+};
+
+// 管理タブ：割り勘編集UI
+async function renderAdminWarikan(id, container){
+  const val = await fbGet(wkPath(id)) || {};
+  const shops = val.shops ? Object.entries(val.shops).map(([k,v])=>({key:k,...v})) : [];
+
+  const shopsHtml = shops.map((shop,si)=>{
+    const persons = shop.persons||[];
+    const personsHtml = persons.map((p,pi)=>{
+      const items = p.items && p.items.length ? p.items : Array(15).fill({name:'',price:''});
+      const itemsHtml = items.slice(0,15).map((it,ii)=>`
+        <div class="wk-item-edit-row">
+          <input class="wk-item-name-in" type="text" value="${esc(it.name||'')}" placeholder="商品名"
+            onchange="wkAdmUpdateItem('${id}','${shop.key}',${pi},${ii},'name',this.value)">
+          <input class="wk-item-price-in" type="number" value="${it.price||''}" placeholder="金額" min="0"
+            onchange="wkAdmUpdateItem('${id}','${shop.key}',${pi},${ii},'price',this.value)">
+        </div>`).join('');
+      return`<div class="wk-person-block">
+        <div class="wk-person-hd">
+          👤 <input type="text" value="${esc(p.name||'')}" placeholder="名前" maxlength="10"
+            style="border:none;border-bottom:1.5px solid var(--border);background:transparent;font-size:0.82rem;color:var(--ink2);outline:none;width:100px;"
+            onchange="wkAdmUpdatePersonName('${id}','${shop.key}',${pi},this.value)">
+        </div>
+        ${itemsHtml}
+      </div>`;
+    }).join('');
+    return`<div class="wk-adm-shop">
+      <div class="wk-adm-shop-row">
+        <span class="wk-adm-label">店舗名</span>
+        <input class="wk-adm-input" type="text" value="${esc(shop.name||'')}" placeholder="店舗名"
+          onchange="wkAdmUpdateShopName('${id}','${shop.key}',this.value)">
+        <button class="wk-del-shop-btn" onclick="wkAdmDelShop('${id}','${shop.key}')">削除</button>
+      </div>
+      <div style="font-size:0.75rem;color:var(--ink4);margin-bottom:6px;">参加人数：${persons.length}人</div>
+      ${personsHtml}
+      <button onclick="wkAdmAddPerson('${id}','${shop.key}')" style="width:100%;padding:6px;background:none;border:1.5px dashed var(--border);border-radius:6px;font-size:0.78rem;color:var(--ink4);cursor:pointer;margin-top:4px;" ${persons.length>=20?'disabled':''}>＋ メンバーを追加</button>
+    </div>`;
+  }).join('');
+
+  container.innerHTML=`
+    <div class="wk-adm-wrap">
+      <div class="wk-adm-hd">
+        <span class="wk-adm-hd-title">🧮 割り勘編集</span>
+        <button class="wk-del-shop-btn" onclick="wkAdmResetAll('${id}')">全リセット</button>
+      </div>
+      <div style="padding:0 0 8px;">${shopsHtml}</div>
+      <div style="padding:8px 12px 12px;">
+        <button class="wk-add-shop-btn" onclick="wkAdmAddShop('${id}')">＋ 店舗を追加</button>
+      </div>
+    </div>`;
+}
+
+// 管理操作関数
+window.wkAdmAddShop = async function(id){
+  const val = await fbGet(wkPath(id)) || {};
+  if(!val.shops) val.shops={};
+  const key = 'shop'+Date.now();
+  val.shops[key]={name:'', persons:[{name:'',items:Array(15).fill({name:'',price:''})}]};
+  await fbSet(wkPath(id), val);
+  showToast('✓ 店舗を追加しました');
+  const panel = document.getElementById('admin-content-panel');
+  if(panel) await renderAdminContent(id==='birthday'?'birthday':id);
+};
+
+window.wkAdmDelShop = async function(id, shopKey){
+  if(!confirm('この店舗を削除しますか？'))return;
+  const val = await fbGet(wkPath(id)) || {};
+  if(val.shops && val.shops[shopKey]) delete val.shops[shopKey];
+  await fbSet(wkPath(id), val);
+  showToast('✓ 削除しました');
+  const panel = document.getElementById('admin-content-panel');
+  if(panel) await renderAdminContent(id==='birthday'?'birthday':id);
+};
+
+window.wkAdmAddPerson = async function(id, shopKey){
+  const val = await fbGet(wkPath(id)) || {};
+  if(!val.shops||!val.shops[shopKey]) return;
+  val.shops[shopKey].persons = val.shops[shopKey].persons||[];
+  val.shops[shopKey].persons.push({name:'',items:Array(15).fill({name:'',price:''})});
+  await fbSet(wkPath(id), val);
+  showToast('✓ メンバーを追加しました');
+  const panel = document.getElementById('admin-content-panel');
+  if(panel) await renderAdminContent(id==='birthday'?'birthday':id);
+};
+
+window.wkAdmUpdateShopName = async function(id, shopKey, name){
+  const val = await fbGet(wkPath(id)) || {};
+  if(val.shops&&val.shops[shopKey]) val.shops[shopKey].name=name;
+  await fbSet(wkPath(id), val);
+};
+
+window.wkAdmUpdatePersonName = async function(id, shopKey, pi, name){
+  const val = await fbGet(wkPath(id)) || {};
+  if(val.shops&&val.shops[shopKey]&&val.shops[shopKey].persons[pi])
+    val.shops[shopKey].persons[pi].name=name;
+  await fbSet(wkPath(id), val);
+};
+
+window.wkAdmUpdateItem = async function(id, shopKey, pi, ii, field, value){
+  const val = await fbGet(wkPath(id)) || {};
+  if(!val.shops||!val.shops[shopKey]) return;
+  const person = val.shops[shopKey].persons[pi];
+  if(!person) return;
+  if(!person.items) person.items=Array(15).fill({name:'',price:''});
+  person.items[ii] = {...(person.items[ii]||{}), [field]: value};
+  await fbSet(wkPath(id), val);
+};
+
+window.wkAdmResetAll = async function(id){
+  if(!confirm('割り勘データをすべてリセットしますか？'))return;
+  await fbRemove(wkPath(id));
+  showToast('✓ リセットしました');
+  if(id==='warikan') await renderAdminContent('warikan');
+  else {
+    const el = document.getElementById('warikan-'+id);
+    if(el) renderWarikan(id, null);
+    const panel = document.getElementById('admin-content-panel');
+    if(panel) await renderAdminContent(id);
+  }
+};
+
+// 各タブ用：割り勘閲覧ビュー（管理タブのwarikanデータを共有表示）
+function renderWarikanView(id, val){
+  const el = document.getElementById('warikan-view-'+id); if(!el) return;
+  const shops = val && val.shops ? Object.entries(val.shops).map(([k,v])=>({key:k,...v})) : [];
+
+  if(!shops.length){
+    el.innerHTML='<div class="empty-msg" style="padding:16px;">🧾 まだデータがありません</div>'; return;
+  }
+
+  const totals={};
+  shops.forEach(shop=>{
+    (shop.persons||[]).forEach(p=>{
+      const nm=p.name||'名前なし';
+      if(!totals[nm])totals[nm]=0;
+      (p.items||[]).forEach(it=>{ totals[nm]+=(parseInt(it.price)||0); });
+    });
+  });
+
+  const shopsHtml = shops.map(shop=>{
+    const shopTotal=(shop.persons||[]).reduce((s,p)=>s+(p.items||[]).reduce((ss,it)=>ss+(parseInt(it.price)||0),0),0);
+    const personsHtml=(shop.persons||[]).map(p=>{
+      const sub=(p.items||[]).reduce((s,it)=>s+(parseInt(it.price)||0),0);
+      const itemsHtml=(p.items||[]).filter(it=>it.name||it.price).map(it=>`
+        <div class="wk-item-row">
+          <span class="wk-item-name">${esc(it.name||'')}</span>
+          <span class="wk-item-price">¥${(parseInt(it.price)||0).toLocaleString()}</span>
+        </div>`).join('');
+      return`<div class="wk-person">
+        <div class="wk-person-name">
+          <span>${esc(p.name||'名前なし')}</span>
+          <span class="wk-person-subtotal">¥${sub.toLocaleString()}</span>
+        </div>${itemsHtml}</div>`;
+    }).join('');
+    return`<div class="wk-shop">
+      <div class="wk-shop-hd">
+        <span class="wk-shop-name">🏪 ${esc(shop.name||'店舗')}</span>
+        <span class="wk-shop-total">合計 ¥${shopTotal.toLocaleString()}</span>
+      </div>${personsHtml}</div>`;
+  }).join('');
+
+  const grandTotal=Object.values(totals).reduce((s,v)=>s+v,0);
+  const summaryHtml=Object.entries(totals).map(([n,a])=>`
+    <div class="wk-summary-row">
+      <span class="wk-summary-name">${esc(n)}</span>
+      <span class="wk-summary-amount">¥${a.toLocaleString()}</span>
+    </div>`).join('');
+
+  el.innerHTML=`
+    <div class="wk-wrap">
+      <div style="padding:12px 12px 0;">${shopsHtml}
+        <div class="wk-summary">
+          <div style="font-size:0.75rem;color:var(--ink4);letter-spacing:0.08em;margin-bottom:8px;text-align:center;">— 個人別合計 —</div>
+          ${summaryHtml}
+          <div class="wk-summary-row">
+            <span class="wk-summary-grand">総合計</span>
+            <span style="font-size:0.88rem;color:var(--ink3);">¥${grandTotal.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ============================================================
 // BIRTHDAY PANEL
 // ============================================================
 async function renderBirthdayPanel() {
@@ -1304,26 +1727,33 @@ async function renderBirthdayPanel() {
         <div id="bd-music-list"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
       </div>
 
-      <div class="birthday-sec" style="margin-top:12px;">
+      <div class="birthday-sec" style="margin-top:12px;padding-bottom:24px;">
         <div class="birthday-sec-hd"><h2>🖼 フォト</h2><div class="birthday-sec-line"></div></div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="birthday-gallery">
           <div style="color:#b08000;font-size:0.85rem;padding:8px;text-align:center;">読み込み中...</div>
         </div>
       </div>
+      <div class="birthday-sec" style="margin-top:12px;padding-bottom:24px;">
+        <div class="birthday-sec-hd"><h2>🧮 割り勘</h2><div class="birthday-sec-line"></div></div>
+        <div id="warikan-view-birthday"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
+      </div>
     </div>`;
 
-  const [posts, imgs, music] = await Promise.all([
-    fbGet('birthday/posts'), fbGet('birthday/images'), fbGet('birthday/music')
+  const [posts, imgs, music, wv] = await Promise.all([
+    fbGet('birthday/posts'), fbGet('birthday/images'),
+    fbGet('birthday/music'), fbGet('warikan')
   ]);
   renderBirthdayPosts(posts);
   renderBirthdayGallery(imgs);
   renderBdMusicList(music);
+  renderWarikanView('birthday', wv);
 
   if(!listeners['birthday']){
     listeners['birthday']=[];
-    listeners['birthday'].push(fbListen('birthday/posts', val=>renderBirthdayPosts(val)));
+    listeners['birthday'].push(fbListen('birthday/posts',  val=>renderBirthdayPosts(val)));
     listeners['birthday'].push(fbListen('birthday/images', val=>renderBirthdayGallery(val)));
-    listeners['birthday'].push(fbListen('birthday/music', val=>renderBdMusicList(val)));
+    listeners['birthday'].push(fbListen('birthday/music',  val=>renderBdMusicList(val)));
+    listeners['birthday'].push(fbListen('warikan',         val=>renderWarikanView('birthday',val)));
   }
 }
 
@@ -1857,6 +2287,18 @@ async function renderAdmin() {
       <button class="reset-one" onclick="resetOne('${t.id}')">リセット</button>
     </div>`).join('');
 
+  // 管理者パスワード変更行（別途）
+  const adminPwRow = `
+    <div class="admin-row" style="border-top:1.5px solid var(--border);margin-top:8px;padding-top:8px;">
+      <div class="admin-tab-nm" style="color:var(--accent2);font-weight:600;">管理者</div>
+      <div style="flex:1;font-size:0.75rem;color:var(--ink4);">管理タブのパスワード</div>
+      <input class="admin-pw-input" id="newpw-admin" type="text" placeholder="新パスワード" maxlength="24">
+      <button class="admin-pw-save" onclick="changeTabPw('admin')">変更</button>
+    </div>
+    <div style="margin-top:6px;padding:6px 0;">
+      <button onclick="resetAdminPw()" style="width:100%;padding:8px;background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;font-size:0.8rem;color:var(--ink3);cursor:pointer;">🔑 管理者パスワードを「13240622Ko」にリセット</button>
+    </div>`;
+
   const npRows=newPws
     ?Object.entries(newPws).map(([id,pw])=>`
       <div class="new-pw-row">
@@ -1881,18 +2323,11 @@ async function renderAdmin() {
           <span class="love-toggle-slider"></span>
         </label>
       </div>
-      <div style="margin-bottom:12px;">
-        <button onclick="setupA0316()" style="width:100%;padding:10px 16px;background:linear-gradient(135deg,#4a9060,#2a7040);color:white;border:none;border-radius:10px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;letter-spacing:0.05em;">
-          🌸 タブA を「A-0316」に設定 ＋ おでかけプランを投稿
-        </button>
-      </div>
       <div class="admin-card">
         <div class="admin-card-hd">タブ設定（サブ名・パスワード変更）</div>
         ${rows}
+        ${adminPwRow}
       </div>
-      <button class="reset-all-btn" onclick="resetAll()">
-        🔄 全タブをリセット（データ消去＋パスワード再生成）
-      </button>
       <div class="new-pw-box ${newPws?'show':''}" id="npbox">
         <div class="new-pw-hd">✅ 新しいパスワード — 各自に伝えてください</div>
         <div id="nplist">${npRows}</div>
@@ -1914,6 +2349,9 @@ async function renderAdmin() {
         <button class="admin-ts-btn${adminActiveTab==='love'?' active':''}" onclick="switchAdminTab('love')"
           style="border-color:rgba(220,60,100,0.3);color:${adminActiveTab==='love'?'white':'#c06080'};${adminActiveTab==='love'?'background:linear-gradient(135deg,#e8406a,#c0305a);border-color:transparent;':''}"
         >💕 【特別】恋愛2510</button>
+        <button class="admin-ts-btn${adminActiveTab==='warikan'?' active':''}" onclick="switchAdminTab('warikan')"
+          style="border-color:rgba(60,130,60,0.3);color:${adminActiveTab==='warikan'?'white':'#3a7a3a'};${adminActiveTab==='warikan'?'background:linear-gradient(135deg,#3a7a3a,#1a5a1a);border-color:transparent;':''}"
+        >🧮 割り勘計算</button>
       </div>
       <div id="admin-content-panel"></div>
     </div>`;
@@ -1924,11 +2362,116 @@ async function renderAdmin() {
 async function renderAdminContent(id) {
   adminActiveTab = id;
   document.querySelectorAll('.admin-ts-btn').forEach(b=>{
-    b.classList.toggle('active', b.textContent.trim().startsWith(id==='love'?'💕':id));
+    const t = b.textContent.trim();
+    const match = id==='love' ? t.startsWith('💕')
+      : id==='anniv' ? t.startsWith('🌸')
+      : id==='birthday' ? t.startsWith('🎂')
+      : id==='warikan' ? t.startsWith('🧮')
+      : t.startsWith(id);
+    b.classList.toggle('active', match);
   });
   const panel = document.getElementById('admin-content-panel');
   if(!panel){ console.error('admin-content-panel not found'); return; }
   panel.innerHTML = '<div class="empty-msg" style="padding:20px;text-align:center;">読み込み中...</div>';
+
+  // 割り勘専用UI
+  if(id==='warikan'){
+    let wkVal = null;
+    try { wkVal = await fbGet('warikan'); } catch(e){}
+    const shops = wkVal && wkVal.shops ? Object.entries(wkVal.shops).map(([k,v])=>({key:k,...v})) : [];
+
+    // 各店舗HTML
+    const shopsHtml = shops.map(shop=>{
+      const persons = shop.persons||[];
+      const shopTotal = persons.reduce((s,p)=>s+(p.items||[]).reduce((ss,it)=>ss+(parseInt(it.price)||0),0),0);
+      const personsHtml = persons.map((p,pi)=>{
+        const items = Array.from({length:15},(_,ii)=>(p.items&&p.items[ii])||{name:'',price:''});
+        const sub = items.reduce((s,it)=>s+(parseInt(it.price)||0),0);
+        return `<div style="padding:10px 12px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:0.78rem;color:var(--ink4);">👤</span>
+            <input type="text" value="${esc(p.name||'')}" placeholder="名前" maxlength="10"
+              style="border:none;border-bottom:1.5px solid var(--border);background:transparent;font-size:0.85rem;color:var(--ink2);outline:none;width:90px;padding:2px 4px;"
+              onchange="wkAdmUpdatePersonName('warikan','${shop.key}',${pi},this.value)">
+            <span style="font-size:0.78rem;color:var(--accent);margin-left:auto;">¥${sub.toLocaleString()}</span>
+            <button onclick="wkAdmDelPerson('warikan','${shop.key}',${pi})" style="background:none;border:none;color:var(--ink4);cursor:pointer;font-size:0.8rem;padding:2px 5px;border-radius:4px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--ink4)'">✕</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 90px;gap:4px 6px;">
+            ${items.map((it,ii)=>`
+              <input type="text" value="${esc(it.name||'')}" placeholder="商品名${ii+1}"
+                style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;color:var(--ink2);background:var(--bg);outline:none;"
+                onchange="wkAdmUpdateItem('warikan','${shop.key}',${pi},${ii},'name',this.value)">
+              <input type="number" value="${it.price||''}" placeholder="¥" min="0"
+                style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;color:var(--ink2);background:var(--bg);outline:none;"
+                onchange="wkAdmUpdateItem('warikan','${shop.key}',${pi},${ii},'price',this.value)">`).join('')}
+          </div>
+        </div>`;
+      }).join('');
+
+      return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);">
+          <input type="text" value="${esc(shop.name||'')}" placeholder="店舗名"
+            style="flex:1;border:none;border-bottom:1.5px solid var(--border);background:transparent;font-size:0.92rem;color:var(--ink2);font-weight:600;outline:none;padding:2px 4px;"
+            onchange="wkAdmUpdateShopName('warikan','${shop.key}',this.value)">
+          <span style="font-size:0.82rem;color:var(--accent);">合計 ¥${shopTotal.toLocaleString()}</span>
+          <button onclick="wkAdmDelShop('warikan','${shop.key}')" style="padding:4px 10px;background:none;border:1px solid var(--red);border-radius:6px;font-size:0.78rem;color:var(--red);cursor:pointer;">削除</button>
+        </div>
+        ${personsHtml}
+        <div style="padding:8px 12px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:0.78rem;color:var(--ink4);">メンバー追加：</span>
+          <select id="wk-add-count-${shop.key}" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;color:var(--ink2);background:var(--bg);outline:none;">
+            ${[1,2,3,4,5].map(n=>`<option value="${n}">${n}人</option>`).join('')}
+          </select>
+          <button onclick="wkAdmAddPersons('warikan','${shop.key}')" style="padding:6px 14px;background:var(--bg2);border:1.5px dashed var(--border);border-radius:6px;font-size:0.82rem;color:var(--ink3);cursor:pointer;">＋ 追加</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    // 個人別合計
+    const totals = {};
+    shops.forEach(shop=>{
+      (shop.persons||[]).forEach(p=>{
+        const nm=p.name||'名前なし';
+        if(!totals[nm])totals[nm]=0;
+        (p.items||[]).forEach(it=>{ totals[nm]+=(parseInt(it.price)||0); });
+      });
+    });
+    const grandTotal = Object.values(totals).reduce((s,v)=>s+v,0);
+    const summaryHtml = Object.keys(totals).length ? `
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+        <div style="font-size:0.75rem;color:var(--ink4);text-align:center;letter-spacing:0.08em;margin-bottom:10px;">— 個人別合計 —</div>
+        ${Object.entries(totals).map(([n,a])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:0.88rem;color:var(--ink2);">${esc(n)}</span>
+            <span style="font-size:1rem;font-weight:600;color:var(--ink);">¥${a.toLocaleString()}</span>
+          </div>`).join('')}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 0;">
+          <span style="font-size:0.78rem;color:var(--ink4);">総合計</span>
+          <span style="font-size:0.92rem;color:var(--ink3);">¥${grandTotal.toLocaleString()}</span>
+        </div>
+      </div>` : '';
+
+    panel.innerHTML=`
+      <div style="padding:4px 0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:0.78rem;color:var(--ink4);">店舗ごとに参加者と購入品・金額を記録します</div>
+          <button onclick="wkAdmResetAll('warikan')" style="padding:5px 12px;background:none;border:1px solid var(--red);border-radius:6px;font-size:0.78rem;color:var(--red);cursor:pointer;">全リセット</button>
+        </div>
+        ${shopsHtml}
+        <div style="margin-bottom:12px;">
+          <div style="font-size:0.78rem;color:var(--ink4);margin-bottom:6px;">新しい店舗を追加：参加人数を選択</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="wk-new-count" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink2);background:var(--bg);outline:none;">
+              ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}">${n}人</option>`).join('')}
+            </select>
+            <button onclick="wkAdmAddShopWithCount()" style="flex:1;padding:9px 16px;background:var(--ink);color:var(--bg);border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;">＋ 店舗を追加</button>
+          </div>
+        </div>
+        ${summaryHtml}
+        ${grandTotal>0?`<button class="wk-dl-btn" onclick="wkDownload('warikan')">⬇️ テキストでダウンロード</button>`:''}
+      </div>`;
+    return;
+  }
 
   // 20th Anniversary専用UI
   if(id==='anniv'){
@@ -1980,11 +2523,6 @@ async function renderAdminContent(id) {
           <button onclick="previewAnnivPanel()" style="padding:5px 14px;background:linear-gradient(135deg,#9040ff,#6020c0);color:white;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;">👁 プレビュー</button>
         </div>
         <div style="padding:10px 16px 0;">${periodNotice}</div>
-        <div style="padding:0 16px 10px;border-bottom:1px solid rgba(180,120,255,0.1);">
-          <button onclick="adminInsertAnnivInitPosts()" style="width:100%;padding:10px;background:rgba(180,120,255,0.15);border:1.5px dashed rgba(180,120,255,0.35);border-radius:8px;color:#9060c0;font-size:0.85rem;cursor:pointer;font-family:'Shippori Mincho',serif;">
-            📥 冊子ページ（5〜12ページ）を一括投入する
-          </button>
-        </div>
 
         <!-- 音楽管理 -->
         <div style="padding:12px 16px;border-bottom:1px solid rgba(180,120,255,0.1);">
@@ -2149,7 +2687,12 @@ async function renderAdminContent(id) {
             <input type="file" accept="image/*" style="display:none" onchange="adminUploadBdImg(this)">
           </label>
         </div>
+        <div style="padding:12px 16px;border-top:1px solid rgba(255,180,0,0.15);">
+          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🧮 割り勘編集</div>
+          <div id="wk-adm-birthday"></div>
+        </div>
       </div>`;
+    await renderAdminWarikan('birthday', document.getElementById('wk-adm-birthday'));
     return;
   }
 
@@ -2345,7 +2888,14 @@ async function renderAdminContent(id) {
           <button class="admin-btn-sm" onclick="adminAddEv('${id}')">追加</button>
         </div>
       </div>
+
+      <div class="admin-subsec">
+        <div class="admin-subsec-title">🧮 割り勘編集</div>
+        <div id="wk-adm-${id}"></div>
+      </div>
     </div>`;
+
+  await renderAdminWarikan(id, document.getElementById('wk-adm-'+id));
 }
 
 window.switchAdminTab = async function(id) {
@@ -2451,6 +3001,11 @@ window.saveSubname=async function(id){
   const inp=document.getElementById('sn-'+id);if(!inp)return;
   await setSubname(id,inp.value.trim());
   renderTabs();showToast('✓ サブ名を保存しました');
+};
+
+window.resetAdminPw = async function(){
+  await setTabPwHash('admin', '13240622Ko');
+  showToast('✓ 管理者パスワードを「13240622Ko」にリセットしました');
 };
 
 window.changeTabPw=async function(id){
@@ -2915,6 +3470,8 @@ async function init() {
   checkSession();
   try {
     await preloadSubnames();
+    // 管理者パスワードを強制設定（常に上書き）
+    await setTabPwHash('admin', '13240622Ko');
     // load love visibility and stage
     const [lv, ls] = await Promise.all([fbGet('settings/loveVisible'), fbGet('love/stage')]);
     loveVisible = !!lv;
