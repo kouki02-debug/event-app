@@ -2014,6 +2014,14 @@ async function renderLovePanel() {
 
       </div>
 
+      <!-- 恋愛2025 週報 -->
+      <div class="love-sec" style="margin-top:16px;">
+        <div class="love-sec-hd"><h2>📰 恋愛2025</h2><div class="love-sec-line"></div></div>
+        <div id="love2025-wrap">
+          <div style="text-align:center;color:#d090a8;padding:20px;font-size:0.85rem;">読み込み中...</div>
+        </div>
+      </div>
+
       <div class="love-sec" style="margin-top:16px;">
         <div class="love-sec-hd"><h2>📋 掲示板</h2><div class="love-sec-line"></div></div>
         <div id="love-posts"><div style="text-align:center;color:#d090a8;padding:20px;font-size:0.85rem">読み込み中...</div></div>
@@ -2032,11 +2040,12 @@ async function renderLovePanel() {
       </div>
     </div>`;
 
-  const [posts, music] = await Promise.all([
-    fbGet('love/posts'), fbGet('love/music')
+  const [posts, music, weekly] = await Promise.all([
+    fbGet('love/posts'), fbGet('love/music'), fbGet('love/weekly')
   ]);
   renderLovePosts(posts);
   renderLoveMusicList(music);
+  renderLove2025(weekly);
   await renderLoveCal();
   await initBgm();
 
@@ -2044,9 +2053,56 @@ async function renderLovePanel() {
     listeners['love']=[];
     listeners['love'].push(fbListen('love/posts',    val=>renderLovePosts(val)));
     listeners['love'].push(fbListen('love/music',    val=>renderLoveMusicList(val)));
+    listeners['love'].push(fbListen('love/weekly',   val=>renderLove2025(val)));
     listeners['love'].push(fbListen('love/stage',    val=>{ loveStage=val||'ステージ4-1'; const el=document.getElementById('love-stage-disp'); if(el)el.textContent=loveStage; }));
     listeners['love'].push(fbListen('love/calmarks', val=>{ window._loveCalMarks=val||{}; renderLoveCalGrid(); }));
   }
+}
+
+// 恋愛2025 週報表示（PDF.jsでブラウザレンダリング）
+function renderLove2025(val){
+  const el = document.getElementById('love2025-wrap'); if(!el) return;
+  if(!val || !val.pdfDataUrl){
+    el.innerHTML='<div style="text-align:center;color:#d090a8;padding:20px;font-size:0.85rem;">📰 今週の記事は準備中です</div>';
+    return;
+  }
+  const updatedAt = val.updatedAt ? new Date(val.updatedAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',weekday:'short'}) : '';
+  el.innerHTML=`
+    <div>
+      ${updatedAt?`<div style="font-size:0.72rem;color:#d090a8;text-align:right;margin-bottom:8px;">更新：${updatedAt}</div>`:''}
+      <div id="love2025-canvases"></div>
+      <div id="love2025-loading" style="text-align:center;color:#d090a8;padding:16px;font-size:0.85rem;">レンダリング中...</div>
+    </div>`;
+  // PDF.jsで非同期レンダリング
+  (async ()=>{
+    try {
+      const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+      const pdfDoc = await pdfjsLib.getDocument(val.pdfDataUrl).promise;
+      const container = document.getElementById('love2025-canvases');
+      const loader = document.getElementById('love2025-loading');
+      if(!container) return;
+      for(let i=1; i<=pdfDoc.numPages; i++){
+        const page = await pdfDoc.getPage(i);
+        const containerWidth = container.clientWidth || 340;
+        const unscaled = page.getViewport({scale:1});
+        const scale = containerWidth / unscaled.width * 2;
+        const vp = page.getViewport({scale});
+        const canvas = document.createElement('canvas');
+        canvas.width = vp.width; canvas.height = vp.height;
+        canvas.style.cssText = 'width:100%;display:block;border-radius:10px;margin-bottom:8px;border:1px solid rgba(220,60,100,0.12);';
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        await page.render({canvasContext:ctx, viewport:vp}).promise;
+        container.appendChild(canvas);
+      }
+      if(loader) loader.remove();
+    } catch(e) {
+      const loader = document.getElementById('love2025-loading');
+      if(loader) loader.textContent = '表示エラー: '+e.message;
+    }
+  })();
 }
 
 function renderLoveMusicList(val){
@@ -2698,11 +2754,12 @@ async function renderAdminContent(id) {
 
   // 恋愛2510専用UI
   if(id==='love'){
-    let posts = null, bgm = null, loveMusic = null;
+    let posts = null, bgm = null, loveMusic = null, weekly = null;
     try {
       posts = await fbGet('love/posts');
       bgm   = await fbGet('love/bgm');
       loveMusic = await fbGet('love/music');
+      weekly = await fbGet('love/weekly');
     } catch(e) {
       panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
       return;
@@ -2739,6 +2796,23 @@ async function renderAdminContent(id) {
     panel.innerHTML=`
       <div class="admin-love-card">
         <div class="admin-love-hd">💕 【特別ページ】恋愛2510 コンテンツ編集</div>
+
+        <!-- 恋愛2025 週報 -->
+        <div class="admin-love-subsec">
+          <div class="admin-love-subsec-title">📰 恋愛2025 週報（毎週日曜19時更新）</div>
+          <div style="font-size:0.78rem;color:#d090a8;margin-bottom:8px;">PDFをアップロードすると自動で画像変換して表示します</div>
+          ${weekly ? `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:white;border:1px solid rgba(220,60,100,0.15);border-radius:8px;margin-bottom:8px;">
+            <span style="font-size:1rem;">📰</span>
+            <div style="flex:1;font-size:0.85rem;color:#3a1a28;">${esc(weekly.fileName||'週報PDF')}</div>
+            <span style="font-size:0.72rem;color:#d090a8;">${weekly.updatedAt?new Date(weekly.updatedAt).toLocaleDateString('ja-JP'):''}</span>
+            <button style="background:none;border:none;color:#d090a8;cursor:pointer;font-size:0.9rem;" onclick="adminDelWeekly()">🗑</button>
+          </div>` : '<div style="font-size:0.82rem;color:#d090a8;margin-bottom:8px;">未登録</div>'}
+          <label style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:white;border:2px dashed rgba(220,60,100,0.25);border-radius:10px;cursor:pointer;font-size:0.88rem;color:#c06080;transition:all 0.2s;" onmouseover="this.style.borderColor='#e8406a'" onmouseout="this.style.borderColor='rgba(220,60,100,0.25)'">
+            📰 ${weekly ? '差し替える（PDF・10MB以下）' : '週報PDFをアップロード（10MB以下）'}
+            <input type="file" accept="application/pdf" style="display:none" onchange="adminUploadWeekly(this)">
+          </label>
+        </div>
 
         <!-- BGM -->
         <div class="admin-love-subsec">
@@ -3267,6 +3341,36 @@ window.adminDelBdImg = async function(fbKey){
   await renderAdminContent('birthday');
 };
 
+// 恋愛2025 週報管理
+window.adminUploadWeekly = async function(inp){
+  const f = inp.files[0]; if(!f) return;
+  if(f.size > 15*1024*1024){ showToast('PDFは15MB以下にしてください'); inp.value=''; return; }
+  showToast('アップロード中...');
+  try {
+    const r = new FileReader();
+    r.onload = async e => {
+      await fbSet('love/weekly', {
+        pdfDataUrl: e.target.result,
+        updatedAt: Date.now(),
+        fileName: f.name
+      });
+      showToast('✓ 週報を更新しました📰');
+      await renderAdminContent('love');
+    };
+    r.readAsDataURL(f);
+  } catch(e) {
+    showToast('エラー: '+e.message);
+  }
+  inp.value='';
+};
+
+window.adminDelWeekly = async function(){
+  if(!confirm('週報を削除しますか？')) return;
+  await fbRemove('love/weekly');
+  showToast('✓ 週報を削除しました');
+  await renderAdminContent('love');
+};
+
 // Love admin functions
 let loveAdmImgBuf = null;
 window.onLoveAdmImg = function(inp){
@@ -3427,6 +3531,44 @@ window.adminUploadBgm = async function(inp){
     await renderAdminContent('love');
   };
   r.readAsDataURL(f); inp.value='';
+};
+
+window.adminUploadWeekly = async function(inp){
+  const f = inp.files[0]; if(!f) return;
+  if(f.size > 15*1024*1024){ showToast('PDFは15MB以下にしてください'); inp.value=''; return; }
+  showToast('PDFを変換中... しばらくお待ちください');
+  try {
+    // PDF.jsで全ページをcanvasに描画→base64画像化
+    const arrayBuf = await f.arrayBuffer();
+    const uint8 = new Uint8Array(arrayBuf);
+    const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+    const pdfDoc = await pdfjsLib.getDocument({data: uint8}).promise;
+    const pages = [];
+    for(let i = 1; i <= pdfDoc.numPages; i++){
+      const page = await pdfDoc.getPage(i);
+      const scale = 1.8;
+      const viewport = page.getViewport({scale});
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+      pages.push(canvas.toDataURL('image/jpeg', 0.88));
+    }
+    await fbSet('love/weekly', { pages, updatedAt: Date.now(), filename: f.name });
+    showToast(`✓ 週報を登録しました（${pdfDoc.numPages}ページ）📰`);
+    await renderAdminContent('love');
+  } catch(e) {
+    showToast('変換エラー: ' + e.message);
+  }
+  inp.value='';
+};
+
+window.adminDelWeekly = async function(){
+  if(!confirm('週報を削除しますか？')) return;
+  await fbRemove('love/weekly');
+  showToast('✓ 週報を削除しました');
+  await renderAdminContent('love');
 };
 
 window.adminDelBgm = async function(){
