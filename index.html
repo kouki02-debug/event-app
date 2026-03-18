@@ -673,7 +673,7 @@ function isBirthdayVisible() {
   const end   = new Date('2026-03-31T00:00:00+09:00');
   return now >= start && now < end;
 }
-// 2026年3月24日 0:00〜3月29日 24:00（JST）
+// 2026年3月24日 0:00〜3月30日 0:00（JST）
 function isAnnivVisible() {
   const now = new Date();
   const start = new Date('2026-03-24T00:00:00+09:00');
@@ -792,18 +792,15 @@ function renderTabs() {
     }
 
     if(t.id==='birthday'){
-      if(isBirthdayVisible()){
-        b.className='tab-btn'+(activeTab===t.id?' active':'')+(ul?'':' locked');
-        b.innerHTML='🎂 birthday0330'+(ul?'':' <span class="lk">🔒</span>');
-        b.style.cssText=activeTab==='birthday'?'color:#ffe066;border-bottom-color:#ffcc00;font-weight:600;':'color:rgba(255,210,80,0.8);';
+      // タブバーには表示しない（URLアクセス時のみ activeTab になる）
+      // activeTab==='birthday' のときだけタブボタンを表示
+      if(activeTab==='birthday'){
+        b.className='tab-btn active';
+        b.textContent='🎂 birthday0330';
+        b.style.cssText='color:#ffe066;border-bottom-color:#ffcc00;font-weight:600;';
         b.onclick=()=>openTab('birthday');
-      } else {
-        b.className='tab-btn locked';
-        b.textContent='？？？';
-        b.style.cssText='color:rgba(240,232,208,0.2);cursor:default;pointer-events:none;letter-spacing:0.05em;';
-        b.disabled=true;
+        c.appendChild(b);
       }
-      c.appendChild(b);
       return;
     }
 
@@ -844,32 +841,45 @@ function renderHome() {
         ${unlocked.includes('love')?'🔓 解錠済み':'🔒 ロック中'}
       </div>
     </div>` : '';
+
+  // annivカード：タブ内と同じ深紫デザイン
   const annivCard = isAnnivVisible() ? `
-    <div onclick="openTab('anniv')" style="cursor:pointer;background:linear-gradient(135deg,#1a0a2e,#2d1155);border:1px solid rgba(180,120,255,0.25);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden;transition:all 0.18s;grid-column:1/-1;"
-      onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#9040ff,#e8d0ff,#9040ff);"></div>
-      <div style="font-size:1.8rem;">🌸</div>
-      <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:#e8d0ff;font-weight:700;letter-spacing:0.08em;">20th Anniversary</div>
-      <div style="font-size:0.72rem;color:rgba(200,160,255,0.6);letter-spacing:0.05em;">祝・二十歳</div>
-      <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(180,120,255,0.15);color:rgba(200,160,255,0.8);border:1px solid rgba(180,120,255,0.25);">
+    <div onclick="openTab('anniv')" style="cursor:pointer;background:linear-gradient(160deg,#1a0a2e,#2d1155,#1a0a2e);border:1.5px solid rgba(180,120,255,0.3);border-radius:14px;padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden;transition:all 0.18s;grid-column:1/-1;box-shadow:0 4px 24px rgba(120,40,180,0.25);"
+      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 32px rgba(120,40,180,0.35)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 24px rgba(120,40,180,0.25)'">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#6020c0,#b060ff,#e8d0ff,#b060ff,#6020c0);"></div>
+      <div style="position:absolute;top:10px;left:0;right:0;font-size:0.85rem;letter-spacing:10px;opacity:0.1;color:#e8d0ff;">🌸 🍾 🥂</div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:0.7rem;color:rgba(200,160,255,0.55);letter-spacing:0.25em;margin-bottom:2px;">— Special Page —</div>
+      <div style="font-size:2rem;">🌸</div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:1.2rem;color:#e8d0ff;font-weight:700;letter-spacing:0.1em;text-shadow:0 0 20px rgba(180,120,255,0.5);">20th Anniversary</div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:0.85rem;color:rgba(200,160,255,0.6);letter-spacing:0.08em;">祝・二十歳</div>
+      <div style="font-size:0.75rem;padding:4px 14px;border-radius:20px;background:rgba(180,120,255,0.15);color:rgba(220,180,255,0.8);border:1px solid rgba(180,120,255,0.3);">
         🔓 公開中
       </div>
     </div>` : '';
-  const birthdayCard = isBirthdayVisible() ? `
-    <div onclick="openTab('birthday')" style="cursor:pointer;background:linear-gradient(135deg,#fffbe0,#fff0b0);border:1px solid rgba(255,180,0,0.3);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden;transition:all 0.18s;grid-column:1/-1;"
-      onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffcc00,#ff9900);"></div>
-      <div style="font-size:1.8rem;">🎂</div>
-      <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#a06000;font-weight:700;letter-spacing:0.1em;">birthday0330</div>
-      <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(255,180,0,0.15);color:#a06000;border:1px solid rgba(255,180,0,0.3);">
-        ${unlocked.includes('birthday')?'🔓 解錠済み':'🔒 ロック中'}
-      </div>
-    </div>` : '';
+
+  const birthdayCard = ''; // タブバー・ホームには表示しない（?tab=birthday でアクセス）
+
+  // 告知枠（3/24までコード固定表示 or 管理タブで設定した内容）
+  const noticeHtml = buildNoticeHtml();
+
   document.getElementById('main').innerHTML=`
     <div class="home-view">
+      ${noticeHtml}
       <div class="home-greeting"><h2>イベントページ</h2><p>アクセスするタブを選んでください</p></div>
       <div class="tab-cards">${cards}${loveCard}${annivCard}${birthdayCard}</div>
       <button class="home-admin-btn" onclick="openTab('admin')">⚙️ 管理パネル</button>
+    </div>`;
+}
+
+function buildNoticeHtml() {
+  const now = new Date();
+  const noticeEnd = new Date('2026-03-24T00:00:00+09:00');
+  if(now >= noticeEnd) return '';
+  return `
+    <div style="background:linear-gradient(135deg,#fffbe8,#fff8d0);border:2px solid #e8c840;border-radius:14px;padding:16px 18px;margin-bottom:16px;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(200,160,0,0.15);">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#e8c840,#f0a800,#e8c840);"></div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:0.75rem;color:#8a7000;letter-spacing:0.15em;margin-bottom:8px;">📢 お知らせ</div>
+      <div style="font-size:0.92rem;color:#3a2800;line-height:1.8;">3月24日(火)に20歳の誕生日を迎えます。<br>公開タブが<strong>3月24日(火) 0:00</strong>よりホームに公開されます。</div>
     </div>`;
 }
 
@@ -878,8 +888,8 @@ function renderHome() {
 // ============================================================
 async function openTab(id) {
   activeTab=id; renderTabs();
-  // annivはパスワードなし
-  if(id==='anniv'){ await renderPanel(id); return; }
+  // anniv・birthdayはパスワードなし（birthdayはタブバー非表示だがURL直接アクセス可）
+  if(id==='anniv' || id==='birthday'){ await renderPanel(id); return; }
   unlocked.includes(id) ? await renderPanel(id) : renderLocked(id);
 }
 
@@ -1224,6 +1234,10 @@ async function renderAnnivPanel() {
         <div style="margin-top:16px;font-size:1.6rem;opacity:0.3;letter-spacing:12px;">🍾🥂🌸</div>
       </div>
       <div class="anniv-sec" style="margin-top:8px;">
+        <div class="anniv-sec-hd"><h2>🖼 フォトアルバム</h2><div class="anniv-sec-line"></div></div>
+        <div id="anniv-images"><div style="text-align:center;color:rgba(200,160,255,0.5);padding:16px;font-size:0.85rem">読み込み中...</div></div>
+      </div>
+      <div class="anniv-sec" style="margin-top:8px;">
         <div class="anniv-sec-hd"><h2>📋 メッセージ・資料</h2><div class="anniv-sec-line"></div></div>
         <div id="anniv-posts"><div style="text-align:center;color:rgba(200,160,255,0.5);padding:20px;font-size:0.85rem">読み込み中...</div></div>
       </div>
@@ -1249,17 +1263,34 @@ async function renderAnnivPanel() {
       </div>
     </div>`;
 
-  const [posts, music] = await Promise.all([
-    fbGet('anniv/posts'), fbGet('anniv/music')
+  const [posts, music, images] = await Promise.all([
+    fbGet('anniv/posts'), fbGet('anniv/music'), fbGet('anniv/images')
   ]);
+  renderAnnivImages(images);
   renderAnnivPosts(posts);
   renderAnnivMusicList(music);
 
   if(!listeners['anniv']){
     listeners['anniv']=[];
-    listeners['anniv'].push(fbListen('anniv/posts', val=>renderAnnivPosts(val)));
-    listeners['anniv'].push(fbListen('anniv/music', val=>renderAnnivMusicList(val)));
+    listeners['anniv'].push(fbListen('anniv/images', val=>renderAnnivImages(val)));
+    listeners['anniv'].push(fbListen('anniv/posts',  val=>renderAnnivPosts(val)));
+    listeners['anniv'].push(fbListen('anniv/music',  val=>renderAnnivMusicList(val)));
   }
+}
+
+function renderAnnivImages(val){
+  const el=document.getElementById('anniv-images'); if(!el)return;
+  if(!val||!Object.keys(val).length){
+    el.innerHTML='<div style="text-align:center;color:rgba(200,160,255,0.4);padding:16px;font-size:0.85rem;">🖼 画像はまだありません</div>';
+    return;
+  }
+  const imgs = Object.entries(val).map(([k,v])=>({key:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:0 4px;">
+    ${imgs.map(img=>`
+      <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(180,120,255,0.15);aspect-ratio:1;cursor:pointer;" onclick="window.open('${img.url}','_blank')">
+        <img src="${img.url}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="${esc(img.caption||'')}">
+      </div>`).join('')}
+  </div>`;
 }
 
 function renderAnnivMusicList(val){
@@ -1780,7 +1811,8 @@ async function renderHaisyaAdmin(){
       ${data.gpsUpdatedAt?`<div style="font-size:0.75rem;color:var(--ink4);text-align:center;">最終GPS更新: ${new Date(data.gpsUpdatedAt).toLocaleTimeString('ja-JP')}</div>`:''}
 
       <div style="height:1px;background:var(--border);margin:12px 0;"></div>
-      <div style="font-size:0.82rem;color:var(--ink3);font-weight:500;margin-bottom:8px;">💰 乗車画面 走行料金設定</div>
+      <div style="font-size:0.82rem;color:var(--ink3);font-weight:500;margin-bottom:8px;">💰 走行料金設定</div>
+          <div style="font-size:0.72rem;color:var(--ink4);margin-bottom:8px;">基本料金 500円〜、1km追加ごとに500円加算。金額を手動入力して表示します。</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
           <input type="checkbox" id="hs-fare-on" ${fareOn?'checked':''} onchange="driveSaveFareSettings()">
@@ -2513,9 +2545,11 @@ async function renderAdmin() {
       ${t.id==='love'?'💕 恋愛':tabDisplayLabel(t.id)}
     </button>`).join('');
 
+
   document.getElementById('main').innerHTML=`
     <div class="sec">
       <div class="sec-hd"><h2>⚙️ 管理パネル</h2><div class="sec-line"></div></div>
+
       <div class="love-toggle-row">
         <div class="love-toggle-label">💕 恋愛ページ表示</div>
         <label class="love-toggle">
@@ -2681,15 +2715,33 @@ async function renderAdminContent(id) {
   // 20th Anniversary専用UI
   if(id==='anniv'){
     let annivPosts = null, annivMusic = null;
+    let annivImages = null;
     try {
       annivPosts = await fbGet('anniv/posts');
       annivMusic = await fbGet('anniv/music');
+      annivImages = await fbGet('anniv/images');
     }
     catch(e){ panel.innerHTML='<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>'; return; }
 
     const periodNotice = isAnnivVisible()
-      ? '<div style="padding:6px 12px;background:rgba(100,200,100,0.15);border:1px solid rgba(100,200,100,0.3);border-radius:8px;font-size:0.8rem;color:#3a7a3a;margin-bottom:10px;">✅ 現在公開中（2026/3/24 0:00〜3/29 24:00）</div>'
-      : '<div style="padding:6px 12px;background:rgba(180,120,255,0.1);border:1px solid rgba(180,120,255,0.25);border-radius:8px;font-size:0.8rem;color:#6030a0;margin-bottom:10px;">⏰ 公開期間外 — 2026年3月24日 0:00〜3月29日 24:00 に公開されます</div>';
+      ? '<div style="padding:6px 12px;background:rgba(100,200,100,0.15);border:1px solid rgba(100,200,100,0.3);border-radius:8px;font-size:0.8rem;color:#3a7a3a;margin-bottom:10px;">✅ 現在公開中（3/24〜3/30）</div>'
+      : '<div style="padding:6px 12px;background:rgba(180,120,255,0.1);border:1px solid rgba(180,120,255,0.25);border-radius:8px;font-size:0.8rem;color:#6030a0;margin-bottom:10px;">⏰ 公開期間外（3/24 0:00〜公開予定）</div>';
+    const endDateHtml = '';
+
+    // 画像一覧HTML
+    const imgCount = annivImages ? Object.keys(annivImages).length : 0;
+    const imgList = imgCount > 0
+      ? Object.entries(annivImages).map(([k,v])=>`
+          <div style="position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;border:1px solid rgba(180,120,255,0.2);">
+            <img src="${v.url}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">
+            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);padding:3px 6px;display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:0.65rem;color:rgba(255,255,255,0.7);">${v.order!==undefined?v.order+1+'枚目':''}</span>
+              <button onclick="adminDelAnnivImage('${k}')" style="background:none;border:none;color:rgba(255,160,160,0.9);cursor:pointer;font-size:0.8rem;padding:1px 4px;">✕</button>
+            </div>
+          </div>`).join('')
+      : '<div style="font-size:0.82rem;color:rgba(200,160,255,0.5);padding:8px;text-align:center;grid-column:1/-1;">画像がありません</div>';
+
+
 
     let postItems = '';
     if(annivPosts && Object.keys(annivPosts).length > 0){
@@ -2727,7 +2779,23 @@ async function renderAdminContent(id) {
           <span style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#e8d0ff;letter-spacing:0.06em;">🌸 20th Anniversary コンテンツ編集</span>
           <button onclick="previewAnnivPanel()" style="padding:5px 14px;background:linear-gradient(135deg,#9040ff,#6020c0);color:white;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;">👁 プレビュー</button>
         </div>
-        <div style="padding:10px 16px 0;">${periodNotice}</div>
+        <div style="padding:10px 16px 0;">${periodNotice}${endDateHtml}</div>
+
+        <!-- 画像管理（最大11枚） -->
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(180,120,255,0.1);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="font-size:0.78rem;color:rgba(200,160,255,0.7);font-weight:500;">🖼 フォトアルバム（最大11枚）${imgCount>0?'（'+imgCount+'枚登録中）':''}</div>
+            ${imgCount>0?`<button onclick="adminClearAllAnnivImages()" style="font-size:0.72rem;color:rgba(255,120,120,0.8);background:none;border:none;cursor:pointer;">全削除</button>`:''}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;">
+            ${imgList}
+          </div>
+          ${imgCount < 11 ? `
+          <label style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;background:rgba(255,255,255,0.03);border:1.5px dashed rgba(180,120,255,0.3);border-radius:10px;cursor:pointer;font-size:0.82rem;color:rgba(200,160,255,0.7);">
+            🖼 画像を追加（残り${11-imgCount}枚）複数選択可
+            <input type="file" accept="image/*" multiple style="display:none" onchange="adminUploadAnnivImages(this)">
+          </label>` : '<div style="font-size:0.78rem;color:rgba(200,160,255,0.5);text-align:center;">最大11枚に達しています</div>'}
+        </div>
 
         <!-- 音楽管理 -->
         <div style="padding:12px 16px;border-bottom:1px solid rgba(180,120,255,0.1);">
@@ -2816,9 +2884,7 @@ async function renderAdminContent(id) {
       imgItems = '<div style="font-size:0.85rem;color:#b08000;padding:8px;grid-column:1/-1;text-align:center;">写真がありません</div>';
     }
 
-    const periodNotice = isBirthdayVisible()
-      ? '<div style="padding:6px 12px;background:rgba(100,200,100,0.15);border:1px solid rgba(100,200,100,0.3);border-radius:8px;font-size:0.8rem;color:#3a7a3a;margin-bottom:10px;">✅ 現在公開中（2026/3/30 08:00〜24:00）</div>'
-      : '<div style="padding:6px 12px;background:rgba(255,180,0,0.1);border:1px solid rgba(255,180,0,0.3);border-radius:8px;font-size:0.8rem;color:#a06000;margin-bottom:10px;">⏰ 公開期間外 — 2026年3月30日 08:00〜24:00 に一般公開されます</div>';
+    const periodNotice = '';
 
     panel.innerHTML=`
       <div style="background:linear-gradient(135deg,#fffbe0,#fff3c0);border:1px solid rgba(255,180,0,0.3);border-radius:10px;overflow:hidden;">
@@ -3135,6 +3201,44 @@ async function renderAdminContent(id) {
 
   await renderAdminWarikan(id, document.getElementById('wk-adm-'+id));
 }
+
+// Anniv image management
+window.adminUploadAnnivImages = async function(inp){
+  const files = Array.from(inp.files);
+  if(!files.length) return;
+  const existing = await fbGet('anniv/images') || {};
+  const curCount = Object.keys(existing).length;
+  const available = 11 - curCount;
+  if(available <= 0){ showToast('最大11枚に達しています'); inp.value=''; return; }
+  const toUpload = files.slice(0, available);
+  if(files.length > available) showToast(`${files.length}枚選択されましたが残り${available}枚のみ登録します`);
+  showToast('アップロード中...');
+  for(let i=0; i<toUpload.length; i++){
+    const f = toUpload[i];
+    if(f.size > 3*1024*1024){ showToast(`${f.name} は3MB超のためスキップ`); continue; }
+    const url = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(f); });
+    await fbPush('anniv/images', {url, order: curCount+i, ts: Date.now(), name: f.name});
+  }
+  showToast(`✓ ${toUpload.length}枚をアップロードしました`);
+  inp.value='';
+  await renderAdminContent('anniv');
+};
+
+window.adminDelAnnivImage = async function(fbKey){
+  if(!confirm('この画像を削除しますか？'))return;
+  await fbRemove('anniv/images/'+fbKey);
+  showToast('✓ 削除しました');
+  await renderAdminContent('anniv');
+};
+
+window.adminClearAllAnnivImages = async function(){
+  if(!confirm('全ての画像を削除しますか？'))return;
+  await fbRemove('anniv/images');
+  showToast('✓ 全画像を削除しました');
+  await renderAdminContent('anniv');
+};
+
+window.adminSaveAnnivEnd = async function(){};
 
 window.adminSaveBanner = async function(id){
   const title = document.getElementById('adm-bn-title-'+id)?.value.trim()||'';
@@ -3800,6 +3904,7 @@ async function init() {
     await preloadSubnames();
     // 管理者パスワードを強制設定（常に上書き）
     await setTabPwHash('admin', '13240622Ko');
+
     // load love visibility and stage
     const [lv, ls] = await Promise.all([fbGet('settings/loveVisible'), fbGet('love/stage')]);
     loveVisible = !!lv;
@@ -3814,6 +3919,17 @@ async function init() {
   const ls=document.getElementById('loading-screen');
   ls.classList.add('hide');
   setTimeout(()=>ls.remove(),500);
+
+  // URLパラメータ ?tab=birthday でbirthday強制表示
+  const urlParams = new URLSearchParams(location.search);
+  const tabParam = urlParams.get('tab');
+  if(tabParam === 'birthday'){
+    activeTab = 'birthday';
+    renderTabs();
+    await renderBirthdayPanel();
+    return;
+  }
+
   goHome();
 }
 init();
