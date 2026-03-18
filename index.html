@@ -12,7 +12,22 @@
   --ink:#2a2218;--ink2:#5a4e3e;--ink3:#9a8e7e;--ink4:#bdb5aa;
   --accent:#2d5a8e;--accent-light:#e8f0f8;--accent2:#7a5c3a;
   --gold:#b8982a;--red:#c04040;--green:#3a7a50;
+  /* 季節テーマ（JS側から body クラスで切替） */
 }
+/* 春 */
+body.season-spring{--bg:#fdf6f0;--bg2:#f8ede2;--border:#e8d0c0;--border2:#d4b8a4;--gold:#c8783a;--accent:#c04870;}
+/* 夏 */
+body.season-summer{--bg:#f0f6fa;--bg2:#ddeef7;--border:#b8d8ee;--border2:#90c0e0;--gold:#2080b0;--accent:#0060a0;}
+/* 秋 */
+body.season-autumn{--bg:#faf4ec;--bg2:#f0e4d0;--border:#d8c4a4;--border2:#c4a878;--gold:#c06820;--accent:#904820;}
+/* 冬 */
+body.season-winter{--bg:#f2f4f8;--bg2:#e4e8f2;--border:#c8d0e0;--border2:#a8b4cc;--gold:#3858a0;--accent:#2040a0;}
+
+/* TTS */
+.tts-btn{background:none;border:none;cursor:pointer;color:var(--ink4);font-size:0.88rem;padding:3px 7px;border-radius:5px;transition:all 0.15s;display:inline-flex;align-items:center;gap:3px;}
+.tts-btn:hover{color:var(--accent);background:var(--bg2);}
+.tts-btn.speaking{color:var(--accent);animation:pulse 1s ease-in-out infinite;}
+
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
 
@@ -649,7 +664,7 @@ function expireSession() {
 // ============================================================
 // CONFIG
 // ============================================================
-const TABS = [{id:'A'},{id:'B'},{id:'C'},{id:'D'},{id:'love'},{id:'birthday'},{id:'anniv'},{id:'admin'}];
+const TABS = [{id:'A'},{id:'B'},{id:'love'},{id:'birthday'},{id:'anniv'},{id:'admin'}];
 
 // 2026年3月30日 08:00〜24:00（JST）のみ一般表示
 function isBirthdayVisible() {
@@ -792,10 +807,11 @@ function renderTabs() {
       return;
     }
 
+
     b.className='tab-btn'+(activeTab===t.id?' active':'')+(ul?'':' locked');
     let lbl;
     if(t.id==='admin') lbl='管理';
-    else if(t.id==='love') lbl='💕 恋愛2510';
+    else if(t.id==='love') lbl='💕 恋愛';
     else lbl=tabDisplayLabel(t.id);
     b.innerHTML=lbl+(ul?'':' <span class="lk">🔒</span>');
     if(t.id==='love') b.style.cssText='color:rgba(240,160,180,0.7);';
@@ -823,7 +839,7 @@ function renderHome() {
       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#e8406a,#ffb0c8);"></div>
       <div style="font-size:1.8rem;">💕</div>
-      <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#c0305a;font-weight:700;letter-spacing:0.1em;">恋愛2510</div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#c0305a;font-weight:700;letter-spacing:0.1em;">恋愛</div>
       <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(220,60,100,0.1);color:#c0305a;border:1px solid rgba(220,60,100,0.2);">
         ${unlocked.includes('love')?'🔓 解錠済み':'🔒 ロック中'}
       </div>
@@ -862,7 +878,7 @@ function renderHome() {
 // ============================================================
 async function openTab(id) {
   activeTab=id; renderTabs();
-  // annivはパスワードなし公開
+  // annivはパスワードなし
   if(id==='anniv'){ await renderPanel(id); return; }
   unlocked.includes(id) ? await renderPanel(id) : renderLocked(id);
 }
@@ -950,6 +966,10 @@ async function renderPanel(id) {
 
   document.getElementById('main').innerHTML=`
     <div class="sec">
+      <div class="sec-hd"><h2>🚗 配車</h2><div class="sec-line"></div></div>
+      <div id="haisya-view-${id}"><div class="empty-msg">読み込み中…</div></div>
+    </div>
+    <div class="sec">
       <div id="banner-wrap-${id}">${makeBannerHtml(bannerVal)}</div>
       <div class="sec-hd"><h2>📋 掲示板</h2><div class="sec-line"></div></div>
       <div class="post-list" id="pl-${id}"><div class="empty-msg">読み込み中…</div></div>
@@ -974,10 +994,6 @@ async function renderPanel(id) {
           </div>
         </div>
       </div>
-    </div>
-    <div class="sec">
-      <div class="sec-hd"><h2>🚗 配車</h2><div class="sec-line"></div></div>
-      <div id="haisya-view-${id}"><div class="empty-msg">読み込み中…</div></div>
     </div>
     <div class="sec">
       <div class="sec-hd"><h2>📅 カレンダー</h2><div class="sec-line"></div></div>
@@ -1027,7 +1043,9 @@ function renderPostsFromData(id,val) {
       }
     }
     return`<div class="post-card" data-pdf-key="${key}" data-pdf-src="${p.isPdf?p.img:''}">
-      <div class="post-hdr"><span class="post-badge">タブ ${id}</span><span class="post-time">${p.time}</span></div>
+      <div class="post-hdr"><span class="post-badge">タブ ${id}</span><span class="post-time">${p.time}</span>
+        ${p.text?`<button class="tts-btn" onclick="ttsSpeak(${JSON.stringify(p.text)},this)" title="読み上げ">🔊</button>`:''}
+      </div>
       <div class="post-body">${esc(p.text)}</div>
       ${mediaHtml}
       <button class="post-del" onclick="delPost('${id}','${p.fbKey}')">✕</button>
@@ -1718,6 +1736,10 @@ async function renderHaisyaAdmin(){
   const tabIds = ['A','B','C','D','birthday'];
   const tabLabels = {A:'A',B:'B',C:'C',D:'D',birthday:'birthday0330'};
 
+  const driveSettings = await fbGet('settings/drive') || {};
+  const fareOn = !!driveSettings.fareOn;
+  const fareAmount = driveSettings.fareAmount || 0;
+
   // タブ切り替えボタン
   const tabBtns = tabIds.map(tid=>`
     <button onclick="haisyaAdminSwitchTab('${tid}')"
@@ -1756,55 +1778,25 @@ async function renderHaisyaAdmin(){
       </div>
       ${active?`<div style="font-size:0.78rem;color:#3a7a3a;text-align:center;">GPS共有中 — 「${tabLabels[haisyaAdminTab]}」タブに配信中</div>`:''}
       ${data.gpsUpdatedAt?`<div style="font-size:0.75rem;color:var(--ink4);text-align:center;">最終GPS更新: ${new Date(data.gpsUpdatedAt).toLocaleTimeString('ja-JP')}</div>`:''}
+
+      <div style="height:1px;background:var(--border);margin:12px 0;"></div>
+      <div style="font-size:0.82rem;color:var(--ink3);font-weight:500;margin-bottom:8px;">💰 乗車画面 走行料金設定</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="hs-fare-on" ${fareOn?'checked':''} onchange="driveSaveFareSettings()">
+          <span style="font-size:0.85rem;color:var(--ink3);">走行料金を表示ON</span>
+        </label>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="font-size:0.82rem;color:var(--ink4);white-space:nowrap;">金額（円）</label>
+        <input type="number" id="hs-fare-amount" value="${fareAmount}" min="0" placeholder="例：1500"
+          style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;">
+        <button onclick="driveSaveFareSettings()" style="padding:7px 14px;background:var(--ink);color:var(--bg);border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;white-space:nowrap;">保存</button>
+      </div>
+
     </div>`;
 }
 
-window.haisyaAdminSwitchTab = async function(tid){
-  haisyaAdminTab = tid;
-  await renderHaisyaAdmin();
-};
-
-window.haisyaStart = async function(){
-  const driver = document.getElementById('hs-driver')?.value.trim()||'配車中';
-  const dest   = document.getElementById('hs-dest')?.value.trim()||'';
-  const etaVal = document.getElementById('hs-eta')?.value;
-  if(!etaVal){ showToast('到着予定時刻を入力してください'); return; }
-  const now = new Date();
-  const [hh,mm] = etaVal.split(':').map(Number);
-  const eta = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0);
-  if(eta.getTime() < now.getTime()) eta.setDate(eta.getDate()+1);
-
-  const path = haisyaPath(haisyaAdminTab);
-  await fbSet(path, { active:true, driverName:driver, dest, etaMs:eta.getTime(), lat:null, lng:null, gpsUpdatedAt:null });
-  showToast('✓ 配車を開始しました');
-
-  if(navigator.geolocation){
-    if(haisyaGpsWatchers[haisyaAdminTab]) navigator.geolocation.clearWatch(haisyaGpsWatchers[haisyaAdminTab]);
-    haisyaGpsWatchers[haisyaAdminTab] = navigator.geolocation.watchPosition(
-      async pos=>{
-        const cur = await fbGet(path);
-        if(!cur||!cur.active) return;
-        await fbSet(path, {...cur, lat:pos.coords.latitude, lng:pos.coords.longitude, gpsUpdatedAt:Date.now()});
-      },
-      err=>showToast('GPS取得エラー: '+err.message),
-      {enableHighAccuracy:true, maximumAge:15000, timeout:20000}
-    );
-  } else {
-    showToast('このブラウザはGPSに対応していません');
-  }
-  await renderHaisyaAdmin();
-};
-
-window.haisyaStop = async function(){
-  if(!confirm('配車を停止しますか？'))return;
-  const tid = haisyaAdminTab;
-  if(haisyaGpsWatchers[tid]){ navigator.geolocation.clearWatch(haisyaGpsWatchers[tid]); delete haisyaGpsWatchers[tid]; }
-  await fbRemove(haisyaPath(tid));
-  showToast('✓ 配車を停止しました');
-  await renderHaisyaAdmin();
-};
-
-// ============================================================
 // HAISYA（配車）システム — 表示側
 // ============================================================
 let haisyaTimers = {};
@@ -1897,6 +1889,11 @@ async function renderBirthdayPanel() {
       </div>
 
       <div class="birthday-sec" style="margin-top:14px;">
+        <div class="birthday-sec-hd"><h2>🚗 配車</h2><div class="birthday-sec-line"></div></div>
+        <div id="haisya-view-birthday"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
+      </div>
+
+      <div class="birthday-sec" style="margin-top:12px;">
         <div class="birthday-sec-hd"><h2>📋 掲示板</h2><div class="birthday-sec-line"></div></div>
         <div id="birthday-posts"><div style="text-align:center;color:#b08000;padding:20px;font-size:0.85rem">読み込み中...</div></div>
       </div>
@@ -1916,10 +1913,6 @@ async function renderBirthdayPanel() {
       <div class="birthday-sec" style="margin-top:12px;padding-bottom:24px;">
         <div class="birthday-sec-hd"><h2>🧮 割り勘</h2><div class="birthday-sec-line"></div></div>
         <div id="warikan-view-birthday"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
-      </div>
-      <div class="birthday-sec" style="margin-top:12px;padding-bottom:24px;">
-        <div class="birthday-sec-hd"><h2>🚗 配車</h2><div class="birthday-sec-line"></div></div>
-        <div id="haisya-view-birthday"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
       </div>
     </div>`;
 
@@ -2072,7 +2065,7 @@ async function renderLovePanel() {
   document.getElementById('main').innerHTML=`
     <div class="love-bg" id="love-bg">
       <div class="love-hero">
-        <div class="love-hero-title">💕 恋愛2510 💕</div>
+        <div class="love-hero-title">💕 恋愛 💕</div>
       </div>
 
       <!-- ステージロードマップ -->
@@ -2305,7 +2298,7 @@ window.openLoveLyricsPage = async function(fbKey){
 </head>
 <body>
   <div class="hero">
-    <div class="badge">💕 恋愛2510</div>
+    <div class="badge">💕 恋愛</div>
     <div class="title">${title}</div>
     ${artist?'<div class="artist">'+artist+'</div>':''}
   </div>
@@ -2317,7 +2310,7 @@ window.openLoveLyricsPage = async function(fbKey){
       <div class="lyrics-body">${lyrics}</div>
     </div>
   </div>
-  <div class="note">💕 恋愛2510 より</div>
+  <div class="note">💕 恋愛 より</div>
   <script>
     const a=document.getElementById('audio');
     if(a){a.volume=0.7;a.play().catch(()=>{});}
@@ -2511,14 +2504,14 @@ async function renderAdmin() {
 
   const tabBtns = TABS.filter(t=>t.id!=='admin').map(t=>`
     <button class="admin-ts-btn${adminActiveTab===t.id?' active':''}" onclick="switchAdminTab('${t.id}')">
-      ${t.id==='love'?'💕 恋愛2510':tabDisplayLabel(t.id)}
+      ${t.id==='love'?'💕 恋愛':tabDisplayLabel(t.id)}
     </button>`).join('');
 
   document.getElementById('main').innerHTML=`
     <div class="sec">
       <div class="sec-hd"><h2>⚙️ 管理パネル</h2><div class="sec-line"></div></div>
       <div class="love-toggle-row">
-        <div class="love-toggle-label">💕 恋愛2510ページ表示</div>
+        <div class="love-toggle-label">💕 恋愛ページ表示</div>
         <label class="love-toggle">
           <input type="checkbox" id="love-toggle-chk" ${loveVisible?'checked':''} onchange="toggleLovePage(this.checked)">
           <span class="love-toggle-slider"></span>
@@ -2535,7 +2528,7 @@ async function renderAdmin() {
       </div>
     </div>
     <div class="sec">
-      <div class="sec-hd"><h2>🚗 配車設定</h2><div class="sec-line"></div></div>
+      <div class="sec-hd"><h2>🚗 配車・運転設定</h2><div class="sec-line"></div></div>
       <div id="haisya-admin-wrap"><div class="empty-msg">読み込み中…</div></div>
     </div>
     <div class="sec admin-content-wrap">
@@ -2553,7 +2546,7 @@ async function renderAdmin() {
         >🎂 birthday0330</button>
         <button class="admin-ts-btn${adminActiveTab==='love'?' active':''}" onclick="switchAdminTab('love')"
           style="border-color:rgba(220,60,100,0.3);color:${adminActiveTab==='love'?'white':'#c06080'};${adminActiveTab==='love'?'background:linear-gradient(135deg,#e8406a,#c0305a);border-color:transparent;':''}"
-        >💕 【特別】恋愛2510</button>
+        >💕 【特別】恋愛</button>
         <button class="admin-ts-btn${adminActiveTab==='warikan'?' active':''}" onclick="switchAdminTab('warikan')"
           style="border-color:rgba(60,130,60,0.3);color:${adminActiveTab==='warikan'?'white':'#3a7a3a'};${adminActiveTab==='warikan'?'background:linear-gradient(135deg,#3a7a3a,#1a5a1a);border-color:transparent;':''}"
         >🧮 割り勘計算</button>
@@ -2902,7 +2895,7 @@ async function renderAdminContent(id) {
     return;
   }
 
-  // 恋愛2510専用UI
+  // 恋愛専用UI
   if(id==='love'){
     let posts = null, bgm = null, loveMusic = null, weekly = null;
     try {
@@ -2945,7 +2938,7 @@ async function renderAdminContent(id) {
 
     panel.innerHTML=`
       <div class="admin-love-card">
-        <div class="admin-love-hd">💕 【特別ページ】恋愛2510 コンテンツ編集</div>
+        <div class="admin-love-hd">💕 【特別ページ】恋愛 コンテンツ編集</div>
 
         <!-- 恋愛2025 週報 -->
         <div class="admin-love-subsec">
@@ -3732,7 +3725,7 @@ window.toggleLovePage = async function(val){
   await fbSet('settings/loveVisible', val);
   loveVisible = val;
   renderTabs();
-  showToast(val ? '💕 恋愛2510ページを表示しました' : '恋愛2510ページを非表示にしました');
+  showToast(val ? '💕 恋愛ページを表示しました' : '恋愛ページを非表示にしました');
 };
 
 window.copyTxt=function(t){navigator.clipboard.writeText(t).then(()=>showToast('コピーしました'));};
@@ -3755,7 +3748,47 @@ window.goHome=goHome;
 // ============================================================
 // INIT
 // ============================================================
+// ============================================================
+// 季節テーマ
+// ============================================================
+function applySeasonTheme(){
+  const m = new Date().getMonth()+1; // 1-12
+  let season = 'spring';
+  if(m>=6&&m<=8) season='summer';
+  else if(m>=9&&m<=11) season='autumn';
+  else if(m===12||m<=2) season='winter';
+  document.body.classList.remove('season-spring','season-summer','season-autumn','season-winter');
+  document.body.classList.add('season-'+season);
+}
+
+// ============================================================
+// TTS（音声読み上げ）— Web Speech API
+// ※ Bluetooth接続中はデバイスに従い自動でBluetoothから出力されます
+// ============================================================
+let ttsSynth = window.speechSynthesis;
+let ttsUtterance = null;
+let ttsSpeaking = false;
+
+window.ttsSpeak = function(text, btnEl){
+  if(!ttsSynth){ showToast('このブラウザは音声読み上げに対応していません'); return; }
+  if(ttsSpeaking){
+    ttsSynth.cancel();
+    ttsSpeaking = false;
+    document.querySelectorAll('.tts-btn').forEach(b=>b.classList.remove('speaking'));
+    return;
+  }
+  ttsUtterance = new SpeechSynthesisUtterance(text);
+  ttsUtterance.lang = 'ja-JP';
+  ttsUtterance.rate = 0.95;
+  ttsUtterance.pitch = 1.0;
+  ttsUtterance.onstart = ()=>{ ttsSpeaking=true; if(btnEl) btnEl.classList.add('speaking'); };
+  ttsUtterance.onend = ()=>{ ttsSpeaking=false; if(btnEl) btnEl.classList.remove('speaking'); };
+  ttsUtterance.onerror = ()=>{ ttsSpeaking=false; if(btnEl) btnEl.classList.remove('speaking'); };
+  ttsSynth.speak(ttsUtterance);
+};
+
 async function init() {
+  applySeasonTheme();
   checkSession();
   try {
     await preloadSubnames();
