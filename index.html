@@ -429,21 +429,21 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
 }
 
 /* HAISYA (配車) */
-.haisya-wrap{background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:4px;}
-.haisya-hd{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.haisya-wrap{background:var(--ink);border:2px solid var(--ink);border-radius:14px;overflow:hidden;margin-bottom:4px;box-shadow:0 4px 20px rgba(0,0,0,0.18);}
+.haisya-hd{display:flex;align-items:center;gap:8px;padding:11px 16px;background:var(--ink);border-bottom:1px solid rgba(255,255,255,0.1);}
 .haisya-hd-icon{font-size:1.1rem;}
-.haisya-hd-title{font-family:'Shippori Mincho',serif;font-size:0.92rem;color:var(--ink2);letter-spacing:0.04em;}
-.haisya-status{padding:14px 16px;}
-.haisya-eta{font-family:'Shippori Mincho',serif;font-size:2rem;font-weight:700;color:var(--ink);text-align:center;line-height:1.2;}
-.haisya-eta.delay{color:#c04040;}
-.haisya-eta.arrived{color:#3a7a3a;}
-.haisya-sub{font-size:0.78rem;color:var(--ink4);text-align:center;margin-top:4px;}
-.haisya-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--border);margin-top:10px;}
-.haisya-label{font-size:0.78rem;color:var(--ink4);}
-.haisya-val{font-size:0.88rem;color:var(--ink2);font-weight:500;}
-.haisya-inactive{text-align:center;padding:20px;color:var(--ink4);font-size:0.85rem;}
+.haisya-hd-title{font-family:'Shippori Mincho',serif;font-size:1rem;color:#f0e8d0;letter-spacing:0.06em;font-weight:600;}
+.haisya-status{padding:16px 18px;background:var(--ink);}
+.haisya-eta{font-family:'Shippori Mincho',serif;font-size:2.4rem;font-weight:700;color:#f0e8d0;text-align:center;line-height:1.2;}
+.haisya-eta.delay{color:#ff6060;text-shadow:0 0 16px rgba(255,80,80,0.4);}
+.haisya-eta.arrived{color:#60e060;}
+.haisya-sub{font-size:0.82rem;color:rgba(240,232,208,0.55);text-align:center;margin-top:6px;}
+.haisya-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,0.08);margin-top:10px;}
+.haisya-label{font-size:0.78rem;color:rgba(240,232,208,0.45);}
+.haisya-val{font-size:0.9rem;color:#f0e8d0;font-weight:500;}
+.haisya-inactive{text-align:center;padding:16px;color:var(--ink4);font-size:0.85rem;}
 .haisya-dot{width:8px;height:8px;border-radius:50%;background:#aaa;display:inline-block;margin-right:4px;}
-.haisya-dot.active{background:#3a7a3a;animation:pulse2 1.2s infinite;}
+.haisya-dot.active{background:#60e060;animation:pulse2 1.2s infinite;}
 @keyframes pulse2{0%,100%{opacity:1;}50%{opacity:0.3;}}
 
 /* BGM */
@@ -966,7 +966,7 @@ async function renderPanel(id) {
 
   document.getElementById('main').innerHTML=`
     <div class="sec">
-      <div class="sec-hd"><h2>🚗 配車</h2><div class="sec-line"></div></div>
+      <div class="sec-hd"><h2>🚗 集合リアルタイム</h2><div class="sec-line"></div></div>
       <div id="haisya-view-${id}"><div class="empty-msg">読み込み中…</div></div>
     </div>
     <div class="sec">
@@ -1818,36 +1818,42 @@ async function renderHaisyaView(tabId){
 
   let etaHtml='', subHtml='', dotClass='active';
   if(diffMs < -60000){
+    // 1分以上超過 → 赤字で遅れ表示
     const late = Math.abs(diffMin);
     etaHtml=`<div class="haisya-eta delay">${late}分遅れ</div>`;
-    subHtml=`予定 ${etaStr} を ${late}分超過`;
+    subHtml=`予定 ${etaStr} を超過中`;
   } else if(diffMs < 0){
     etaHtml=`<div class="haisya-eta arrived">まもなく到着</div>`;
     subHtml=`予定 ${etaStr}`;
+  } else if(diffMs < 5*60000){
+    // 5分以内 → オレンジ気味で警告
+    etaHtml=`<div class="haisya-eta" style="color:#f0b040;">あと約${diffMin}分</div>`;
+    subHtml=`到着予定 ${etaStr}`;
   } else if(diffMin < 60){
     etaHtml=`<div class="haisya-eta">約 ${diffMin}分後</div>`;
     subHtml=`到着予定 ${etaStr}`;
   } else {
     const h=Math.floor(diffMin/60), m=diffMin%60;
-    etaHtml=`<div class="haisya-eta">${h}時間${m}分後</div>`;
+    etaHtml=`<div class="haisya-eta">${h}時間${m > 0 ? m+'分' : ''}後</div>`;
     subHtml=`到着予定 ${etaStr}`;
   }
 
   const gpsHtml = data.lat && data.lng
-    ? `<a href="https://maps.google.com/?q=${data.lat},${data.lng}" target="_blank" style="font-size:0.78rem;color:var(--accent);text-decoration:none;">📍 地図で見る</a>`
-    : `<span style="font-size:0.78rem;color:var(--ink4);">GPS未取得</span>`;
+    ? `<a href="https://maps.google.com/?q=${data.lat},${data.lng}" target="_blank" style="font-size:0.78rem;color:#a0d0f0;text-decoration:none;">📍 地図で見る</a>`
+    : `<span style="font-size:0.78rem;color:rgba(240,232,208,0.35);">GPS未取得</span>`;
 
   el.innerHTML=`
     <div class="haisya-wrap">
       <div class="haisya-hd">
         <span class="haisya-dot ${dotClass}"></span>
-        <span class="haisya-hd-title">${esc(data.driverName||'配車中')}</span>
-        <span style="font-size:0.72rem;color:var(--ink4);margin-left:auto;">更新 ${updStr}</span>
+        <span class="haisya-hd-title">🚗 集合リアルタイム</span>
+        <span style="font-size:0.7rem;color:rgba(240,232,208,0.4);margin-left:auto;">${updStr !== '—' ? '更新 '+updStr : ''}</span>
       </div>
       <div class="haisya-status">
         ${etaHtml}
         <div class="haisya-sub">${subHtml}</div>
-        <div class="haisya-row"><span class="haisya-label">目的地</span><span class="haisya-val">${esc(data.dest||'—')}</span></div>
+        ${data.driverName ? `<div class="haisya-row"><span class="haisya-label">ドライバー</span><span class="haisya-val">${esc(data.driverName)}</span></div>` : ''}
+        ${data.dest ? `<div class="haisya-row"><span class="haisya-label">目的地</span><span class="haisya-val">${esc(data.dest)}</span></div>` : ''}
         <div class="haisya-row"><span class="haisya-label">現在地</span>${gpsHtml}</div>
       </div>
     </div>`;
@@ -1889,7 +1895,7 @@ async function renderBirthdayPanel() {
       </div>
 
       <div class="birthday-sec" style="margin-top:14px;">
-        <div class="birthday-sec-hd"><h2>🚗 配車</h2><div class="birthday-sec-line"></div></div>
+        <div class="birthday-sec-hd"><h2>🚗 集合リアルタイム</h2><div class="birthday-sec-line"></div></div>
         <div id="haisya-view-birthday"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
       </div>
 
