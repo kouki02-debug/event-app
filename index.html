@@ -664,7 +664,7 @@ function expireSession() {
 // ============================================================
 // CONFIG
 // ============================================================
-const TABS = [{id:'A'},{id:'B'},{id:'love'},{id:'birthday'},{id:'anniv'},{id:'admin'}];
+const TABS = [{id:'A'},{id:'B'},{id:'sample'},{id:'love'},{id:'birthday'},{id:'anniv'},{id:'admin'}];
 
 // 2026年3月30日 08:00〜24:00（JST）のみ一般表示
 function isBirthdayVisible() {
@@ -674,6 +674,17 @@ function isBirthdayVisible() {
   return now >= start && now < end;
 }
 // 2026年3月24日 0:00〜3月30日 0:00（JST）
+// 日時制御ヘルパー
+function isBirthdayContentVisible() {
+  // 3月31日(火) 09:30以降に音楽・フォト・割り勘を表示
+  const now = new Date();
+  return now >= new Date('2026-03-31T09:30:00+09:00');
+}
+function isLoveMusicVisible() {
+  // 3月21日(土) 20:50以降に音楽プレゼントを表示
+  const now = new Date();
+  return now >= new Date('2026-03-21T20:50:00+09:00');
+}
 function isAnnivVisible() {
   const now = new Date();
   const start = new Date('2026-03-24T00:00:00+09:00');
@@ -809,10 +820,12 @@ function renderTabs() {
     let lbl;
     if(t.id==='admin') lbl='管理';
     else if(t.id==='love') lbl='💕 恋愛';
+    else if(t.id==='sample') lbl='📋 サンプル';
     else lbl=tabDisplayLabel(t.id);
-    b.innerHTML=lbl+(ul?'':' <span class="lk">🔒</span>');
+    b.innerHTML = t.id==='sample' ? lbl : lbl+(ul?'':' <span class="lk">🔒</span>');
     if(t.id==='love') b.style.cssText='color:rgba(240,160,180,0.7);';
     if(t.id==='love'&&activeTab==='love') b.style.cssText='color:#ffb0c8;border-bottom-color:#e8406a;font-weight:600;';
+    if(t.id==='sample') b.style.cssText=activeTab==='sample'?'color:#222;border-bottom-color:#444;font-weight:600;':'color:rgba(240,232,208,0.55);';
     b.onclick=()=>openTab(t.id);
     c.appendChild(b);
   });
@@ -822,7 +835,7 @@ function renderTabs() {
 // HOME
 // ============================================================
 function renderHome() {
-  const cards=TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday'&&t.id!=='anniv').map(t=>{
+  const cards=TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday'&&t.id!=='anniv'&&t.id!=='sample').map(t=>{
     const ul=unlocked.includes(t.id);
     const sn=snCache[t.id]||'';
     return`<div class="tab-card${ul?' unlocked':''}" onclick="openTab('${t.id}')">
@@ -888,8 +901,8 @@ function buildNoticeHtml() {
 // ============================================================
 async function openTab(id) {
   activeTab=id; renderTabs();
-  // anniv・birthdayはパスワードなし（birthdayはタブバー非表示だがURL直接アクセス可）
-  if(id==='anniv' || id==='birthday'){ await renderPanel(id); return; }
+  // anniv・birthday・sampleはパスワードなし（birthdayはタブバー非表示だがURL直接アクセス可）
+  if(id==='anniv' || id==='birthday' || id==='sample'){ await renderPanel(id); return; }
   unlocked.includes(id) ? await renderPanel(id) : renderLocked(id);
 }
 
@@ -963,6 +976,7 @@ async function renderPanel(id) {
   if(id==='love'){ await renderLovePanel(); return; }
   if(id==='birthday'){ await renderBirthdayPanel(); return; }
   if(id==='anniv'){ await renderAnnivPanel(); return; }
+  if(id==='sample'){ await renderSamplePanel(); return; }
   attachListeners(id);
 
   // バナー（settings/banners に保存 → リセットで消えない）
@@ -1762,6 +1776,47 @@ let haisyaAdminTab = 'A'; // 現在管理中のタブ
 
 function haisyaPath(id){ return 'haisya/'+id; }
 
+window.haisyaAdminSwitchTab = async function(tid){
+  haisyaAdminTab = tid;
+  await renderHaisyaAdmin();
+};
+
+window.haisyaStart = async function(){
+  const driver = document.getElementById('hs-driver')?.value.trim()||'配車中';
+  const dest   = document.getElementById('hs-dest')?.value.trim()||'';
+  const etaVal = document.getElementById('hs-eta')?.value;
+  if(!etaVal){ showToast('到着予定時刻を入力してください'); return; }
+  const now = new Date();
+  const [hh,mm] = etaVal.split(':').map(Number);
+  const eta = new Date(now.getFullYear(),now.getMonth(),now.getDate(),hh,mm,0);
+  if(eta.getTime() < now.getTime()) eta.setDate(eta.getDate()+1);
+  const path = haisyaPath(haisyaAdminTab);
+  await fbSet(path, {active:true, driverName:driver, dest, etaMs:eta.getTime(), lat:null, lng:null, gpsUpdatedAt:null});
+  showToast('✓ 配車を開始しました');
+  if(navigator.geolocation){
+    if(haisyaGpsWatchers[haisyaAdminTab]) navigator.geolocation.clearWatch(haisyaGpsWatchers[haisyaAdminTab]);
+    haisyaGpsWatchers[haisyaAdminTab] = navigator.geolocation.watchPosition(
+      async pos=>{
+        const cur = await fbGet(path);
+        if(!cur||!cur.active) return;
+        await fbSet(path, {...cur, lat:pos.coords.latitude, lng:pos.coords.longitude, gpsUpdatedAt:Date.now()});
+      },
+      err=>showToast('GPS取得エラー: '+err.message),
+      {enableHighAccuracy:true, maximumAge:15000, timeout:20000}
+    );
+  } else { showToast('このブラウザはGPSに対応していません'); }
+  await renderHaisyaAdmin();
+};
+
+window.haisyaStop = async function(){
+  if(!confirm('配車を停止しますか？'))return;
+  const tid = haisyaAdminTab;
+  if(haisyaGpsWatchers[tid]){ navigator.geolocation.clearWatch(haisyaGpsWatchers[tid]); delete haisyaGpsWatchers[tid]; }
+  await fbRemove(haisyaPath(tid));
+  showToast('✓ 配車を停止しました');
+  await renderHaisyaAdmin();
+};
+
 async function renderHaisyaAdmin(){
   const wrap = document.getElementById('haisya-admin-wrap'); if(!wrap) return;
   const tabIds = ['A','B','birthday'];
@@ -1873,6 +1928,63 @@ async function renderHaisyaView(tabId){
 }
 
 // ============================================================
+// SAMPLE PANEL（パスワードなし・白背景デモタブ）
+// ============================================================
+async function renderSamplePanel(){
+  const bannerVal = await fbGet('settings/banners/sample');
+  const makeBannerHtml = (bv) => (bv && bv.text) ? `
+    <div style="background:#f8f8f8;border:2px solid #ddd;border-radius:12px;padding:14px 16px;margin-bottom:4px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:#333;"></div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#555;letter-spacing:0.1em;margin-bottom:8px;">📌 ${esc(bv.title||'お知らせ')}</div>
+      <div style="font-size:0.88rem;color:#222;line-height:1.9;white-space:pre-wrap;word-break:break-word;">${esc(bv.text)}</div>
+    </div>` : '';
+
+  document.getElementById('main').style.background = '#ffffff';
+  document.getElementById('main').innerHTML=`
+    <div style="background:#fff;min-height:100%;">
+      <div class="sec" style="background:#fff;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#aaa;letter-spacing:0.15em;margin-bottom:8px;text-align:center;">— SAMPLE TAB —</div>
+        <div id="banner-wrap-sample">${makeBannerHtml(bannerVal)}</div>
+        <div class="sec-hd" style="border-color:#eee;"><h2 style="color:#333;">📋 掲示板</h2><div class="sec-line" style="background:linear-gradient(90deg,#ccc,transparent);"></div></div>
+        <div class="post-list" id="pl-sample"><div class="empty-msg">読み込み中…</div></div>
+        <div class="post-form" style="border-color:#eee;background:#fafafa;">
+          <textarea id="pt-sample" placeholder="投稿を入力…" style="background:#fff;border-color:#ddd;"></textarea>
+          <div class="post-form-ft">
+            <label class="img-lbl" style="color:#888;">📎 画像・PDF<input type="file" accept="image/*,application/pdf" onchange="onImg('sample',this)"></label>
+            <span class="img-fname" id="ifn-sample"></span>
+            <button class="post-sub" onclick="submitPost('sample')" style="background:#333;">投稿</button>
+          </div>
+        </div>
+      </div>
+      <div class="sec" style="background:#fff;">
+        <div class="sec-hd" style="border-color:#eee;"><h2 style="color:#333;">📝 メモ</h2><div class="sec-line" style="background:linear-gradient(90deg,#ccc,transparent);"></div></div>
+        <div class="memo-box" style="background:#fafafa;border-color:#eee;">
+          <textarea class="memo-ta" id="mta-sample" placeholder="メモを入力…" style="background:#fff;border-color:#ddd;color:#333;"></textarea>
+          <div class="memo-ft">
+            <span class="memo-ts" id="mts-sample"></span>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="memo-ok" id="mok-sample">✓ 保存</span>
+              <button class="memo-save" onclick="saveMemoBtn('sample')" style="background:#333;">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sec" style="background:#fff;">
+        <div class="sec-hd" style="border-color:#eee;"><h2 style="color:#333;">📅 カレンダー</h2><div class="sec-line" style="background:linear-gradient(90deg,#ccc,transparent);"></div></div>
+        <div class="cal-wrap" id="cal-sample"><div class="empty-msg">読み込み中…</div></div>
+      </div>
+    </div>`;
+
+  const [pv,mv,ev] = await Promise.all([
+    fbGet('tabs/sample/posts'), fbGet('tabs/sample/memo'), fbGet('tabs/sample/events')
+  ]);
+  renderPostsFromData('sample', pv);
+  updateMemoUI('sample', mv);
+  renderCal('sample', ev);
+  if(!listeners['sample']) attachListeners('sample');
+}
+
+// ============================================================
 // BIRTHDAY PANEL
 // ============================================================
 async function renderBirthdayPanel() {
@@ -1937,18 +2049,27 @@ async function renderBirthdayPanel() {
     fbGet('birthday/music'), fbGet('warikan')
   ]);
   renderBirthdayPosts(posts);
-  renderBirthdayGallery(imgs);
-  renderBdMusicList(music);
-  renderWarikanView('birthday', wv);
   renderHaisyaView('birthday');
+
+  if(isBirthdayContentVisible()){
+    renderBdMusicList(music);
+    renderBirthdayGallery(imgs);
+    renderWarikanView('birthday', wv);
+  } else {
+    const pending = '🎂 3月31日(火) 09:30より公開します';
+    const stl = 'text-align:center;color:#b08000;padding:16px;font-size:0.85rem;';
+    const el1=document.getElementById('bd-music-list'); if(el1) el1.innerHTML=`<div style="${stl}">${pending}</div>`;
+    const el2=document.getElementById('birthday-gallery'); if(el2) el2.innerHTML=`<div style="${stl};grid-column:1/-1;">${pending}</div>`;
+    const el3=document.getElementById('warikan-view-birthday'); if(el3) el3.innerHTML=`<div style="${stl}">${pending}</div>`;
+  }
 
   if(!listeners['birthday']){
     listeners['birthday']=[];
     listeners['birthday'].push(fbListen('birthday/posts',  val=>renderBirthdayPosts(val)));
-    listeners['birthday'].push(fbListen('birthday/images', val=>renderBirthdayGallery(val)));
-    listeners['birthday'].push(fbListen('birthday/music',  val=>renderBdMusicList(val)));
-    listeners['birthday'].push(fbListen('warikan',         val=>renderWarikanView('birthday',val)));
-    listeners['birthday'].push(fbListen('haisya/birthday',   ()=>renderHaisyaView('birthday')));
+    listeners['birthday'].push(fbListen('birthday/images', val=>{ if(isBirthdayContentVisible()) renderBirthdayGallery(val); }));
+    listeners['birthday'].push(fbListen('birthday/music',  val=>{ if(isBirthdayContentVisible()) renderBdMusicList(val); }));
+    listeners['birthday'].push(fbListen('warikan',         val=>{ if(isBirthdayContentVisible()) renderWarikanView('birthday',val); }));
+    listeners['birthday'].push(fbListen('haisya/birthday', ()=>renderHaisyaView('birthday')));
   }
 }
 
@@ -2126,7 +2247,7 @@ async function renderLovePanel() {
                 <div style="font-family:'Shippori Mincho',serif;font-size:0.92rem;color:#c0305a;font-weight:700;">ステージ 4　← 現在地</div>
                 <div style="font-size:0.74rem;color:#c06080;margin-top:4px;line-height:1.6;">
                   会話量増加・約束・来てほしい発言・誕生日確認待ち<br>
-                  3/25（水）が重要な確認日
+                  3/22(日)・3/25(水)が重要日
                 </div>
               </div>
             </div>
@@ -2173,7 +2294,7 @@ async function renderLovePanel() {
           </div>
           <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:12px 8px;text-align:center;">
             <div style="font-size:0.7rem;color:#9a8880;letter-spacing:0.05em;margin-bottom:4px;">次の重要日</div>
-            <div style="font-family:'Shippori Mincho',serif;font-size:1.6rem;color:#3a2820;font-weight:700;">3/25</div>
+            <div style="font-family:'Shippori Mincho',serif;font-size:1.2rem;color:#3a2820;font-weight:700;line-height:1.4;">3/22<br>3/25</div>
           </div>
         </div>
 
@@ -2261,6 +2382,10 @@ function renderLove2025(val){
 
 function renderLoveMusicList(val){
   const el=document.getElementById('love-music-list'); if(!el)return;
+  if(!isLoveMusicVisible()){
+    el.innerHTML='<div style="text-align:center;color:#d090a8;padding:16px;font-size:0.85rem;">🎵 準備中です</div>';
+    return;
+  }
   if(!val||!Object.keys(val).length){
     el.innerHTML='<div style="text-align:center;color:#d090a8;padding:16px;font-size:0.85rem;">🎵 準備中です</div>';
     return;
@@ -2374,15 +2499,27 @@ function renderLoveCalGrid() {
     const dow = new Date(year,month,d).getDay();
     const isToday = ds===todayStr;
     const dayColor = isToday ? 'white' : dow===0 ? '#c06080' : dow===6 ? '#6080b0' : '#3a1a28';
+
+    let innerHtml;
+    if(mark && mark.key!=='none'){
+      // マークあり：絵文字＋日付＋ラベルを縦並びで見やすく
+      innerHtml = `
+        <span style="font-size:1.4rem;line-height:1.1;">${mark.emoji}</span>
+        <span style="font-size:0.72rem;font-weight:700;color:${isToday?'white':mark.color};">${d}</span>
+        <span style="font-size:0.58rem;color:${isToday?'rgba(255,255,255,0.9)':mark.color};font-weight:600;letter-spacing:0;line-height:1.1;">${mark.label}</span>`;
+    } else {
+      innerHtml = `<span style="font-size:0.88rem;">${d}</span>`;
+    }
+
     grid+=`<div onclick="loveDayClick('${ds}')" style="
-      aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
       border-radius:8px;cursor:pointer;position:relative;
       background:${isToday?'#e8406a':mark?mark.bg:'transparent'};
-      border:${isToday?'none':mark?'1px solid '+mark.color:'1px solid transparent'};
-      transition:all 0.15s;font-size:0.85rem;color:${dayColor};
-    " onmouseover="this.style.background='rgba(232,64,106,0.08)'" onmouseout="this.style.background='${isToday?'#e8406a':mark?mark.bg:'transparent'}'">
-      ${d}
-      ${mark&&mark.emoji?`<span style="font-size:0.6rem;line-height:1;">${mark.emoji}</span>`:''}
+      border:${isToday?'2px solid #c0305a':mark?'2px solid '+mark.color+'80':'1px solid transparent'};
+      transition:all 0.15s;color:${dayColor};
+      box-shadow:${mark&&!isToday?'0 2px 8px '+mark.color+'50':'none'};
+    " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+      ${innerHtml}
     </div>`;
   }
 
@@ -2394,11 +2531,12 @@ function renderLoveCalGrid() {
       <button onclick="loveCal.month++;if(loveCal.month>11){loveCal.month=0;loveCal.year++;}renderLoveCalGrid();"
         style="background:none;border:none;color:#d090a8;font-size:1.3rem;cursor:pointer;padding:4px 10px;">›</button>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;">${grid}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;justify-content:center;">
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">${grid}</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;justify-content:center;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;">
       ${LOVE_MARKS.filter(m=>m.key!=='none').map(m=>`
-        <div style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:#d090a8;">
-          <span style="font-size:0.85rem;">${m.emoji}</span>${m.label}
+        <div style="display:flex;align-items:center;gap:4px;font-size:0.75rem;color:#d090a8;">
+          <span style="font-size:1rem;">${m.emoji}</span>
+          <span style="color:${m.color};font-weight:600;">${m.label}</span>
         </div>`).join('')}
     </div>`;
 }
@@ -2552,7 +2690,7 @@ async function renderAdmin() {
     <div class="sec admin-content-wrap">
       <div class="sec-hd"><h2>📝 コンテンツ編集</h2><div class="sec-line"></div></div>
       <div class="admin-tab-switcher" id="admin-tab-switcher">
-        ${TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday'&&t.id!=='anniv').map(t=>`
+        ${TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday'&&t.id!=='anniv'&&t.id!=='sample').map(t=>`
           <button class="admin-ts-btn${adminActiveTab===t.id?' active':''}" onclick="switchAdminTab('${t.id}')">
             ${tabDisplayLabel(t.id)}
           </button>`).join('')}
@@ -3053,6 +3191,22 @@ async function renderAdminContent(id) {
               <button class="love-admin-btn" onclick="adminAddLoveMusic()">追加</button>
             </div>
           </div>` : '<div style="font-size:0.82rem;color:#d090a8;text-align:center;padding:8px;">最大3曲に達しています</div>'}
+        </div>
+
+        <!-- 発展カレンダー管理 -->
+        <div class="admin-love-subsec">
+          <div class="admin-love-subsec-title">📅 発展カレンダー（日付を指定してマーク）</div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center;">
+            <input type="date" id="love-cal-date" style="flex:1;min-width:130px;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:white;outline:none;">
+            <select id="love-cal-mark" style="flex:1;min-width:100px;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:white;outline:none;">
+              <option value="big">💗 大発展</option>
+              <option value="mid">💕 中発展</option>
+              <option value="small">🌸 小発展</option>
+              <option value="none">✕ 削除</option>
+            </select>
+            <button onclick="adminSetCalMark()" class="love-admin-btn" style="white-space:nowrap;">設定</button>
+          </div>
+          <div style="font-size:0.72rem;color:#d090a8;">例：2026-03-21 → 💕 中発展 で設定。「✕ 削除」でマークを消去します。</div>
         </div>
 
         <!-- 掲示板 -->
@@ -3682,6 +3836,21 @@ window.adminDelLoveMusic = async function(fbKey){
   await fbRemove('love/music/'+fbKey);
   showToast('✓ 曲を削除しました');
   await renderAdminContent('love');
+};
+
+window.adminSetCalMark = async function(){
+  const dateEl = document.getElementById('love-cal-date');
+  const markEl = document.getElementById('love-cal-mark');
+  const date = dateEl?.value;
+  const mark = markEl?.value;
+  if(!date){ showToast('日付を入力してください'); return; }
+  if(mark === 'none'){
+    await fbRemove('love/calmarks/'+date);
+    showToast('✓ マークを削除しました');
+  } else {
+    await fbSet('love/calmarks/'+date, mark);
+    showToast('✓ カレンダーに設定しました');
+  }
 };
 
 window.lovePostEditMode = async function(fbKey){
