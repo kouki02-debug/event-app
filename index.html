@@ -1764,69 +1764,47 @@ function haisyaPath(id){ return 'haisya/'+id; }
 
 async function renderHaisyaAdmin(){
   const wrap = document.getElementById('haisya-admin-wrap'); if(!wrap) return;
-  const tabIds = ['A','B','C','D','birthday'];
-  const tabLabels = {A:'A',B:'B',C:'C',D:'D',birthday:'birthday0330'};
-
-  const driveSettings = await fbGet('settings/drive') || {};
-  const fareOn = !!driveSettings.fareOn;
-  const fareAmount = driveSettings.fareAmount || 0;
-
-  // タブ切り替えボタン
-  const tabBtns = tabIds.map(tid=>`
-    <button onclick="haisyaAdminSwitchTab('${tid}')"
-      style="padding:5px 12px;border-radius:6px;border:1.5px solid var(--border);font-size:0.8rem;cursor:pointer;
-             background:${haisyaAdminTab===tid?'var(--ink)':'var(--bg2)'};
-             color:${haisyaAdminTab===tid?'var(--bg)':'var(--ink3)'};">
-      ${tabLabels[tid]}
-    </button>`).join('');
+  const tabIds = ['A','B','birthday'];
+  const tabLabels = {A:'A',B:'B',birthday:'birthday0330'};
 
   const data = await fbGet(haisyaPath(haisyaAdminTab)) || {};
   const active = !!data.active;
   const etaInput = data.etaMs ? new Date(data.etaMs - new Date().getTimezoneOffset()*60000).toISOString().slice(11,16) : '';
 
-  wrap.innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <div style="font-size:0.78rem;color:var(--ink4);margin-bottom:2px;">設定するタブを選択：</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">${tabBtns}</div>
-      <div style="display:flex;gap:8px;align-items:center;padding:6px 0;">
-        <span style="font-size:0.82rem;color:var(--ink3);">ステータス：</span>
-        <span style="font-size:0.88rem;font-weight:600;color:${active?'#3a7a3a':'var(--ink4)'};">${active?'🟢 配車中':'⚫ 停止中'}</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <input type="text" id="hs-driver" value="${esc(data.driverName||'')}" placeholder="ドライバー名（例：○○さんの車）" maxlength="20"
-          style="padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;">
-        <input type="text" id="hs-dest" value="${esc(data.dest||'')}" placeholder="目的地（例：集合場所）" maxlength="30"
-          style="padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;">
-        <div style="display:flex;gap:8px;align-items:center;">
-          <label style="font-size:0.82rem;color:var(--ink4);white-space:nowrap;">到着予定時刻</label>
-          <input type="time" id="hs-eta" value="${etaInput}"
-            style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;">
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="haisyaStart()" style="flex:1;padding:9px;background:var(--ink);color:var(--bg);border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;">🚗 配車開始 ＋ GPS共有</button>
-        <button onclick="haisyaStop()" style="flex:1;padding:9px;background:none;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink3);cursor:pointer;">⏹ 停止</button>
-      </div>
-      ${active?`<div style="font-size:0.78rem;color:#3a7a3a;text-align:center;">GPS共有中 — 「${tabLabels[haisyaAdminTab]}」タブに配信中</div>`:''}
-      ${data.gpsUpdatedAt?`<div style="font-size:0.75rem;color:var(--ink4);text-align:center;">最終GPS更新: ${new Date(data.gpsUpdatedAt).toLocaleTimeString('ja-JP')}</div>`:''}
+  const tabBtns = tabIds.map(tid=>{
+    const sel = tid===haisyaAdminTab;
+    return '<button onclick="haisyaAdminSwitchTab(\''+tid+'\')" style="padding:5px 12px;border-radius:6px;border:1.5px solid var(--border);font-size:0.8rem;cursor:pointer;background:'+(sel?'var(--ink)':'var(--bg2)')+';color:'+(sel?'var(--bg)':'var(--ink3)')+';">'+tabLabels[tid]+'</button>';
+  }).join('');
 
-      <div style="height:1px;background:var(--border);margin:12px 0;"></div>
-      <div style="font-size:0.82rem;color:var(--ink3);font-weight:500;margin-bottom:8px;">💰 走行料金設定</div>
-          <div style="font-size:0.72rem;color:var(--ink4);margin-bottom:8px;">基本料金 500円〜、1km追加ごとに500円加算。金額を手動入力して表示します。</div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-          <input type="checkbox" id="hs-fare-on" ${fareOn?'checked':''} onchange="driveSaveFareSettings()">
-          <span style="font-size:0.85rem;color:var(--ink3);">走行料金を表示ON</span>
-        </label>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <label style="font-size:0.82rem;color:var(--ink4);white-space:nowrap;">金額（円）</label>
-        <input type="number" id="hs-fare-amount" value="${fareAmount}" min="0" placeholder="例：1500"
-          style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;">
-        <button onclick="driveSaveFareSettings()" style="padding:7px 14px;background:var(--ink);color:var(--bg);border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;white-space:nowrap;">保存</button>
-      </div>
+  const gpsInfo = data.gpsUpdatedAt
+    ? '<div style="font-size:0.75rem;color:var(--ink4);text-align:center;margin-top:4px;">最終GPS更新: '+new Date(data.gpsUpdatedAt).toLocaleTimeString('ja-JP')+'</div>'
+    : '';
+  const activeInfo = active
+    ? '<div style="font-size:0.78rem;color:#3a7a3a;text-align:center;">🟢 GPS共有中 — 「'+tabLabels[haisyaAdminTab]+'」タブに配信中</div>'
+    : '';
 
-    </div>`;
+  wrap.innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:10px;">' +
+    '<div style="font-size:0.78rem;color:var(--ink4);">設定するタブを選択：</div>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;">' + tabBtns + '</div>' +
+    '<div style="display:flex;gap:8px;align-items:center;padding:4px 0;">' +
+      '<span style="font-size:0.82rem;color:var(--ink3);">ステータス：</span>' +
+      '<span style="font-size:0.88rem;font-weight:600;color:'+(active?'#3a7a3a':'var(--ink4)')+';">'+(active?'🟢 配車中':'⚫ 停止中')+'</span>' +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:6px;">' +
+      '<input type="text" id="hs-driver" value="'+esc(data.driverName||'')+'" placeholder="ドライバー名（例：○○さんの車）" maxlength="20" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;">' +
+      '<input type="text" id="hs-dest" value="'+esc(data.dest||'')+'" placeholder="目的地（例：集合場所）" maxlength="30" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;">' +
+      '<div style="display:flex;gap:8px;align-items:center;">' +
+        '<label style="font-size:0.82rem;color:var(--ink4);white-space:nowrap;">到着予定時刻</label>' +
+        '<input type="time" id="hs-eta" value="'+etaInput+'" style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink);background:var(--bg);outline:none;">' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+      '<button onclick="haisyaStart()" style="flex:1;padding:10px;background:var(--ink);color:var(--bg);border:none;border-radius:8px;font-family:\'Shippori Mincho\',serif;font-size:0.92rem;cursor:pointer;">🚗 配車開始 ＋ GPS共有</button>' +
+      '<button onclick="haisyaStop()" style="flex:1;padding:10px;background:none;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;color:var(--ink3);cursor:pointer;">⏹ 停止</button>' +
+    '</div>' +
+    activeInfo + gpsInfo +
+    '</div>';
 }
 
 // HAISYA（配車）システム — 表示側
