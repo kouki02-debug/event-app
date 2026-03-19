@@ -870,7 +870,14 @@ function renderHome() {
       </div>
     </div>` : '';
 
-  const birthdayCard = ''; // タブバー・ホームには表示しない（?tab=birthday でアクセス）
+  const birthdayCard = localStorage.getItem('birthday_access')==='1' ? `
+    <div onclick="openTab('birthday')" style="cursor:pointer;background:linear-gradient(135deg,#fffbe0,#fff0b0);border:1px solid rgba(255,180,0,0.3);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden;transition:all 0.18s;grid-column:1/-1;"
+      onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffcc00,#ff9900);"></div>
+      <div style="font-size:1.8rem;">🎂</div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#a06000;font-weight:700;letter-spacing:0.1em;">birthday0330</div>
+      <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(255,180,0,0.15);color:#a06000;border:1px solid rgba(255,180,0,0.3);">🔓 アクセス済み</div>
+    </div>` : ''; // タブバー・ホームには非表示（?tab=birthday でアクセス後はフラグで表示）
 
   // 告知枠（3/24までコード固定表示 or 管理タブで設定した内容）
   const noticeHtml = buildNoticeHtml();
@@ -2511,14 +2518,15 @@ function renderLoveCalGrid() {
       innerHtml = `<span style="font-size:0.88rem;">${d}</span>`;
     }
 
-    grid+=`<div onclick="loveDayClick('${ds}')" style="
+    const isAdmin = unlocked.includes('admin');
+    grid+=`<div onclick="${isAdmin?`loveDayClick('${ds}')`:'void 0'}" style="
       aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
-      border-radius:8px;cursor:pointer;position:relative;
+      border-radius:8px;cursor:${isAdmin?'pointer':'default'};position:relative;
       background:${isToday?'#e8406a':mark?mark.bg:'transparent'};
       border:${isToday?'2px solid #c0305a':mark?'2px solid '+mark.color+'80':'1px solid transparent'};
       transition:all 0.15s;color:${dayColor};
       box-shadow:${mark&&!isToday?'0 2px 8px '+mark.color+'50':'none'};
-    " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+    " ${isAdmin?'onmouseover="this.style.opacity=\'0.8\'" onmouseout="this.style.opacity=\'1\'"':''}>
       ${innerHtml}
     </div>`;
   }
@@ -4067,10 +4075,14 @@ async function init() {
   ls.classList.add('hide');
   setTimeout(()=>ls.remove(),500);
 
-  // URLパラメータ ?tab=birthday でbirthday強制表示
+  // URLパラメータ ?tab=birthday でbirthday強制表示 → デバイスに永続フラグ保存
   const urlParams = new URLSearchParams(location.search);
   const tabParam = urlParams.get('tab');
   if(tabParam === 'birthday'){
+    localStorage.setItem('birthday_access', '1');
+  }
+  // localStorageフラグがあれば次回以降もbirthdayに直接アクセス可
+  if(tabParam === 'birthday' || localStorage.getItem('birthday_access') === '1'){
     activeTab = 'birthday';
     renderTabs();
     await renderBirthdayPanel();
