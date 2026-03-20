@@ -722,7 +722,7 @@ const snCache = {};
 let newPws = null;
 let adminActiveTab = 'A';
 let loveVisible = false;
-let loveStage = 'ステージ4-1';
+let loveStage = '4-1';
 let loveBgmPlaying = false;
 const listeners = {};
 
@@ -2281,11 +2281,6 @@ async function renderLovePanel() {
         </div>
       </div>
 
-      <div class="love-stage-banner">
-        <span class="love-stage-label">現在のステージ</span>
-        <span class="love-stage-badge" id="love-stage-disp">${esc(loveStage)}</span>
-      </div>
-
       <!-- ステータスカード -->
       <div style="padding:14px 14px 0;">
 
@@ -2346,7 +2341,7 @@ async function renderLovePanel() {
       <!-- 発展カレンダー -->
       <div class="love-sec" style="margin-top:24px;padding-bottom:24px;">
         <div class="love-sec-hd"><h2>📅 発展カレンダー</h2><div class="love-sec-line"></div></div>
-        <div id="love-cal-wrap"></div>
+        <div id="love-cal-wrap" style="overflow:hidden;width:100%;box-sizing:border-box;"></div>
       </div>
     </div>`;
 
@@ -2364,7 +2359,7 @@ async function renderLovePanel() {
     listeners['love'].push(fbListen('love/posts',    val=>renderLovePosts(val)));
     listeners['love'].push(fbListen('love/music',    val=>renderLoveMusicList(val)));
     listeners['love'].push(fbListen('love/weekly',   val=>renderLove2025(val)));
-    listeners['love'].push(fbListen('love/stage',    val=>{ loveStage=val||'ステージ4-1'; const el=document.getElementById('love-stage-disp'); if(el)el.textContent=loveStage; }));
+    listeners['love'].push(fbListen('love/stage',    val=>{ loveStage=(val||'').replace(/^ステージ/,'') || '4-1'; const el=document.getElementById('love-stage-disp'); if(el)el.textContent=loveStage; }));
     listeners['love'].push(fbListen('love/calmarks', val=>{ window._loveCalMarks=val||{}; renderLoveCalGrid(); }));
   }
 }
@@ -2474,10 +2469,12 @@ window.openLoveLyricsPage = async function(fbKey){
 // LOVE CALENDAR
 // ============================================================
 const LOVE_MARKS = [
-  { key:'big',   label:'大発展', color:'#e8406a', bg:'rgba(232,64,106,0.15)', emoji:'💗' },
-  { key:'mid',   label:'中発展', color:'#d090a8', bg:'rgba(208,144,168,0.15)', emoji:'💕' },
-  { key:'small', label:'小発展', color:'#b0c8a8', bg:'rgba(176,200,168,0.15)', emoji:'🌸' },
-  { key:'none',  label:'なし',   color:'transparent', bg:'transparent', emoji:'' },
+  { key:'big',    label:'大発展', color:'#e8406a', bg:'rgba(232,64,106,0.15)', emoji:'💗' },
+  { key:'mid',    label:'中発展', color:'#d090a8', bg:'rgba(208,144,168,0.15)', emoji:'💕' },
+  { key:'small',  label:'小発展', color:'#b0c8a8', bg:'rgba(176,200,168,0.15)', emoji:'🌸' },
+  { key:'sight',  label:'見発展', color:'#9080d0', bg:'rgba(144,128,208,0.15)', emoji:'👀' },
+  { key:'off',    label:'休暇',   color:'#a0a0a0', bg:'rgba(160,160,160,0.12)', emoji:'🏖' },
+  { key:'none',   label:'なし',   color:'transparent', bg:'transparent', emoji:'' },
 ];
 
 let loveCal = { year: new Date().getFullYear(), month: new Date().getMonth() };
@@ -2521,7 +2518,8 @@ function renderLoveCalGrid() {
     const isAdmin = unlocked.includes('admin');
     grid+=`<div onclick="${isAdmin?`loveDayClick('${ds}')`:'void 0'}" style="
       aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
-      border-radius:8px;cursor:${isAdmin?'pointer':'default'};position:relative;
+      border-radius:6px;cursor:${isAdmin?'pointer':'default'};position:relative;
+      min-width:0;overflow:hidden;box-sizing:border-box;
       background:${isToday?'#e8406a':mark?mark.bg:'transparent'};
       border:${isToday?'2px solid #c0305a':mark?'2px solid '+mark.color+'80':'1px solid transparent'};
       transition:all 0.15s;color:${dayColor};
@@ -2539,11 +2537,11 @@ function renderLoveCalGrid() {
       <button onclick="loveCal.month++;if(loveCal.month>11){loveCal.month=0;loveCal.year++;}renderLoveCalGrid();"
         style="background:none;border:none;color:#d090a8;font-size:1.3rem;cursor:pointer;padding:4px 10px;">›</button>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">${grid}</div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;justify-content:center;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;">
+    <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;width:100%;box-sizing:border-box;">${grid}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;justify-content:center;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;">
       ${LOVE_MARKS.filter(m=>m.key!=='none').map(m=>`
-        <div style="display:flex;align-items:center;gap:4px;font-size:0.75rem;color:#d090a8;">
-          <span style="font-size:1rem;">${m.emoji}</span>
+        <div style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:#d090a8;">
+          <span style="font-size:0.9rem;">${m.emoji}</span>
           <span style="color:${m.color};font-weight:600;">${m.label}</span>
         </div>`).join('')}
     </div>`;
@@ -4063,11 +4061,11 @@ async function init() {
     // load love visibility and stage
     const [lv, ls] = await Promise.all([fbGet('settings/loveVisible'), fbGet('love/stage')]);
     loveVisible = !!lv;
-    loveStage = ls || 'ステージ4-1';
+    loveStage = (ls||'').replace(/^ステージ/,'') || '4-1';
     setSyncStatus(true);
     fbListen('.info/connected',val=>setSyncStatus(!!val));
     fbListen('settings/loveVisible', val=>{ loveVisible=!!val; renderTabs(); if(!activeTab)renderHome(); });
-    fbListen('love/stage', val=>{ loveStage=val||'ステージ4-1'; });
+    fbListen('love/stage', val=>{ loveStage=(val||'').replace(/^ステージ/,'') || '4-1'; });
   } catch(e){ setSyncStatus(false); }
   startSessionWatcher();
   resetSessionTimer();
