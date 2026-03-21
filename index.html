@@ -547,7 +547,9 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
       <button onclick="goHome()" style="background:none;border:none;color:rgba(240,232,208,0.5);font-size:0.8rem;cursor:pointer;letter-spacing:0.05em;font-family:'Shippori Mincho',serif;" onmouseover="this.style.color='rgba(240,232,208,0.9)'" onmouseout="this.style.color='rgba(240,232,208,0.5)'">🏠 ホーム</button>
     </div>
   </div>
-  <div class="tabs-wrap" id="tabs"></div>
+  <div id="tab-title-bar" style="display:none;padding:6px 20px 8px;border-top:1px solid rgba(255,255,255,0.06);">
+    <span id="tab-title-label" style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:rgba(240,232,208,0.7);letter-spacing:0.08em;"></span>
+  </div>
 </header>
 <main id="main"></main>
 <audio id="love-bgm" loop></audio>
@@ -776,54 +778,31 @@ function setSyncStatus(live) {
 }
 
 // ============================================================
-// TABS UI
+// TABS UI → タブバー廃止、ヘッダーにタイトルのみ表示
 // ============================================================
 function renderTabs() {
-  const c=document.getElementById('tabs'); c.innerHTML='';
-  TABS.forEach(t=>{
-    // love: 常にタブバーに表示（フラグなしでもOK）
-    const ul=unlocked.includes(t.id);
-    const b=document.createElement('button');
+  const titleBar   = document.getElementById('tab-title-bar');
+  const titleLabel = document.getElementById('tab-title-label');
+  if(!titleBar || !titleLabel) return;
 
-    if(t.id==='anniv'){
-      if(isAnnivVisible()){
-        b.className='tab-btn'+(activeTab===t.id?' active':'');
-        b.textContent='🌸 20th Anniversary';
-        b.style.cssText=activeTab==='anniv'?'color:#e8d0ff;border-bottom-color:#b060ff;font-weight:600;':'color:rgba(200,160,255,0.7);';
-        b.onclick=()=>openTab('anniv');
-      } else {
-        b.className='tab-btn locked';
-        b.textContent='？？？';
-        b.style.cssText='color:rgba(240,232,208,0.2);cursor:default;pointer-events:none;letter-spacing:0.05em;';
-        b.disabled=true;
-      }
-      c.appendChild(b);
-      return;
-    }
+  if(!activeTab){
+    titleBar.style.display = 'none';
+    titleLabel.textContent = '';
+    return;
+  }
 
-    if(t.id==='birthday'){
-      b.className='tab-btn'+(activeTab==='birthday'?' active':'');
-      b.textContent='🎂 birthday0330';
-      b.style.cssText=activeTab==='birthday'?'color:#ffe066;border-bottom-color:#ffcc00;font-weight:600;':'color:rgba(255,210,80,0.7);';
-      b.onclick=()=>openTab('birthday');
-      c.appendChild(b);
-      return;
-    }
-
-
-    b.className='tab-btn'+(activeTab===t.id?' active':'')+(ul?'':' locked');
-    let lbl;
-    if(t.id==='admin') lbl='管理';
-    else if(t.id==='love') lbl='💕 恋愛';
-    else if(t.id==='sample') lbl='📋 サンプル';
-    else lbl=tabDisplayLabel(t.id);
-    b.innerHTML = t.id==='sample' ? lbl : lbl+(ul?'':' <span class="lk">🔒</span>');
-    if(t.id==='love') b.style.cssText='color:rgba(240,160,180,0.7);';
-    if(t.id==='love'&&activeTab==='love') b.style.cssText='color:#ffb0c8;border-bottom-color:#e8406a;font-weight:600;';
-    if(t.id==='sample') b.style.cssText=activeTab==='sample'?'color:#222;border-bottom-color:#444;font-weight:600;':'color:rgba(240,232,208,0.55);';
-    b.onclick=()=>openTab(t.id);
-    c.appendChild(b);
-  });
+  const labels = {
+    A:         ()=> '📋 ' + tabDisplayLabel('A'),
+    B:         ()=> '📋 ' + tabDisplayLabel('B'),
+    love:      ()=> '💕 恋愛',
+    birthday:  ()=> '🎂 birthday0330',
+    anniv:     ()=> '🌸 20th Anniversary',
+    admin:     ()=> '⚙️ 管理パネル',
+    sample:    ()=> '📋 サンプル',
+  };
+  const fn = labels[activeTab];
+  titleLabel.textContent = fn ? fn() : ('📋 ' + tabDisplayLabel(activeTab));
+  titleBar.style.display = 'block';
 }
 
 // ============================================================
@@ -839,16 +818,14 @@ function renderHome() {
       <div class="tab-card-status">${ul?'🔓 解錠済み':'🔒 ロック中'}</div>
     </div>`;
   }).join('');
-  const loveCard = `
+  const loveCard = localStorage.getItem('tab_access_love')==='1' ? `
     <div onclick="openTab('love')" style="cursor:pointer;background:linear-gradient(135deg,#fff0f5,#ffe0ea);border:1px solid rgba(220,60,100,0.2);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden;transition:all 0.18s;grid-column:1/-1;"
       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#e8406a,#ffb0c8);"></div>
       <div style="font-size:1.8rem;">💕</div>
       <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#c0305a;font-weight:700;letter-spacing:0.1em;">恋愛</div>
-      <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(220,60,100,0.1);color:#c0305a;border:1px solid rgba(220,60,100,0.2);">
-        ${unlocked.includes('love')?'🔓 解錠済み':'🔒 ロック中'}
-      </div>
-    </div>`;
+      <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(220,60,100,0.1);color:#c0305a;border:1px solid rgba(220,60,100,0.2);">🔓 アクセス済み</div>
+    </div>` : '';
 
   // annivカード：タブ内と同じ深紫デザイン
   const annivCard = isAnnivVisible() ? `
@@ -865,14 +842,14 @@ function renderHome() {
       </div>
     </div>` : '';
 
-  const birthdayCard = `
+  const birthdayCard = (localStorage.getItem('tab_access_birthday')==='1' || localStorage.getItem('birthday_access')==='1') ? `
     <div onclick="openTab('birthday')" style="cursor:pointer;background:linear-gradient(135deg,#fffbe0,#fff0b0);border:1px solid rgba(255,180,0,0.3);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden;transition:all 0.18s;grid-column:1/-1;"
       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffcc00,#ff9900);"></div>
       <div style="font-size:1.8rem;">🎂</div>
       <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#a06000;font-weight:700;letter-spacing:0.1em;">birthday0330</div>
       <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(255,180,0,0.15);color:#a06000;border:1px solid rgba(255,180,0,0.3);">🔓 アクセス済み</div>
-    </div>` : ''; // タブバー・ホームには非表示（?tab=birthday でアクセス後はフラグで表示）
+    </div>` : '';
 
   // 告知枠（Firebase管理 + 3/24まで固定告知）
   const noticeHtml = buildNoticeHtml();
@@ -4238,17 +4215,17 @@ async function init() {
     await setTabPwHash('admin', '13240622Ko');
 
     // load stage
-    const ls = await fbGet('love/stage');
-    loveStage = (ls||'').replace(/^ステージ/,'') || '4-1';
+    const loveStageVal = await fbGet('love/stage');
+    loveStage = (loveStageVal||'').replace(/^ステージ/,'') || '4-1';
     setSyncStatus(true);
     fbListen('.info/connected',val=>setSyncStatus(!!val));
     fbListen('love/stage', val=>{ loveStage=(val||'').replace(/^ステージ/,'') || '4-1'; });
   } catch(e){ setSyncStatus(false); }
   startSessionWatcher();
   resetSessionTimer();
-  const ls=document.getElementById('loading-screen');
-  ls.classList.add('hide');
-  setTimeout(()=>ls.remove(),500);
+  const loadingScreen=document.getElementById('loading-screen');
+  loadingScreen.classList.add('hide');
+  setTimeout(()=>loadingScreen.remove(),500);
 
 
   // ============================================================
