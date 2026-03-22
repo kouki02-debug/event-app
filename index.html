@@ -3161,14 +3161,15 @@ async function renderAdminContent(id) {
   // 恋愛専用UI
   if(id==='love'){
     let posts = null, bgm = null, loveMusic = null, weekly = null, loveInfo = null;
+    let loveCurStage = 4, lovePlanImgs = null;
     try {
       posts = await fbGet('love/posts');
       bgm   = await fbGet('love/bgm');
       loveMusic = await fbGet('love/music');
       weekly = await fbGet('love/weekly');
       loveInfo = await fbGet('love/info');
-      const loveCurStage = (await fbGet('love/currentStage')) || 4;
-      const lovePlanImgs = await fbGet('love/planImages');
+      loveCurStage = (await fbGet('love/currentStage')) || 4;
+      lovePlanImgs = await fbGet('love/planImages');
     } catch(e) {
       panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
       return;
