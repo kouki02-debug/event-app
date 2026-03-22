@@ -1250,11 +1250,6 @@ async function renderAnnivPanel() {
         <div class="anniv-sec-hd"><h2>📂 発表資料</h2><div class="anniv-sec-line"></div></div>
         <div id="anniv-images"><div style="text-align:center;color:rgba(200,160,255,0.5);padding:16px;font-size:0.85rem">読み込み中...</div></div>
       </div>
-      <div class="anniv-sec" style="margin-top:8px;">
-        <div class="anniv-sec-hd"><h2>📋 メッセージ・資料</h2><div class="anniv-sec-line"></div></div>
-        <div id="anniv-posts"><div style="text-align:center;color:rgba(200,160,255,0.5);padding:20px;font-size:0.85rem">読み込み中...</div></div>
-      </div>
-
       <!-- 音楽プレゼント -->
       <div class="anniv-sec" style="margin-top:20px;">
         <div class="anniv-sec-hd"><h2>🎵 音楽プレゼント</h2><div class="anniv-sec-line"></div></div>
@@ -1276,17 +1271,15 @@ async function renderAnnivPanel() {
       </div>
     </div>`;
 
-  const [posts, music, images] = await Promise.all([
-    fbGet('anniv/posts'), fbGet('anniv/music'), fbGet('anniv/images')
+  const [music, images] = await Promise.all([
+    fbGet('anniv/music'), fbGet('anniv/images')
   ]);
   renderAnnivImages(images);
-  renderAnnivPosts(posts);
   renderAnnivMusicList(music);
 
   if(!listeners['anniv']){
     listeners['anniv']=[];
     listeners['anniv'].push(fbListen('anniv/images', val=>renderAnnivImages(val)));
-    listeners['anniv'].push(fbListen('anniv/posts',  val=>renderAnnivPosts(val)));
     listeners['anniv'].push(fbListen('anniv/music',  val=>renderAnnivMusicList(val)));
   }
 }
@@ -1300,14 +1293,27 @@ function renderAnnivImages(val){
   // ファイル名順でソート
   const imgs = Object.entries(val).map(([k,v])=>({key:k,...v}))
     .sort((a,b)=>(a.name||'').localeCompare(b.name||'', 'ja'));
-  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:0 4px;">
-    ${imgs.map(img=>`
-      <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(180,120,255,0.15);aspect-ratio:1;cursor:pointer;position:relative;" onclick="window.open('${img.url}','_blank')">
-        <img src="${img.url}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="${esc(img.name||'')}">
-        ${img.name?`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);padding:2px 6px;font-size:0.6rem;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(img.name)}</div>`:''}
-      </div>`).join('')}
-  </div>`;
+  el.innerHTML = imgs.map((img,idx)=>`
+    <div style="margin-bottom:16px;">
+      <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:rgba(200,160,255,0.55);letter-spacing:0.08em;margin-bottom:6px;padding:0 2px;">
+        ${idx+1}. ${esc(img.name||'')}
+      </div>
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(180,120,255,0.2);background:rgba(0,0,0,0.3);cursor:pointer;"
+           onclick="annivImgFullscreen('${img.url}')">
+        <img src="${img.url}"
+          style="width:100%;height:auto;display:block;object-fit:contain;max-height:80vh;"
+          alt="${esc(img.name||'')}">
+      </div>
+    </div>`).join('');
 }
+
+window.annivImgFullscreen = function(url){
+  const overlay = document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:16px;box-sizing:border-box;';
+  overlay.innerHTML='<img src="'+url+'" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;">';
+  overlay.onclick=()=>overlay.remove();
+  document.body.appendChild(overlay);
+};
 
 function renderAnnivMusicList(val){
   const el=document.getElementById('anniv-music-list'); if(!el)return;
@@ -1392,20 +1398,7 @@ window.openAnnivLyricsPage = async function(fbKey){
   window.open(url,'_blank');
 };
 
-function renderAnnivPosts(val){
-  const el=document.getElementById('anniv-posts'); if(!el)return;
-  if(!val||!Object.keys(val).length){
-    el.innerHTML='<div style="text-align:center;color:rgba(200,160,255,0.4);padding:30px;font-size:0.85rem;">🌸 まだメッセージがありません</div>';
-    return;
-  }
-  const posts=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>a.ts-b.ts);
-  el.innerHTML=posts.map(p=>`
-    <div class="anniv-post">
-      <div class="anniv-post-time">🌸 ${p.time}${p.author?' — '+esc(p.author):''}</div>
-      <div class="anniv-post-text">${esc(p.text)}</div>
-      ${p.img?`<img src="${p.img}" style="margin-top:10px;max-width:100%;border-radius:10px;display:block;max-height:300px;object-fit:cover;opacity:0.9;" alt="">` :''}
-    </div>`).join('');
-}
+
 
 // ============================================================
 // WARIKAN TOOL (新版)
@@ -2932,10 +2925,9 @@ async function renderAdminContent(id) {
 
   // 20th Anniversary専用UI
   if(id==='anniv'){
-    let annivPosts = null, annivMusic = null;
+    let annivMusic = null;
     let annivImages = null;
     try {
-      annivPosts = await fbGet('anniv/posts');
       annivMusic = await fbGet('anniv/music');
       annivImages = await fbGet('anniv/images');
     }
@@ -2964,21 +2956,6 @@ async function renderAdminContent(id) {
 
 
 
-    let postItems = '';
-    if(annivPosts && Object.keys(annivPosts).length > 0){
-      const sorted = Object.entries(annivPosts).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts);
-      postItems = sorted.map(p=>`
-        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:rgba(180,120,255,0.06);border:1px solid rgba(180,120,255,0.15);border-radius:8px;margin-bottom:6px;">
-          <div style="flex:1;font-size:0.85rem;color:#2a1a3a;line-height:1.5;word-break:break-word;">
-            <div>${esc(p.text)}</div>
-            ${p.img?'<span style="font-size:0.72rem;color:#9060c0;">🖼 画像あり</span>':''}
-            <div style="font-size:0.7rem;color:#9060c0;margin-top:2px;">${p.time}${p.author?' — '+esc(p.author):''}</div>
-          </div>
-          <button style="background:none;border:none;color:#9060c0;cursor:pointer;font-size:0.9rem;padding:3px 6px;border-radius:5px;" onclick="adminDelAnnivPost('${p.fbKey}')">🗑</button>
-        </div>`).join('');
-    } else {
-      postItems = '<div style="padding:12px;color:#9060c0;font-size:0.85rem;text-align:center;">投稿がありません</div>';
-    }
 
     const musicCount = annivMusic ? Object.keys(annivMusic).length : 0;
     const musicItems = musicCount > 0
@@ -3041,24 +3018,7 @@ async function renderAdminContent(id) {
           </div>` : '<div style="font-size:0.82rem;color:rgba(200,160,255,0.5);text-align:center;padding:8px;">最大2曲に達しています</div>'}
         </div>
 
-        <div style="padding:0 16px 12px;border-bottom:1px solid rgba(180,120,255,0.1);">
-          <div style="font-size:0.78rem;color:rgba(200,160,255,0.7);margin-bottom:8px;font-weight:500;">📋 メッセージ・資料（追加・削除）</div>
-          <div style="margin-bottom:10px;">${postItems}</div>
-          <div style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(180,120,255,0.2);border-radius:10px;padding:12px;">
-            <div style="font-size:0.78rem;color:rgba(200,160,255,0.6);margin-bottom:6px;">＋ 新規投稿</div>
-            <textarea id="anniv-adm-post" style="width:100%;min-height:72px;padding:8px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:0.9rem;color:#2a1a3a;background:rgba(255,255,255,0.9);resize:vertical;outline:none;line-height:1.6;box-sizing:border-box;" placeholder="メッセージ・資料の内容を入力..."></textarea>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-              <input type="text" id="anniv-adm-author" placeholder="投稿者名（任意）" maxlength="20"
-                style="padding:7px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.85rem;color:#2a1a3a;background:rgba(255,255,255,0.9);outline:none;width:120px;">
-              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.82rem;color:#9060c0;cursor:pointer;background:rgba(255,255,255,0.9);white-space:nowrap;">
-                📷 画像
-                <input type="file" accept="image/*" style="display:none" onchange="onAnnivAdmImg(this)">
-              </label>
-              <span id="anniv-adm-img-name" style="font-size:0.75rem;color:#9040ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-              <button style="padding:8px 18px;background:linear-gradient(135deg,#9040ff,#6020c0);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;white-space:nowrap;" onclick="adminPostAnniv()">投稿する</button>
-            </div>
-          </div>
-        </div>
+
       </div>`;
     return;
   }
@@ -3753,39 +3713,6 @@ window.adminDelAnnivMusic = async function(fbKey){
 };
 
 // Anniv admin functions
-let annivAdmImgBuf = null;
-window.onAnnivAdmImg = function(inp){
-  const f=inp.files[0]; if(!f)return;
-  if(f.size>3*1024*1024){showToast('画像は3MB以下にしてください');inp.value='';return;}
-  const r=new FileReader();
-  r.onload=e=>{
-    annivAdmImgBuf={dataUrl:e.target.result};
-    const el=document.getElementById('anniv-adm-img-name');
-    if(el)el.textContent=f.name;
-  };
-  r.readAsDataURL(f);
-};
-
-window.adminPostAnniv = async function(){
-  const ta=document.getElementById('anniv-adm-post');
-  const authorEl=document.getElementById('anniv-adm-author');
-  const text=ta?ta.value.trim():'';
-  const author=authorEl?authorEl.value.trim():'';
-  if(!text&&!annivAdmImgBuf){showToast('テキストか画像を入力してください');return;}
-  const t=new Date();
-  const time=`${t.getMonth()+1}/${t.getDate()} ${pad(t.getHours())}:${pad(t.getMinutes())}`;
-  await fbPush('anniv/posts',{text,author,img:annivAdmImgBuf?annivAdmImgBuf.dataUrl:null,time,ts:Date.now()});
-  if(ta)ta.value=''; if(authorEl)authorEl.value=''; annivAdmImgBuf=null;
-  showToast('✓ 投稿しました🌸');
-  await renderAdminContent('anniv');
-};
-
-window.adminDelAnnivPost = async function(fbKey){
-  if(!confirm('この投稿を削除しますか？'))return;
-  await fbRemove(`anniv/posts/${fbKey}`);
-  showToast('✓ 投稿を削除しました');
-  await renderAdminContent('anniv');
-};
 
 window.previewAnnivPanel = async function(){
   activeTab='anniv';
