@@ -2219,40 +2219,52 @@ async function renderLovePanel() {
       <!-- 計画資料（ロードマップの上） -->
       <div id="love-plan-images-wrap" style="padding:14px 14px 0;"></div>
 
-      <div style="padding:16px 14px 4px;">
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:12px;">— ステージロードマップ —</div>
-        <div id="love-roadmap-grid" style="display:flex;flex-direction:column;gap:0;"></div>
+      <!-- ===== 恋愛2601 ===== -->
+      <div style="margin:16px 14px 0;padding:12px 16px 4px;background:rgba(255,220,235,0.18);border:1.5px solid rgba(220,60,100,0.18);border-radius:14px;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:#c0305a;font-weight:700;letter-spacing:0.1em;margin-bottom:12px;text-align:center;">💕 恋愛2601</div>
+
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:8px;">— ステージロードマップ —</div>
+        <div id="love-roadmap-grid" style="display:flex;flex-direction:column;gap:0;margin-bottom:12px;"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 8px;text-align:center;">
+            <div style="font-size:0.68rem;color:#9a8880;margin-bottom:3px;">次の重要日</div>
+            <div id="love-info-nextday" style="font-family:'Shippori Mincho',serif;font-size:1.05rem;color:#3a2820;font-weight:700;line-height:1.4;">—</div>
+          </div>
+          <div id="love-info-about" style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 8px;">
+            <div style="font-size:0.68rem;color:#9a8880;margin-bottom:3px;">相手について</div>
+            <div style="font-size:0.78rem;color:#3a2820;">読み込み中...</div>
+          </div>
+        </div>
+
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:6px;">📅 発展カレンダー</div>
+        <div id="love-cal-wrap" style="overflow:hidden;width:100%;box-sizing:border-box;"></div>
       </div>
 
-      <!-- ステータスカード -->
-      <div style="padding:14px 14px 0;">
+      <!-- ===== 恋愛2610 ===== -->
+      <div style="margin:16px 14px 24px;padding:12px 16px 4px;background:rgba(220,200,255,0.12);border:1.5px solid rgba(160,100,220,0.2);border-radius:14px;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:#8040b0;font-weight:700;letter-spacing:0.1em;margin-bottom:12px;text-align:center;">💜 恋愛2610</div>
 
-        <!-- 3カラム数字カード -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;">
-          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:12px 8px;text-align:center;">
-            <div style="font-size:0.7rem;color:#9a8880;letter-spacing:0.05em;margin-bottom:4px;">現在のステージ</div>
-            <div id="love-info-stage" style="font-family:'Shippori Mincho',serif;font-size:1.6rem;color:#3a2820;font-weight:700;">—</div>
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#b090d0;letter-spacing:0.1em;text-align:center;margin-bottom:8px;">— ステージロードマップ —</div>
+        <div id="love-roadmap-grid-2610" style="display:flex;flex-direction:column;gap:0;margin-bottom:12px;"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div style="background:#f0eef8;border:1.5px solid #d8d0e8;border-radius:10px;padding:10px 8px;text-align:center;">
+            <div style="font-size:0.68rem;color:#9080b0;margin-bottom:3px;">次の重要日</div>
+            <div id="love-info-nextday-2610" style="font-family:'Shippori Mincho',serif;font-size:1.05rem;color:#3a2860;font-weight:700;line-height:1.4;">—</div>
           </div>
-          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:12px 8px;text-align:center;">
-            <div style="font-size:0.7rem;color:#9a8880;letter-spacing:0.05em;margin-bottom:4px;">関係開始から</div>
-            <div id="love-info-duration" style="font-family:'Shippori Mincho',serif;font-size:1.6rem;color:#3a2820;font-weight:700;">—</div>
-          </div>
-          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:12px 8px;text-align:center;">
-            <div style="font-size:0.7rem;color:#9a8880;letter-spacing:0.05em;margin-bottom:4px;">次の重要日</div>
-            <div id="love-info-nextday" style="font-family:'Shippori Mincho',serif;font-size:1.2rem;color:#3a2820;font-weight:700;line-height:1.4;">—</div>
+          <div id="love-info-about-2610" style="background:#f0eef8;border:1.5px solid #d8d0e8;border-radius:10px;padding:10px 8px;">
+            <div style="font-size:0.68rem;color:#9080b0;margin-bottom:3px;">相手について</div>
+            <div style="font-size:0.78rem;color:#3a2860;">読み込み中...</div>
           </div>
         </div>
 
-        <!-- 相手について -->
-        <div id="love-info-about" style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:14px 16px;margin-bottom:10px;">
-          <div style="font-size:0.8rem;color:#6a5a54;font-weight:600;margin-bottom:10px;">相手について</div>
-          <div style="text-align:center;color:#9a8880;font-size:0.82rem;padding:8px 0;">読み込み中...</div>
-        </div>
-
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#b090d0;letter-spacing:0.1em;text-align:center;margin-bottom:6px;">📅 発展カレンダー</div>
+        <div id="love-cal-wrap-2610" style="overflow:hidden;width:100%;box-sizing:border-box;"></div>
       </div>
 
       <!-- 恋愛2025 週報 -->
-      <div class="love-sec" style="margin-top:16px;">
+      <div class="love-sec" style="margin-top:0;">
         <div class="love-sec-hd"><h2>📰 恋愛2025</h2><div class="love-sec-line"></div></div>
         <div id="love2025-wrap">
           <div style="text-align:center;color:#d090a8;padding:20px;font-size:0.85rem;">読み込み中...</div>
@@ -2269,24 +2281,30 @@ async function renderLovePanel() {
         <div class="love-sec-hd"><h2>🎵 音楽プレゼント</h2><div class="love-sec-line"></div></div>
         <div id="love-music-list"><div style="text-align:center;color:#d090a8;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
       </div>
-
-      <!-- 発展カレンダー -->
-      <div class="love-sec" style="margin-top:24px;padding-bottom:24px;">
-        <div class="love-sec-hd"><h2>📅 発展カレンダー</h2><div class="love-sec-line"></div></div>
-        <div id="love-cal-wrap" style="overflow:hidden;width:100%;box-sizing:border-box;"></div>
-      </div>
     </div>`;
 
-  const [posts, music, weekly, loveInfo, loveNotices, lovePlanImages] = await Promise.all([
-    fbGet('love/posts'), fbGet('love/music'), fbGet('love/weekly'), fbGet('love/info'), fbGet('settings/loveNotices'), fbGet('love/planImages')
+  const [posts, music, weekly, loveInfo, loveNotices, lovePlanImages,
+         info2610, curStage2610, calmarks2610] = await Promise.all([
+    fbGet('love/posts'), fbGet('love/music'), fbGet('love/weekly'),
+    fbGet('love/info'), fbGet('settings/loveNotices'), fbGet('love/planImages'),
+    fbGet('love/info2610'), fbGet('love/currentStage2610'), fbGet('love/calmarks2610')
   ]);
   renderLoveNotices(loveNotices);
   renderLovePlanImages(lovePlanImages);
-  renderLoveInfo(loveInfo);
 
-  // ロードマップ（currentStageをFirebaseから取得）
-  const curStage = await fbGet('love/currentStage') || 4;
-  renderLoveRoadmap(curStage);
+  // 恋愛2601
+  renderLoveInfo(loveInfo);
+  const curStage2601 = await fbGet('love/currentStage') || 4;
+  renderLoveRoadmap(curStage2601, 'love-roadmap-grid');
+  const calmarks2601 = await fbGet('love/calmarks');
+  window._loveCalMarks = calmarks2601 || {};
+  renderLoveCalGrid('love-cal-wrap', '2601');
+
+  // 恋愛2610
+  renderLoveInfo2610(info2610);
+  renderLoveRoadmap(curStage2610 || 4, 'love-roadmap-grid-2610');
+  window._loveCalMarks2610 = calmarks2610 || {};
+  renderLoveCalGrid('love-cal-wrap-2610', '2610');
   renderLovePosts(posts);
   renderLoveMusicList(music);
   renderLove2025(weekly);
@@ -2297,13 +2315,15 @@ async function renderLovePanel() {
     listeners['love']=[];
     listeners['love'].push(fbListen('settings/loveNotices', val=>renderLoveNotices(val)));
     listeners['love'].push(fbListen('love/planImages',      val=>renderLovePlanImages(val)));
-    listeners['love'].push(fbListen('love/currentStage',    val=>renderLoveRoadmap(val||4)));
-    listeners['love'].push(fbListen('love/info',     val=>renderLoveInfo(val)));
+    listeners['love'].push(fbListen('love/currentStage',   val=>renderLoveRoadmap(val||4,'love-roadmap-grid')));
+    listeners['love'].push(fbListen('love/info',             val=>renderLoveInfo(val)));
+    listeners['love'].push(fbListen('love/calmarks',         val=>{ window._loveCalMarks=val||{}; renderLoveCalGrid('love-cal-wrap','2601'); }));
+    listeners['love'].push(fbListen('love/currentStage2610', val=>renderLoveRoadmap(val||4,'love-roadmap-grid-2610')));
+    listeners['love'].push(fbListen('love/info2610',         val=>renderLoveInfo2610(val)));
+    listeners['love'].push(fbListen('love/calmarks2610',     val=>{ window._loveCalMarks2610=val||{}; renderLoveCalGrid('love-cal-wrap-2610','2610'); }));
     listeners['love'].push(fbListen('love/posts',    val=>renderLovePosts(val)));
     listeners['love'].push(fbListen('love/music',    val=>renderLoveMusicList(val)));
     listeners['love'].push(fbListen('love/weekly',   val=>renderLove2025(val)));
-    listeners['love'].push(fbListen('love/stage',    val=>{ loveStage=(val||'').replace(/^ステージ/,'') || '4-1'; const el=document.getElementById('love-stage-disp'); if(el)el.textContent=loveStage; }));
-    listeners['love'].push(fbListen('love/calmarks', val=>{ window._loveCalMarks=val||{}; renderLoveCalGrid(); }));
   }
 }
 
@@ -2326,8 +2346,9 @@ function renderLove2025(val){
 }
 
 // ステージロードマップ描画（currentStage連動）
-function renderLoveRoadmap(cur){
-  const grid = document.getElementById('love-roadmap-grid'); if(!grid) return;
+function renderLoveRoadmap(cur, gridId){
+  gridId = gridId || 'love-roadmap-grid';
+  const grid = document.getElementById(gridId); if(!grid) return;
   cur = parseInt(cur) || 4;
   const stages = [
     {n:1, label:'ステージ 1', desc:'挨拶・視線が合う程度'},
@@ -2376,6 +2397,29 @@ function renderLovePlanImages(val){
            alt="${esc(img.name||'')}"
            onclick="(function(u){const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:12px;box-sizing:border-box;';o.innerHTML='<img src=\\''+u+'\\' style=\\'max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;\\'>';o.onclick=function(){o.remove();};document.body.appendChild(o);})(this.src)">
     </div>`).join('');
+}
+
+// 恋愛2610 ステータス表示
+function renderLoveInfo2610(val){
+  const info = val || {};
+  const ndEl = document.getElementById('love-info-nextday-2610');
+  if(ndEl){
+    const days = (info.nextdays||[]).filter(Boolean);
+    ndEl.innerHTML = days.length ? days.map(d=>esc(d)).join('<br>') : '—';
+  }
+  const abEl = document.getElementById('love-info-about-2610');
+  if(abEl){
+    const rows = (info.about||[]).slice(0,3);
+    const rowsHtml = rows.length
+      ? `<div style="font-size:0.68rem;color:#9080b0;margin-bottom:3px;">相手について</div>`
+        + rows.map((r,i)=>`
+          <div style="display:flex;justify-content:space-between;padding:3px 0;${i<rows.length-1?'border-bottom:1px solid #e0d8f4;':''}">
+            <span style="font-size:0.72rem;color:#9080b0;">${esc(r.label||'')}</span>
+            <span style="font-size:0.72rem;color:#3a2860;text-align:right;">${esc(r.value||'')}</span>
+          </div>`).join('')
+      : '<div style="font-size:0.68rem;color:#9080b0;">相手について</div><div style="font-size:0.72rem;color:#9080b0;">未設定</div>';
+    abEl.innerHTML = rowsHtml;
+  }
 }
 
 // 恋愛お知らせ表示
@@ -2523,13 +2567,18 @@ let loveCal = { year: new Date().getFullYear(), month: new Date().getMonth() };
 async function renderLoveCal() {
   const marks = await fbGet('love/calmarks');
   window._loveCalMarks = marks || {};
-  renderLoveCalGrid();
+  renderLoveCalGrid('love-cal-wrap','2601');
 }
 
-function renderLoveCalGrid() {
-  const wrap = document.getElementById('love-cal-wrap'); if(!wrap) return;
-  const { year, month } = loveCal;
-  const marks = window._loveCalMarks || {};
+function renderLoveCalGrid(wrapId, suffix) {
+  wrapId = wrapId || 'love-cal-wrap';
+  suffix = suffix || '2601';
+  const wrap = document.getElementById(wrapId); if(!wrap) return;
+  const calKey = 'loveCal_'+suffix;
+  if(!window[calKey]) window[calKey] = { year: new Date().getFullYear(), month: new Date().getMonth() };
+  const { year, month } = window[calKey];
+  const marksKey = suffix==='2610' ? '_loveCalMarks2610' : '_loveCalMarks';
+  const marks = window[marksKey] || {};
   const label = `${year}年 ${month+1}月`;
   const DOW = ['日','月','火','水','木','金','土'];
   const first = new Date(year, month, 1).getDay();
@@ -2560,7 +2609,7 @@ function renderLoveCalGrid() {
     }
 
     const isAdmin = unlocked.includes('admin');
-    grid += `<div onclick="${isAdmin?`loveDayClick('${ds}')`:'void 0'}" style="`+
+    grid += `<div onclick="${isAdmin?`loveDayClick('${ds}','${suffix}')`:'void 0'}" style="`+
       `display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;`+
       `padding:4px 2px;min-height:48px;`+
       `border-radius:6px;cursor:${isAdmin?'pointer':'default'};`+
@@ -2573,12 +2622,13 @@ function renderLoveCalGrid() {
       innerHtml + `</div>`;
   }
 
+  const calObj = window['loveCal_'+suffix];
   wrap.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <button onclick="${canGoPrev?'loveCal.month--;if(loveCal.month<0){loveCal.month=11;loveCal.year--;}renderLoveCalGrid();':'void 0'}"
+      <button onclick="${canGoPrev?`window['loveCal_${suffix}'].month--;if(window['loveCal_${suffix}'].month<0){window['loveCal_${suffix}'].month=11;window['loveCal_${suffix}'].year--;}renderLoveCalGrid('${wrapId}','${suffix}');`:'void 0'}"
         style="background:none;border:none;color:${canGoPrev?'#d090a8':'rgba(208,144,168,0.2)'};font-size:1.3rem;cursor:${canGoPrev?'pointer':'default'};padding:4px 10px;">‹</button>
       <span style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#c06080;">${label}</span>
-      <button onclick="loveCal.month++;if(loveCal.month>11){loveCal.month=0;loveCal.year++;}renderLoveCalGrid();"
+      <button onclick="window['loveCal_${suffix}'].month++;if(window['loveCal_${suffix}'].month>11){window['loveCal_${suffix}'].month=0;window['loveCal_${suffix}'].year++;}renderLoveCalGrid('${wrapId}','${suffix}');"
         style="background:none;border:none;color:#d090a8;font-size:1.3rem;cursor:pointer;padding:4px 10px;">›</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;width:100%;box-sizing:border-box;">${grid}</div>
@@ -2591,16 +2641,20 @@ function renderLoveCalGrid() {
     </div>`;
 }
 
-window.loveDayClick = async function(ds){
-  const marks = window._loveCalMarks || {};
+window.loveDayClick = async function(ds, suffix){
+  suffix = suffix || '2601';
+  const marksKey = suffix==='2610' ? '_loveCalMarks2610' : '_loveCalMarks';
+  const fbPath = suffix==='2610' ? 'love/calmarks2610' : 'love/calmarks';
+  const wrapId = suffix==='2610' ? 'love-cal-wrap-2610' : 'love-cal-wrap';
+  const marks = window[marksKey] || {};
   const cur = marks[ds] || 'none';
   const keys = LOVE_MARKS.map(m=>m.key);
   const next = keys[(keys.indexOf(cur)+1) % keys.length];
   if(next==='none'){ delete marks[ds]; }
   else { marks[ds]=next; }
-  window._loveCalMarks = marks;
-  await fbSet('love/calmarks', marks);
-  renderLoveCalGrid();
+  window[marksKey] = marks;
+  await fbSet(fbPath, marks);
+  renderLoveCalGrid(wrapId, suffix);
 };
 
 // BGM
@@ -2697,7 +2751,8 @@ async function renderAdmin() {
       </div>`).join('');
   };
 
-  const rows=TABS.filter(t=>t.id!=='admin').map(t=>`
+  // パスワード不要タブ（love/sample/birthday/anniv）は除外
+  const rows=TABS.filter(t=>!['admin','love','sample','birthday','anniv'].includes(t.id)).map(t=>`
     <div class="admin-row">
       <div class="admin-tab-nm">${t.id}</div>
       <input class="admin-sn-input" id="sn-${t.id}" type="text" value="${esc(snCache[t.id]||'')}"
@@ -3162,6 +3217,7 @@ async function renderAdminContent(id) {
   if(id==='love'){
     let posts = null, bgm = null, loveMusic = null, weekly = null, loveInfo = null;
     let loveCurStage = 4, lovePlanImgs = null;
+    let loveCurStage2610 = 4;
     try {
       posts = await fbGet('love/posts');
       bgm   = await fbGet('love/bgm');
@@ -3169,6 +3225,7 @@ async function renderAdminContent(id) {
       weekly = await fbGet('love/weekly');
       loveInfo = await fbGet('love/info');
       loveCurStage = (await fbGet('love/currentStage')) || 4;
+      loveCurStage2610 = (await fbGet('love/currentStage2610')) || 4;
       lovePlanImgs = await fbGet('love/planImages');
     } catch(e) {
       panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
@@ -3206,6 +3263,9 @@ async function renderAdminContent(id) {
     const info = loveInfo || {};
     const aboutRows = info.about || [{label:'年齢差',value:''},{label:'部署',value:''},{label:'タイプ',value:''}];
     const nextdays = info.nextdays || ['',''];
+    const info2610val = await fbGet('love/info2610') || {};
+    const about2610 = info2610val.about || [{label:'年齢差',value:''},{label:'部署',value:''},{label:'タイプ',value:''}];
+    const nextdays2610 = info2610val.nextdays || ['',''];
 
     panel.innerHTML=`
       <div class="admin-love-card">
@@ -3214,11 +3274,19 @@ async function renderAdminContent(id) {
         <!-- ロードマップ現在地 & 計画資料 -->
         <div class="admin-love-subsec">
           <div class="admin-love-subsec-title">🗺 ロードマップ現在地</div>
-          <div style="display:flex;gap:8px;align-items:center;">
+          <div style="margin-bottom:6px;font-size:0.75rem;color:#d090a8;">💕 恋愛2601</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
             <select id="love-cur-stage" style="flex:1;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;">
               ${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${loveCurStage==n?'selected':''}>${n}</option>`).join('')}
             </select>
             <button onclick="adminSaveCurrentStage()" class="love-admin-btn" style="white-space:nowrap;">保存</button>
+          </div>
+          <div style="margin-bottom:6px;font-size:0.75rem;color:#9060c0;">💜 恋愛2610</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="love-cur-stage-2610" style="flex:1;padding:8px 10px;border:1.5px solid rgba(160,100,220,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">
+              ${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${loveCurStage2610==n?'selected':''}>${n}</option>`).join('')}
+            </select>
+            <button onclick="adminSaveCurrentStage2610()" class="love-admin-btn" style="white-space:nowrap;background:linear-gradient(135deg,#9040ff,#6020c0);">保存</button>
           </div>
         </div>
 
@@ -3241,7 +3309,7 @@ async function renderAdminContent(id) {
 
         <!-- ステータス情報編集 -->
         <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">📊 ステータスカード編集</div>
+          <div class="admin-love-subsec-title">📊 ステータスカード編集（💕 恋愛2601）</div>
           <div style="display:flex;flex-direction:column;gap:8px;">
             <div style="display:flex;gap:8px;align-items:center;">
               <label style="font-size:0.78rem;color:#d090a8;width:80px;flex-shrink:0;">現在のステージ</label>
@@ -3270,7 +3338,32 @@ async function renderAdminContent(id) {
                   style="flex:1;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;">
               </div>`).join('')}
             </div>
-            <button onclick="adminSaveLoveInfo(${aboutRows.length})" class="love-admin-btn" style="margin-top:4px;">💾 保存</button>
+            <button onclick="adminSaveLoveInfo(${aboutRows.length})" class="love-admin-btn" style="margin-top:4px;">💾 保存（2601）</button>
+          </div>
+        </div>
+
+        <!-- 2610ステータス編集 -->
+        <div class="admin-love-subsec">
+          <div class="admin-love-subsec-title" style="color:#8040b0;">📊 ステータスカード編集（💜 恋愛2610）</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="font-size:0.78rem;color:#9060c0;margin-top:4px;">次の重要日（最大2日）</div>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="li2610-day1" value="${esc(nextdays2610[0]||'')}" placeholder="例：4/1(水)" maxlength="15"
+                style="flex:1;padding:7px 10px;border:1.5px solid rgba(160,100,220,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">
+              <input type="text" id="li2610-day2" value="${esc(nextdays2610[1]||'')}" placeholder="例：4/5(日)" maxlength="15"
+                style="flex:1;padding:7px 10px;border:1.5px solid rgba(160,100,220,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">
+            </div>
+            <div style="font-size:0.78rem;color:#9060c0;margin-top:4px;">相手について（3項目）</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              ${about2610.map((r,i)=>`
+              <div style="display:flex;gap:6px;">
+                <input type="text" id="li2610-alabel-${i}" value="${esc(r.label||'')}" placeholder="ラベル" maxlength="10"
+                  style="width:80px;padding:6px 8px;border:1.5px solid rgba(160,100,220,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#f8f4ff;outline:none;">
+                <input type="text" id="li2610-avalue-${i}" value="${esc(r.value||'')}" placeholder="値" maxlength="30"
+                  style="flex:1;padding:6px 8px;border:1.5px solid rgba(160,100,220,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#f8f4ff;outline:none;">
+              </div>`).join('')}
+            </div>
+            <button onclick="adminSaveLoveInfo2610(${about2610.length})" class="love-admin-btn" style="margin-top:4px;background:linear-gradient(135deg,#9040ff,#6020c0);">💾 保存（2610）</button>
           </div>
         </div>
 
@@ -3343,16 +3436,22 @@ async function renderAdminContent(id) {
         <div class="admin-love-subsec">
           <div class="admin-love-subsec-title">📅 発展カレンダー（日付を指定してマーク）</div>
           <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center;">
-            <input type="date" id="love-cal-date" style="flex:1;min-width:130px;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:white;outline:none;">
-            <select id="love-cal-mark" style="flex:1;min-width:100px;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:white;outline:none;">
+            <select id="love-cal-target" style="padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:white;outline:none;">
+              <option value="2601">💕 恋愛2601</option>
+              <option value="2610">💜 恋愛2610</option>
+            </select>
+            <input type="date" id="love-cal-date" style="flex:1;min-width:110px;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:white;outline:none;">
+            <select id="love-cal-mark" style="flex:1;min-width:90px;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:white;outline:none;">
               <option value="big">💗 大発展</option>
               <option value="mid">💕 中発展</option>
               <option value="small">🌸 小発展</option>
+              <option value="sight">👀 見発展</option>
+              <option value="off">🏖 休暇</option>
               <option value="none">✕ 削除</option>
             </select>
             <button onclick="adminSetCalMark()" class="love-admin-btn" style="white-space:nowrap;">設定</button>
           </div>
-          <div style="font-size:0.72rem;color:#d090a8;">例：2026-03-21 → 💕 中発展 で設定。「✕ 削除」でマークを消去します。</div>
+          <div style="font-size:0.72rem;color:#d090a8;">対象（2601/2610）を選んで日付・マークを設定します。</div>
         </div>
 
         <!-- 掲示板 -->
@@ -3964,7 +4063,12 @@ window.adminSaveNotices = async function(type, idPrefix, max){
 window.adminSaveCurrentStage = async function(){
   const v = parseInt(document.getElementById('love-cur-stage')?.value||4);
   await fbSet('love/currentStage', v);
-  showToast('✓ ロードマップ現在地を保存しました');
+  showToast('✓ 恋愛2601のロードマップを保存しました');
+};
+window.adminSaveCurrentStage2610 = async function(){
+  const v = parseInt(document.getElementById('love-cur-stage-2610')?.value||4);
+  await fbSet('love/currentStage2610', v);
+  showToast('✓ 恋愛2610のロードマップを保存しました');
 };
 
 window.adminUploadLovePlanImages = async function(inp){
@@ -3989,6 +4093,19 @@ window.adminDelLovePlanImage = async function(fbKey){
   await renderAdminContent('love');
 };
 
+window.adminSaveLoveInfo2610 = async function(rowCount){
+  const day1  = document.getElementById('li2610-day1')?.value.trim()||'';
+  const day2  = document.getElementById('li2610-day2')?.value.trim()||'';
+  const about = [];
+  for(let i=0;i<rowCount;i++){
+    const label = document.getElementById('li2610-alabel-'+i)?.value.trim()||'';
+    const value = document.getElementById('li2610-avalue-'+i)?.value.trim()||'';
+    if(label) about.push({label, value});
+  }
+  await fbSet('love/info2610', {nextdays:[day1,day2], about, ts:Date.now()});
+  showToast('✓ 恋愛2610のステータスを保存しました💜');
+};
+
 window.adminSaveLoveInfo = async function(rowCount){
   const stage    = document.getElementById('li-stage')?.value.trim()||'';
   const duration = document.getElementById('li-duration')?.value.trim()||'';
@@ -4001,21 +4118,24 @@ window.adminSaveLoveInfo = async function(rowCount){
     if(label) about.push({label, value});
   }
   await fbSet('love/info', {stage, duration, nextdays:[day1,day2], about, ts:Date.now()});
-  showToast('✓ ステータス情報を保存しました💕');
+  showToast('✓ 恋愛2601のステータスを保存しました💕');
 };
 
 window.adminSetCalMark = async function(){
-  const dateEl = document.getElementById('love-cal-date');
-  const markEl = document.getElementById('love-cal-mark');
-  const date = dateEl?.value;
-  const mark = markEl?.value;
+  const targetEl = document.getElementById('love-cal-target');
+  const dateEl   = document.getElementById('love-cal-date');
+  const markEl   = document.getElementById('love-cal-mark');
+  const target = targetEl?.value || '2601';
+  const date   = dateEl?.value;
+  const mark   = markEl?.value;
   if(!date){ showToast('日付を入力してください'); return; }
+  const fbPath = target==='2610' ? 'love/calmarks2610/'+date : 'love/calmarks/'+date;
   if(mark === 'none'){
-    await fbRemove('love/calmarks/'+date);
+    await fbRemove(fbPath);
     showToast('✓ マークを削除しました');
   } else {
-    await fbSet('love/calmarks/'+date, mark);
-    showToast('✓ カレンダーに設定しました');
+    await fbSet(fbPath, mark);
+    showToast('✓ カレンダーに設定しました（'+target+'）');
   }
 };
 
