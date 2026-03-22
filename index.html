@@ -1247,7 +1247,7 @@ async function renderAnnivPanel() {
         <div style="margin-top:16px;font-size:1.6rem;opacity:0.3;letter-spacing:12px;">🍾🥂🌸</div>
       </div>
       <div class="anniv-sec" style="margin-top:8px;">
-        <div class="anniv-sec-hd"><h2>🖼 フォトアルバム</h2><div class="anniv-sec-line"></div></div>
+        <div class="anniv-sec-hd"><h2>📂 発表資料</h2><div class="anniv-sec-line"></div></div>
         <div id="anniv-images"><div style="text-align:center;color:rgba(200,160,255,0.5);padding:16px;font-size:0.85rem">読み込み中...</div></div>
       </div>
       <div class="anniv-sec" style="margin-top:8px;">
@@ -1294,14 +1294,17 @@ async function renderAnnivPanel() {
 function renderAnnivImages(val){
   const el=document.getElementById('anniv-images'); if(!el)return;
   if(!val||!Object.keys(val).length){
-    el.innerHTML='<div style="text-align:center;color:rgba(200,160,255,0.4);padding:16px;font-size:0.85rem;">🖼 画像はまだありません</div>';
+    el.innerHTML='<div style="text-align:center;color:rgba(200,160,255,0.4);padding:16px;font-size:0.85rem;">📂 資料はまだありません</div>';
     return;
   }
-  const imgs = Object.entries(val).map(([k,v])=>({key:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
+  // ファイル名順でソート
+  const imgs = Object.entries(val).map(([k,v])=>({key:k,...v}))
+    .sort((a,b)=>(a.name||'').localeCompare(b.name||'', 'ja'));
   el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:0 4px;">
     ${imgs.map(img=>`
-      <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(180,120,255,0.15);aspect-ratio:1;cursor:pointer;" onclick="window.open('${img.url}','_blank')">
-        <img src="${img.url}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="${esc(img.caption||'')}">
+      <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(180,120,255,0.15);aspect-ratio:1;cursor:pointer;position:relative;" onclick="window.open('${img.url}','_blank')">
+        <img src="${img.url}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="${esc(img.name||'')}">
+        ${img.name?`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);padding:2px 6px;font-size:0.6rem;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(img.name)}</div>`:''}
       </div>`).join('')}
   </div>`;
 }
@@ -2946,15 +2949,18 @@ async function renderAdminContent(id) {
     // 画像一覧HTML
     const imgCount = annivImages ? Object.keys(annivImages).length : 0;
     const imgList = imgCount > 0
-      ? Object.entries(annivImages).map(([k,v])=>`
+      ? Object.entries(annivImages)
+          .map(([k,v])=>({key:k,...v}))
+          .sort((a,b)=>(a.name||'').localeCompare(b.name||'', 'ja'))
+          .map(img=>`
           <div style="position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;border:1px solid rgba(180,120,255,0.2);">
-            <img src="${v.url}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">
+            <img src="${img.url}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">
             <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);padding:3px 6px;display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-size:0.65rem;color:rgba(255,255,255,0.7);">${v.order!==undefined?v.order+1+'枚目':''}</span>
-              <button onclick="adminDelAnnivImage('${k}')" style="background:none;border:none;color:rgba(255,160,160,0.9);cursor:pointer;font-size:0.8rem;padding:1px 4px;">✕</button>
+              <span style="font-size:0.6rem;color:rgba(255,255,255,0.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%;">${esc(img.name||'')}</span>
+              <button onclick="adminDelAnnivImage('${img.key}')" style="background:none;border:none;color:rgba(255,160,160,0.9);cursor:pointer;font-size:0.8rem;padding:1px 4px;">✕</button>
             </div>
           </div>`).join('')
-      : '<div style="font-size:0.82rem;color:rgba(200,160,255,0.5);padding:8px;text-align:center;grid-column:1/-1;">画像がありません</div>';
+      : '<div style="font-size:0.82rem;color:rgba(200,160,255,0.5);padding:8px;text-align:center;grid-column:1/-1;">資料がありません</div>';
 
 
 
@@ -2996,20 +3002,19 @@ async function renderAdminContent(id) {
         </div>
         <div style="padding:10px 16px 0;">${periodNotice}${endDateHtml}</div>
 
-        <!-- 画像管理（最大11枚） -->
+        <!-- 発表資料管理（無制限） -->
         <div style="padding:12px 16px;border-bottom:1px solid rgba(180,120,255,0.1);">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-size:0.78rem;color:rgba(200,160,255,0.7);font-weight:500;">🖼 フォトアルバム（最大11枚）${imgCount>0?'（'+imgCount+'枚登録中）':''}</div>
+            <div style="font-size:0.78rem;color:rgba(200,160,255,0.7);font-weight:500;">📂 発表資料${imgCount>0?'（'+imgCount+'枚登録中）':''}</div>
             ${imgCount>0?`<button onclick="adminClearAllAnnivImages()" style="font-size:0.72rem;color:rgba(255,120,120,0.8);background:none;border:none;cursor:pointer;">全削除</button>`:''}
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;">
             ${imgList}
           </div>
-          ${imgCount < 11 ? `
           <label style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;background:rgba(255,255,255,0.03);border:1.5px dashed rgba(180,120,255,0.3);border-radius:10px;cursor:pointer;font-size:0.82rem;color:rgba(200,160,255,0.7);">
-            🖼 画像を追加（残り${11-imgCount}枚）複数選択可
+            📂 画像を追加（複数選択可・上限なし）
             <input type="file" accept="image/*" multiple style="display:none" onchange="adminUploadAnnivImages(this)">
-          </label>` : '<div style="font-size:0.78rem;color:rgba(200,160,255,0.5);text-align:center;">最大11枚に達しています</div>'}
+          </label>
         </div>
 
         <!-- 音楽管理 -->
@@ -3477,20 +3482,16 @@ async function renderAdminContent(id) {
 window.adminUploadAnnivImages = async function(inp){
   const files = Array.from(inp.files);
   if(!files.length) return;
-  const existing = await fbGet('anniv/images') || {};
-  const curCount = Object.keys(existing).length;
-  const available = 11 - curCount;
-  if(available <= 0){ showToast('最大11枚に達しています'); inp.value=''; return; }
-  const toUpload = files.slice(0, available);
-  if(files.length > available) showToast(`${files.length}枚選択されましたが残り${available}枚のみ登録します`);
   showToast('アップロード中...');
-  for(let i=0; i<toUpload.length; i++){
-    const f = toUpload[i];
+  let uploaded = 0;
+  for(let i=0; i<files.length; i++){
+    const f = files[i];
     if(f.size > 3*1024*1024){ showToast(`${f.name} は3MB超のためスキップ`); continue; }
     const url = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(f); });
-    await fbPush('anniv/images', {url, order: curCount+i, ts: Date.now(), name: f.name});
+    await fbPush('anniv/images', {url, ts: Date.now(), name: f.name});
+    uploaded++;
   }
-  showToast(`✓ ${toUpload.length}枚をアップロードしました`);
+  showToast(`✓ ${uploaded}枚をアップロードしました`);
   inp.value='';
   await renderAdminContent('anniv');
 };
