@@ -2216,72 +2216,12 @@ async function renderLovePanel() {
       <!-- お知らせ枠 -->
       <div id="love-notices-wrap" style="padding:14px 14px 0;"></div>
 
+      <!-- 計画資料（ロードマップの上） -->
+      <div id="love-plan-images-wrap" style="padding:14px 14px 0;"></div>
+
       <div style="padding:16px 14px 4px;">
         <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:12px;">— ステージロードマップ —</div>
-
-        <div style="display:flex;flex-direction:column;gap:0;">
-          <!-- ステージ1 -->
-          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#6a5a54;font-weight:600;">ステージ 1</div>
-              <div style="font-size:0.74rem;color:#9a8880;margin-top:2px;">挨拶・視線が合う程度</div>
-            </div>
-            <div style="font-size:0.75rem;color:#9a8880;font-style:italic;">✓ 完了</div>
-          </div>
-          <div style="width:1px;height:10px;background:#c0b0aa;margin:0 auto;"></div>
-
-          <!-- ステージ2 -->
-          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#6a5a54;font-weight:600;">ステージ 2</div>
-              <div style="font-size:0.74rem;color:#9a8880;margin-top:2px;">笑顔・手振り・短い会話</div>
-            </div>
-            <div style="font-size:0.75rem;color:#9a8880;font-style:italic;">✓ 完了</div>
-          </div>
-          <div style="width:1px;height:10px;background:#c0b0aa;margin:0 auto;"></div>
-
-          <!-- ステージ3 -->
-          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#6a5a54;font-weight:600;">ステージ 3</div>
-              <div style="font-size:0.74rem;color:#9a8880;margin-top:2px;">相手発信の会話・ボディータッチ・個人的な共有</div>
-            </div>
-            <div style="font-size:0.75rem;color:#9a8880;font-style:italic;">✓ 完了</div>
-          </div>
-          <div style="width:1px;height:10px;background:#d090a8;margin:0 auto;"></div>
-
-          <!-- ステージ4（現在地・ハイライト） -->
-          <div style="background:linear-gradient(135deg,#fff0f5,#ffe4ee);border:2px solid #e8406a;border-radius:10px;padding:12px 14px;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-              <div>
-                <div style="font-family:'Shippori Mincho',serif;font-size:0.92rem;color:#c0305a;font-weight:700;">ステージ 4　← 現在地</div>
-                <div style="font-size:0.74rem;color:#c06080;margin-top:4px;line-height:1.6;">
-                  会話量増加・約束・来てほしい発言・誕生日確認待ち<br>
-                  3/22(日)・3/25(水)が重要日
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style="width:1px;height:10px;background:#808080;margin:0 auto;"></div>
-
-          <!-- ステージ5 -->
-          <div style="background:#3a3a3a;border:1.5px solid #555;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#aaa;font-weight:600;">ステージ 5</div>
-              <div style="font-size:0.74rem;color:#888;margin-top:2px;">苗字呼び・連絡先交換・プライベートな誘い</div>
-            </div>
-            <div style="font-size:0.75rem;color:#888;font-style:italic;">次の目標</div>
-          </div>
-          <div style="width:1px;height:10px;background:#505050;margin:0 auto;"></div>
-
-          <!-- ステージ6 -->
-          <div style="background:#2a2a2a;border:1.5px solid #444;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#8080c0;font-weight:600;">ステージ 6</div>
-            </div>
-            <div style="font-size:0.75rem;color:#8080c0;font-style:italic;">告白・交際へ</div>
-          </div>
-        </div>
+        <div id="love-roadmap-grid" style="display:flex;flex-direction:column;gap:0;"></div>
       </div>
 
       <!-- ステータスカード -->
@@ -2337,11 +2277,16 @@ async function renderLovePanel() {
       </div>
     </div>`;
 
-  const [posts, music, weekly, loveInfo, loveNotices] = await Promise.all([
-    fbGet('love/posts'), fbGet('love/music'), fbGet('love/weekly'), fbGet('love/info'), fbGet('settings/loveNotices')
+  const [posts, music, weekly, loveInfo, loveNotices, lovePlanImages] = await Promise.all([
+    fbGet('love/posts'), fbGet('love/music'), fbGet('love/weekly'), fbGet('love/info'), fbGet('settings/loveNotices'), fbGet('love/planImages')
   ]);
   renderLoveNotices(loveNotices);
+  renderLovePlanImages(lovePlanImages);
   renderLoveInfo(loveInfo);
+
+  // ロードマップ（currentStageをFirebaseから取得）
+  const curStage = await fbGet('love/currentStage') || 4;
+  renderLoveRoadmap(curStage);
   renderLovePosts(posts);
   renderLoveMusicList(music);
   renderLove2025(weekly);
@@ -2351,6 +2296,8 @@ async function renderLovePanel() {
   if(!listeners['love']){
     listeners['love']=[];
     listeners['love'].push(fbListen('settings/loveNotices', val=>renderLoveNotices(val)));
+    listeners['love'].push(fbListen('love/planImages',      val=>renderLovePlanImages(val)));
+    listeners['love'].push(fbListen('love/currentStage',    val=>renderLoveRoadmap(val||4)));
     listeners['love'].push(fbListen('love/info',     val=>renderLoveInfo(val)));
     listeners['love'].push(fbListen('love/posts',    val=>renderLovePosts(val)));
     listeners['love'].push(fbListen('love/music',    val=>renderLoveMusicList(val)));
@@ -2376,6 +2323,59 @@ function renderLove2025(val){
           <img src="${src}" style="width:100%;display:block;" alt="週報 p.${i+1}" loading="lazy">
         </div>`).join('')}
     </div>`;
+}
+
+// ステージロードマップ描画（currentStage連動）
+function renderLoveRoadmap(cur){
+  const grid = document.getElementById('love-roadmap-grid'); if(!grid) return;
+  cur = parseInt(cur) || 4;
+  const stages = [
+    {n:1, label:'ステージ 1', desc:'挨拶・視線が合う程度'},
+    {n:2, label:'ステージ 2', desc:'笑顔・手振り・短い会話'},
+    {n:3, label:'ステージ 3', desc:'相手発信の会話・ボディータッチ・個人的な共有'},
+    {n:4, label:'ステージ 4', desc:'会話量増加・約束・来てほしい発言'},
+    {n:5, label:'ステージ 5', desc:'苗字呼び・連絡先交換・プライベートな誘い'},
+    {n:6, label:'ステージ 6', desc:'告白・交際へ'},
+  ];
+  grid.innerHTML = stages.map((s,i)=>{
+    const isCur = s.n === cur;
+    const isDone = s.n < cur;
+    const isFuture = s.n > cur;
+    const connector = i < stages.length-1 ? `<div style="width:1px;height:10px;background:${isDone?'#c0b0aa':isCur?'#d090a8':'#505050'};margin:0 auto;"></div>` : '';
+    if(isCur){
+      return `<div style="background:linear-gradient(135deg,#fff0f5,#ffe4ee);border:2px solid #e8406a;border-radius:10px;padding:12px 14px;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.92rem;color:#c0305a;font-weight:700;">${s.label}　← 現在地</div>
+        <div style="font-size:0.74rem;color:#c06080;margin-top:4px;line-height:1.6;">${s.desc}</div>
+      </div>${connector}`;
+    } else if(isDone){
+      return `<div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#6a5a54;font-weight:600;">${s.label}</div>
+        <div style="font-size:0.74rem;color:#9a8880;margin-top:2px;">${s.desc}</div></div>
+        <div style="font-size:0.75rem;color:#9a8880;font-style:italic;">✓ 完了</div>
+      </div>${connector}`;
+    } else {
+      return `<div style="background:#2a2a2a;border:1.5px solid #444;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#888;font-weight:600;">${s.label}</div>
+        ${s.n===cur+1?'<div style="font-size:0.74rem;color:#888;margin-top:2px;">'+s.desc+'</div>':''}</div>
+        <div style="font-size:0.75rem;color:#8080c0;font-style:italic;">${s.n===cur+1?'次の目標':''}</div>
+      </div>${connector}`;
+    }
+  }).join('');
+}
+
+// 恋愛計画資料（ロードマップ上の画像）
+function renderLovePlanImages(val){
+  const wrap = document.getElementById('love-plan-images-wrap'); if(!wrap) return;
+  if(!val){ wrap.innerHTML=''; return; }
+  const arr = Array.isArray(val) ? val : Object.values(val);
+  const imgs = arr.filter(n=>n&&n.url).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ja'));
+  if(!imgs.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = imgs.map((img,i)=>`
+    <div style="margin-bottom:12px;">
+      <img src="${img.url}" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(220,60,100,0.15);"
+           alt="${esc(img.name||'')}"
+           onclick="(function(u){const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:12px;box-sizing:border-box;';o.innerHTML='<img src=\\''+u+'\\' style=\\'max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;\\'>';o.onclick=function(){o.remove();};document.body.appendChild(o);})(this.src)">
+    </div>`).join('');
 }
 
 // 恋愛お知らせ表示
@@ -2756,17 +2756,28 @@ async function renderAdmin() {
         </div>
       </div>
 
-      <!-- 恋愛タブ アクセスURL -->
-      <div style="background:linear-gradient(135deg,#fff0f4,#ffe8ee);border:1.5px solid rgba(220,60,100,0.2);border-radius:12px;padding:12px 16px;margin-bottom:14px;">
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;font-weight:600;">💕 恋愛タブ 専用アクセスURL</div>
-        <div style="font-size:0.78rem;color:#d090a8;margin-bottom:8px;">このURLを渡したデバイスのみ、次回以降も恋愛タブにアクセスできます。</div>
-        <div style="background:white;border:1px solid rgba(220,60,100,0.15);border-radius:8px;padding:8px 12px;font-size:0.8rem;color:#3a1a28;word-break:break-all;user-select:all;">
-          https://kouki02-debug.github.io/event-app/?tab=love
+      <!-- 特別アクセスURL一覧 -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:14px;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:var(--ink2);margin-bottom:12px;font-weight:600;">🔗 特別アクセスURL一覧</div>
+        <div style="font-size:0.75rem;color:var(--ink4);margin-bottom:10px;">渡したデバイスのみ次回以降もアクセス可能です。</div>
+
+        <!-- 恋愛タブ -->
+        <div style="margin-bottom:10px;">
+          <div style="font-size:0.78rem;color:#c0305a;font-weight:600;margin-bottom:4px;">💕 恋愛タブ</div>
+          <div style="background:white;border:1px solid rgba(220,60,100,0.15);border-radius:8px;padding:7px 10px;font-size:0.75rem;color:#3a1a28;word-break:break-all;user-select:all;margin-bottom:4px;">https://kouki02-debug.github.io/event-app/?tab=love</div>
+          <button onclick="navigator.clipboard?.writeText('https://kouki02-debug.github.io/event-app/?tab=love').then(()=>showToast('✓ コピーしました'))"
+            style="width:100%;padding:6px;background:linear-gradient(90deg,#e8406a,#c0305a);color:white;border:none;border-radius:7px;font-size:0.8rem;cursor:pointer;">コピー</button>
         </div>
-        <button onclick="navigator.clipboard?.writeText('https://kouki02-debug.github.io/event-app/?tab=love').then(()=>showToast('✓ URLをコピーしました'))"
-          style="margin-top:8px;width:100%;padding:7px;background:linear-gradient(90deg,#e8406a,#c0305a);color:white;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;">
-          URLをコピー
-        </button>
+
+        <!-- birthday0330 -->
+        <div style="margin-bottom:10px;">
+          <div style="font-size:0.78rem;color:#a06000;font-weight:600;margin-bottom:4px;">🎂 birthday0330</div>
+          <div style="background:white;border:1px solid rgba(255,180,0,0.25);border-radius:8px;padding:7px 10px;font-size:0.75rem;color:#3a2800;word-break:break-all;user-select:all;margin-bottom:4px;">https://kouki02-debug.github.io/event-app/?tab=birthday</div>
+          <button onclick="navigator.clipboard?.writeText('https://kouki02-debug.github.io/event-app/?tab=birthday').then(()=>showToast('✓ コピーしました'))"
+            style="width:100%;padding:6px;background:linear-gradient(90deg,#ffcc00,#ff9900);color:white;border:none;border-radius:7px;font-size:0.8rem;cursor:pointer;">コピー</button>
+        </div>
+
+        <div style="font-size:0.7rem;color:var(--ink4);">※ 今後追加するタブも同様に ?tab=タブID で共有できます。</div>
       </div>
       <div class="admin-card">
         <div class="admin-card-hd">タブ設定（サブ名・パスワード変更）</div>
@@ -3156,6 +3167,8 @@ async function renderAdminContent(id) {
       loveMusic = await fbGet('love/music');
       weekly = await fbGet('love/weekly');
       loveInfo = await fbGet('love/info');
+      const loveCurStage = (await fbGet('love/currentStage')) || 4;
+      const lovePlanImgs = await fbGet('love/planImages');
     } catch(e) {
       panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
       return;
@@ -3196,6 +3209,34 @@ async function renderAdminContent(id) {
     panel.innerHTML=`
       <div class="admin-love-card">
         <div class="admin-love-hd">💕 【特別ページ】恋愛 コンテンツ編集</div>
+
+        <!-- ロードマップ現在地 & 計画資料 -->
+        <div class="admin-love-subsec">
+          <div class="admin-love-subsec-title">🗺 ロードマップ現在地</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="love-cur-stage" style="flex:1;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;">
+              ${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${loveCurStage==n?'selected':''}>${n}</option>`).join('')}
+            </select>
+            <button onclick="adminSaveCurrentStage()" class="love-admin-btn" style="white-space:nowrap;">保存</button>
+          </div>
+        </div>
+
+        <!-- 計画資料画像 -->
+        <div class="admin-love-subsec">
+          <div class="admin-love-subsec-title">📄 計画資料（ロードマップの上に表示）</div>
+          <div style="margin-bottom:8px;">
+            ${lovePlanImgs ? Object.entries(lovePlanImgs).map(([k,v])=>`
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(220,60,100,0.1);">
+                <img src="${v.url}" style="width:48px;height:36px;object-fit:contain;border-radius:4px;background:#fff8fa;border:1px solid rgba(220,60,100,0.15);" alt="">
+                <span style="flex:1;font-size:0.78rem;color:#d090a8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(v.name||'')}</span>
+                <button onclick="adminDelLovePlanImage('${k}')" style="background:none;border:none;color:rgba(200,80,80,0.7);cursor:pointer;font-size:0.85rem;">✕</button>
+              </div>`).join('') : '<div style="font-size:0.78rem;color:rgba(220,60,100,0.4);">画像がありません</div>'}
+          </div>
+          <label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;background:rgba(255,255,255,0.04);border:1.5px dashed rgba(220,60,100,0.3);border-radius:8px;cursor:pointer;font-size:0.82rem;color:#d090a8;">
+            📄 画像を追加（複数可・名前順表示）
+            <input type="file" accept="image/*" multiple style="display:none" onchange="adminUploadLovePlanImages(this)">
+          </label>
+        </div>
 
         <!-- ステータス情報編集 -->
         <div class="admin-love-subsec">
@@ -3917,6 +3958,34 @@ window.adminSaveNotices = async function(type, idPrefix, max){
   else await fbRemove(path);
   showToast('✓ お知らせを保存しました');
   await renderAdmin();
+};
+
+window.adminSaveCurrentStage = async function(){
+  const v = parseInt(document.getElementById('love-cur-stage')?.value||4);
+  await fbSet('love/currentStage', v);
+  showToast('✓ ロードマップ現在地を保存しました');
+};
+
+window.adminUploadLovePlanImages = async function(inp){
+  const files = Array.from(inp.files); if(!files.length) return;
+  showToast('アップロード中...');
+  let uploaded=0;
+  for(const f of files){
+    if(f.size>5*1024*1024){showToast(`${f.name} は5MB超のためスキップ`);continue;}
+    const url = await new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(f);});
+    await fbPush('love/planImages',{url,name:f.name,ts:Date.now()});
+    uploaded++;
+  }
+  showToast(`✓ ${uploaded}枚をアップロードしました`);
+  inp.value='';
+  await renderAdminContent('love');
+};
+
+window.adminDelLovePlanImage = async function(fbKey){
+  if(!confirm('この画像を削除しますか？'))return;
+  await fbRemove('love/planImages/'+fbKey);
+  showToast('✓ 削除しました');
+  await renderAdminContent('love');
 };
 
 window.adminSaveLoveInfo = async function(rowCount){
