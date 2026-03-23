@@ -672,15 +672,15 @@ const TABS = [{id:'A'},{id:'B'},{id:'sample'},{id:'love'},{id:'birthday'},{id:'a
 function isBirthdayVisible() {
   const now = new Date();
   const start = new Date('2026-03-30T08:00:00+09:00');
-  const end   = new Date('2026-03-31T00:00:00+09:00');
+  const end   = new Date('2026-03-30T00:00:00+09:00');
   return now >= start && now < end;
 }
 // 2026年3月24日 0:00〜3月30日 0:00（JST）
 // 日時制御ヘルパー
 function isBirthdayContentVisible() {
-  // 3月31日(火) 09:30以降に音楽・フォト・割り勘を表示
+  // 3月30日(月) 09:30以降に音楽を表示
   const now = new Date();
-  return now >= new Date('2026-03-31T09:30:00+09:00');
+  return now >= new Date('2026-03-30T09:30:00+09:00');
 }
 function isLoveMusicVisible() {
   // 3月21日(土) 20:50以降に音楽プレゼントを表示
@@ -2002,15 +2002,40 @@ async function renderBirthdayPanel() {
         <div class="birthday-hero-title">🎂 birthday0330 🎉</div>
       </div>
 
-      <!-- イベント概要カード -->
+      <!-- 誕生日カウントダウン＆サプライズ -->
       <div style="padding:14px 14px 0;">
+        <div id="bd-countdown-wrap" style="background:linear-gradient(135deg,#3a1800,#7a3800,#3a1800);border:2px solid rgba(255,180,0,0.5);border-radius:16px;padding:20px 18px;text-align:center;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(255,140,0,0.25);">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffcc00,#ff6600,#ffcc00);"></div>
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,200,0,0.12),transparent 70%);pointer-events:none;"></div>
+          <div id="bd-countdown-content" style="position:relative;">
+            <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:rgba(255,200,100,0.7);letter-spacing:0.2em;margin-bottom:10px;">🎂 BIRTHDAY COUNTDOWN</div>
+            <div id="bd-countdown-timer" style="font-family:'Shippori Mincho',serif;font-size:2.8rem;color:#ffdd44;font-weight:700;letter-spacing:0.06em;line-height:1;text-shadow:0 0 24px rgba(255,200,0,0.6),0 2px 8px rgba(0,0,0,0.5);">計算中...</div>
+            <div style="font-size:0.7rem;color:rgba(255,200,100,0.5);margin-top:10px;letter-spacing:0.1em;">3月30日（月）誕生日まで</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 集合カウントダウン -->
+      <div style="padding:10px 14px 0;">
+        <div id="bd-gather-wrap" style="background:linear-gradient(135deg,#fff8f0,#ffefe0);border:1.5px solid rgba(255,140,0,0.3);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:1.4rem;">🚩</div>
+          <div style="flex:1;">
+            <div style="font-size:0.7rem;color:#a06000;margin-bottom:2px;letter-spacing:0.05em;">集合まで</div>
+            <div id="bd-gather-timer" style="font-family:'Shippori Mincho',serif;font-size:1.2rem;color:#7a4000;font-weight:700;">計算中...</div>
+          </div>
+          <div style="font-size:0.72rem;color:#b08000;text-align:right;">3/30(月)<br>09:30</div>
+        </div>
+      </div>
+
+      <!-- イベント概要カード -->
+      <div style="padding:10px 14px 0;">
         <div style="background:linear-gradient(135deg,#fffbe0,#fff3c0);border:2px solid rgba(255,180,0,0.35);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;">
           <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffcc00,#ff9900,#ffcc00);"></div>
           <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#a06000;letter-spacing:0.15em;margin-bottom:12px;">🎂 イベント概要</div>
           <div style="display:flex;flex-direction:column;gap:0;">
             <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,180,0,0.18);">
               <span style="font-size:0.78rem;color:#8a6800;width:88px;flex-shrink:0;letter-spacing:0.04em;">開催日時</span>
-              <span style="font-size:0.92rem;color:#3a2800;font-weight:600;font-family:'Shippori Mincho',serif;">2026年3月31日（火）09：30〜</span>
+              <span style="font-size:0.92rem;color:#3a2800;font-weight:600;font-family:'Shippori Mincho',serif;">2026年3月30日（月）09：30〜</span>
             </div>
             <div style="display:flex;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,180,0,0.18);">
               <span style="font-size:0.78rem;color:#8a6800;width:88px;flex-shrink:0;letter-spacing:0.04em;padding-top:2px;">集合・解散場所</span>
@@ -2024,7 +2049,15 @@ async function renderBirthdayPanel() {
         </div>
       </div>
 
+      <!-- タイムライン -->
       <div class="birthday-sec" style="margin-top:14px;">
+        <div class="birthday-sec-hd"><h2>🗓 当日タイムライン</h2><div class="birthday-sec-line"></div></div>
+        <div id="bd-timeline" style="padding:0 4px;">
+          <div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div>
+        </div>
+      </div>
+
+      <div class="birthday-sec" style="margin-top:12px;">
         <div class="birthday-sec-hd"><h2>🚗 集合リアルタイム</h2><div class="birthday-sec-line"></div></div>
         <div id="haisya-view-birthday"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
       </div>
@@ -2034,41 +2067,182 @@ async function renderBirthdayPanel() {
         <div id="birthday-posts"><div style="text-align:center;color:#b08000;padding:20px;font-size:0.85rem">読み込み中...</div></div>
       </div>
 
-      <!-- 音楽プレゼント -->
-      <div class="birthday-sec" style="margin-top:12px;">
+      <!-- 音楽プレゼント（時刻制限） -->
+      <div class="birthday-sec" style="margin-top:12px;padding-bottom:24px;">
         <div class="birthday-sec-hd"><h2>🎵 音楽プレゼント</h2><div class="birthday-sec-line"></div></div>
         <div id="bd-music-list"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
       </div>
-
-      <div class="birthday-sec" style="margin-top:12px;padding-bottom:24px;">
-        <div class="birthday-sec-hd"><h2>🧮 割り勘</h2><div class="birthday-sec-line"></div></div>
-        <div id="warikan-view-birthday"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
-      </div>
     </div>`;
 
-  const [posts, music, wv] = await Promise.all([
+  const [posts, music, timeline, surprise] = await Promise.all([
     fbGet('birthday/posts'),
-    fbGet('birthday/music'), fbGet('warikan')
+    fbGet('birthday/music'),
+    fbGet('birthday/timeline'),
+    fbGet('birthday/surprise')
   ]);
   renderBirthdayPosts(posts);
   renderHaisyaView('birthday');
+  window._bdTimelineCache = timeline;
+  renderBdTimeline(timeline);
 
-  // 音楽のみ時刻制限（09:30〜）、それ以外は常時表示
+  // 音楽のみ時刻制限（09:30〜）
   if(isBirthdayContentVisible()){
     renderBdMusicList(music);
   } else {
     const el1=document.getElementById('bd-music-list');
-    if(el1) el1.innerHTML='<div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">🎂 3月31日(火) 09:30より公開します</div>';
+    if(el1) el1.innerHTML='<div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">🎂 3月30日(月) 09:30より公開します</div>';
   }
-  renderWarikanView('birthday', wv);
+
+  // カウントダウン起動
+  startBdCountdown(surprise);
+  startBdGatherCountdown();
 
   if(!listeners['birthday']){
     listeners['birthday']=[];
-    listeners['birthday'].push(fbListen('birthday/posts',  val=>renderBirthdayPosts(val)));
-    listeners['birthday'].push(fbListen('birthday/music', val=>{ if(isBirthdayContentVisible()) renderBdMusicList(val); }));
-    listeners['birthday'].push(fbListen('warikan',         val=>renderWarikanView('birthday',val)));
-    listeners['birthday'].push(fbListen('haisya/birthday', ()=>renderHaisyaView('birthday')));
+    listeners['birthday'].push(fbListen('birthday/posts',    val=>renderBirthdayPosts(val)));
+    listeners['birthday'].push(fbListen('birthday/music',   val=>{ if(isBirthdayContentVisible()) renderBdMusicList(val); }));
+    listeners['birthday'].push(fbListen('birthday/timeline',val=>{ window._bdTimelineCache=val; renderBdTimeline(val); }));
+    listeners['birthday'].push(fbListen('haisya/birthday',  ()=>renderHaisyaView('birthday')));
   }
+}
+
+// ============================================================
+// Birthday カウントダウン
+// ============================================================
+let _bdCountdownTimer = null;
+let _bdGatherTimer = null;
+
+function renderBdTimeline(val){
+  const el = document.getElementById('bd-timeline'); if(!el) return;
+  const isAdmin = unlocked.includes('admin');
+  if(!val || !Object.keys(val).length){
+    el.innerHTML='<div style="text-align:center;color:#b08000;padding:12px;font-size:0.85rem;">タイムラインは未設定です</div>'
+      +(isAdmin?'<div style="text-align:center;margin-top:6px;"><button onclick="showBdTimelineAddForm()" style="padding:6px 16px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;">＋ 追加</button></div>':'');
+    return;
+  }
+  const items = Object.entries(val).map(([k,v])=>({key:k,...v}))
+    .sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  el.innerHTML = items.map((s,i)=>`
+    <div style="display:flex;gap:12px;position:relative;">
+      <div style="display:flex;flex-direction:column;align-items:center;width:36px;flex-shrink:0;">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ffcc00,#ff9900);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">${esc(s.icon||'📌')}</div>
+        ${i<items.length-1?'<div style="width:2px;flex:1;min-height:16px;background:linear-gradient(180deg,#ffcc00,rgba(255,204,0,0.2));margin:3px 0;"></div>':''}
+      </div>
+      <div style="padding:4px 0 ${i<items.length-1?'16':'4'}px;flex:1;display:flex;align-items:flex-start;gap:6px;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:baseline;gap:8px;">
+            <span style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#a06000;font-weight:700;flex-shrink:0;">${esc(s.time||'')}</span>
+            <span style="font-size:0.92rem;color:#3a2800;font-weight:600;">${esc(s.label||'')}</span>
+          </div>
+          ${s.note?'<div style="font-size:0.75rem;color:#b08000;margin-top:2px;">'+esc(s.note)+'</div>':''}
+        </div>
+        ${isAdmin?`<button onclick="adminDelBdTimeline('${s.key}')" style="background:none;border:none;color:rgba(180,120,0,0.4);cursor:pointer;font-size:0.85rem;padding:2px 4px;flex-shrink:0;">✕</button>`:''}
+      </div>
+    </div>`).join('')
+  + (isAdmin?`
+    <div style="margin-top:10px;" id="bd-tl-add-wrap">
+      <button onclick="showBdTimelineAddForm()" style="width:100%;padding:8px;background:rgba(255,180,0,0.08);border:1.5px dashed rgba(255,180,0,0.35);border-radius:10px;font-size:0.82rem;color:#a06000;cursor:pointer;">＋ アイテムを追加</button>
+    </div>`:'');
+}
+
+window.showBdTimelineAddForm = function(){
+  const wrap = document.getElementById('bd-tl-add-wrap');
+  if(!wrap) return;
+  wrap.innerHTML=`
+    <div style="background:white;border:1.5px solid rgba(255,180,0,0.25);border-radius:10px;padding:10px;margin-top:4px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+        <input type="text" id="bd-tl-time" placeholder="09:30" maxlength="6" style="width:60px;padding:6px 8px;border:1.5px solid rgba(255,180,0,0.3);border-radius:8px;font-size:0.88rem;color:#3a2800;outline:none;">
+        <input type="text" id="bd-tl-icon" placeholder="🚩" maxlength="4" style="width:46px;padding:6px 8px;border:1.5px solid rgba(255,180,0,0.3);border-radius:8px;font-size:0.88rem;color:#3a2800;outline:none;text-align:center;">
+        <input type="text" id="bd-tl-label" placeholder="ラベル" maxlength="20" style="flex:1;min-width:80px;padding:6px 8px;border:1.5px solid rgba(255,180,0,0.3);border-radius:8px;font-size:0.88rem;color:#3a2800;outline:none;">
+      </div>
+      <div style="display:flex;gap:6px;">
+        <input type="text" id="bd-tl-note" placeholder="補足（任意）" maxlength="40" style="flex:1;padding:6px 8px;border:1.5px solid rgba(255,180,0,0.3);border-radius:8px;font-size:0.88rem;color:#3a2800;outline:none;">
+        <button onclick="adminAddBdTimeline()" style="padding:6px 14px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;white-space:nowrap;">追加</button>
+        <button onclick="renderBdTimeline(window._bdTimelineCache)" style="padding:6px 10px;background:#f5f0e8;border:none;border-radius:8px;font-size:0.82rem;color:#a06000;cursor:pointer;">✕</button>
+      </div>
+    </div>`;
+};
+
+function startBdCountdown(surprise){
+  if(_bdCountdownTimer) clearInterval(_bdCountdownTimer);
+  const tick = () => {
+    const el = document.getElementById('bd-countdown-timer');
+    const wrap = document.getElementById('bd-countdown-wrap');
+    if(!el) { clearInterval(_bdCountdownTimer); return; }
+    const now = new Date();
+    // 対象：3月30日 0:00（誕生日）
+    const target = new Date('2026-03-30T00:00:00+09:00');
+    const diff = target - now;
+
+    if(diff <= 0){
+      // 当日0:00以降 → サプライズメッセージ表示
+      if(wrap){
+        wrap.style.background = 'linear-gradient(135deg,#3a0820,#7a1840,#3a0820)';
+        wrap.style.borderColor = 'rgba(220,60,100,0.6)';
+        wrap.style.boxShadow   = '0 6px 24px rgba(200,30,80,0.3)';
+      }
+      const sc = document.getElementById('bd-countdown-content');
+      if(sc){
+        const title = (surprise && surprise.title) ? esc(surprise.title) : 'お誕生日おめでとう！';
+        const body  = (surprise && surprise.body)  ? esc(surprise.body).replace(/\n/g,'<br>') : '20歳おめでとう 🎂🎉';
+        const emoji = (surprise && surprise.emoji) ? esc(surprise.emoji) : '🎂🎉🎊';
+        sc.innerHTML = `
+          <div style="font-size:2rem;margin-bottom:10px;">${emoji}</div>
+          <div style="font-family:'Shippori Mincho',serif;font-size:1.3rem;color:#ffdd44;font-weight:700;letter-spacing:0.1em;margin-bottom:10px;text-shadow:0 0 20px rgba(255,200,0,0.5);">${title}</div>
+          <div style="font-size:0.88rem;color:rgba(255,220,160,0.85);line-height:2;letter-spacing:0.06em;">${body}</div>`;
+      }
+      clearInterval(_bdCountdownTimer);
+      return;
+    }
+
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000)  / 60000);
+    const secs  = Math.floor((diff % 60000)    / 1000);
+
+    if(days > 0){
+      el.textContent = days+'日 '+String(hours).padStart(2,'0')+':'+String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0');
+    } else {
+      el.textContent = String(hours).padStart(2,'0')+':'+String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0');
+    }
+  };
+  tick();
+  _bdCountdownTimer = setInterval(tick, 1000);
+}
+
+function startBdGatherCountdown(){
+  if(_bdGatherTimer) clearInterval(_bdGatherTimer);
+  const tick = () => {
+    const el = document.getElementById('bd-gather-timer');
+    const wrap = document.getElementById('bd-gather-wrap');
+    if(!el) { clearInterval(_bdGatherTimer); return; }
+    const now = new Date();
+    const gather = new Date('2026-03-30T09:30:00+09:00');
+    const diff = gather - now;
+
+    if(diff <= 0){
+      el.innerHTML = '<span style="color:#e8406a;">集合時刻です！</span> 🎉';
+      if(wrap) wrap.style.borderColor='rgba(220,60,100,0.5)';
+      clearInterval(_bdGatherTimer);
+      return;
+    }
+
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000)  / 60000);
+    const secs  = Math.floor((diff % 60000)    / 1000);
+
+    if(days > 0){
+      el.textContent = days+'日 '+hours+'時間 '+mins+'分 '+secs+'秒';
+    } else if(hours > 0){
+      el.textContent = hours+'時間 '+mins+'分 '+secs+'秒';
+    } else {
+      el.style.color='#e8406a';
+      el.textContent = 'あと '+mins+'分 '+secs+'秒！';
+    }
+  };
+  tick();
+  _bdGatherTimer = setInterval(tick, 1000);
 }
 
 function renderBdMusicList(val){
@@ -3260,11 +3434,12 @@ async function renderAdminContent(id) {
 
   // Birthday専用UI
   if(id==='birthday'){
-    let bdPosts = null, bdImgs = null, bdMusic = null;
+    let bdPosts = null, bdMusic = null, bdTimeline = null, bdSurprise = null;
     try {
-      bdPosts = await fbGet('birthday/posts');
-      bdImgs  = await fbGet('birthday/images');
-      bdMusic = await fbGet('birthday/music');
+      bdPosts    = await fbGet('birthday/posts');
+      bdMusic    = await fbGet('birthday/music');
+      bdTimeline = await fbGet('birthday/timeline');
+      bdSurprise = await fbGet('birthday/surprise');
     } catch(e) {
       panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
       return;
@@ -3280,43 +3455,75 @@ async function renderAdminContent(id) {
             ${p.img?'<span style="font-size:0.72rem;color:#b08000;">🖼 画像あり</span>':''}
             <div style="font-size:0.7rem;color:#b08000;margin-top:2px;">${p.time}</div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
-            <button style="background:none;border:none;color:#b08000;cursor:pointer;font-size:0.9rem;padding:3px 6px;border-radius:5px;" onclick="adminDelBdPost('${p.fbKey}')">🗑</button>
-          </div>
+          <button style="background:none;border:none;color:#b08000;cursor:pointer;font-size:0.9rem;padding:3px 6px;border-radius:5px;" onclick="adminDelBdPost('${p.fbKey}')">🗑</button>
         </div>`).join('');
     } else {
       postItems = '<div style="padding:12px;color:#b08000;font-size:0.85rem;text-align:center;">投稿がありません</div>';
     }
 
-    let imgItems = '';
-    if(bdImgs && Object.keys(bdImgs).length > 0){
-      imgItems = Object.entries(bdImgs).map(([k,v])=>`
-        <div style="aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;border:2px solid rgba(255,180,0,0.2);">
-          <img src="${v.dataUrl}" style="width:100%;height:100%;object-fit:cover;" alt="">
-          <button style="position:absolute;top:3px;right:3px;width:20px;height:20px;background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;font-size:0.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="adminDelBdImg('${k}')">✕</button>
-        </div>`).join('');
-    } else {
-      imgItems = '<div style="font-size:0.85rem;color:#b08000;padding:8px;grid-column:1/-1;text-align:center;">写真がありません</div>';
-    }
-
-    const periodNotice = '';
+    // タイムライン items
+    const tlItems = bdTimeline
+      ? Object.entries(bdTimeline).map(([k,v])=>({key:k,...v})).sort((a,b)=>(a.time||'').localeCompare(b.time||''))
+      : [];
 
     panel.innerHTML=`
       <div style="background:linear-gradient(135deg,#fffbe0,#fff3c0);border:1px solid rgba(255,180,0,0.3);border-radius:10px;overflow:hidden;">
         <div style="padding:10px 16px;background:linear-gradient(90deg,rgba(255,180,0,0.2),rgba(255,180,0,0.05));border-bottom:1px solid rgba(255,180,0,0.2);display:flex;align-items:center;justify-content:space-between;">
           <span style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#a06000;letter-spacing:0.06em;">🎂 Birthday コンテンツ編集</span>
-          <button onclick="previewBirthdayPanel()" style="padding:5px 14px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;box-shadow:0 2px 6px rgba(255,180,0,0.3);">👁 プレビュー</button>
+          <button onclick="previewBirthdayPanel()" style="padding:5px 14px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;">👁 プレビュー</button>
         </div>
 
-        <div style="padding:10px 16px 0;">
-          ${periodNotice}
+        <!-- タイムライン編集 -->
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,180,0,0.15);">
+          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🗓 タイムライン</div>
+          <div id="bd-adm-tl-list" style="margin-bottom:10px;">
+            ${tlItems.length ? tlItems.map(s=>`
+              <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:white;border:1px solid rgba(255,180,0,0.2);border-radius:8px;margin-bottom:5px;">
+                <span style="font-size:1rem;width:24px;text-align:center;">${esc(s.icon||'📌')}</span>
+                <span style="font-size:0.82rem;color:#a06000;font-weight:600;width:40px;flex-shrink:0;">${esc(s.time||'')}</span>
+                <span style="font-size:0.85rem;color:#3a2800;flex:1;">${esc(s.label||'')}${s.note?' — <span style="color:#b08000">'+esc(s.note)+'</span>':''}</span>
+                <button style="background:none;border:none;color:#b08000;cursor:pointer;font-size:0.85rem;" onclick="adminDelBdTimeline('${s.key}')">🗑</button>
+              </div>`).join('') : '<div style="font-size:0.82rem;color:#b08000;padding:6px;text-align:center;">未設定</div>'}
+          </div>
+          <div style="background:white;border:1.5px solid rgba(255,180,0,0.25);border-radius:10px;padding:10px;">
+            <div style="font-size:0.75rem;color:#b08000;margin-bottom:6px;">＋ 追加</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+              <input type="text" id="bd-tl-time" placeholder="09:30" maxlength="6" style="width:64px;padding:6px 8px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;">
+              <input type="text" id="bd-tl-icon" placeholder="🚩" maxlength="4" style="width:48px;padding:6px 8px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;text-align:center;">
+              <input type="text" id="bd-tl-label" placeholder="ラベル" maxlength="20" style="flex:1;min-width:80px;padding:6px 8px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;">
+            </div>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="bd-tl-note" placeholder="補足（任意）" maxlength="40" style="flex:1;padding:6px 8px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;">
+              <button onclick="adminAddBdTimeline()" style="padding:6px 14px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;white-space:nowrap;">追加</button>
+            </div>
+          </div>
         </div>
 
+        <!-- サプライズメッセージ編集 -->
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,180,0,0.15);">
+          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🎊 サプライズメッセージ（3/30 0:00に表示）</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;gap:6px;align-items:center;">
+              <label style="font-size:0.75rem;color:#b08000;width:52px;flex-shrink:0;">絵文字</label>
+              <input type="text" id="bd-sur-emoji" value="${esc(bdSurprise?.emoji||'🎂🎉🎊')}" maxlength="12" style="flex:1;padding:7px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;">
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <label style="font-size:0.75rem;color:#b08000;width:52px;flex-shrink:0;">タイトル</label>
+              <input type="text" id="bd-sur-title" value="${esc(bdSurprise?.title||'お誕生日おめでとう！')}" maxlength="30" style="flex:1;padding:7px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;">
+            </div>
+            <div>
+              <label style="font-size:0.75rem;color:#b08000;display:block;margin-bottom:4px;">本文（改行可）</label>
+              <textarea id="bd-sur-body" rows="4" style="width:100%;padding:7px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;resize:vertical;box-sizing:border-box;line-height:1.6;">${esc(bdSurprise?.body||'')}</textarea>
+            </div>
+            <button onclick="adminSaveBdSurprise()" style="width:100%;padding:8px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;">💾 保存</button>
+          </div>
+        </div>
+
+        <!-- 掲示板 -->
         <div style="padding:0 16px 12px;border-bottom:1px solid rgba(255,180,0,0.15);">
-          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">📋 掲示板（追加・削除）</div>
+          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;padding-top:12px;">📋 掲示板（追加・削除）</div>
           <div style="margin-bottom:10px;">${postItems}</div>
           <div style="background:white;border:1.5px solid rgba(255,180,0,0.25);border-radius:10px;padding:12px;">
-            <div style="font-size:0.78rem;color:#b08000;margin-bottom:6px;">＋ 新規投稿</div>
             <textarea id="bd-adm-post" style="width:100%;min-height:72px;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:0.9rem;color:#3a2800;background:#fffbe0;resize:vertical;outline:none;line-height:1.6;box-sizing:border-box;" placeholder="投稿内容を入力..."></textarea>
             <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
               <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(255,180,0,0.25);border-radius:8px;font-size:0.82rem;color:#a06000;cursor:pointer;background:#fffbe0;white-space:nowrap;">
@@ -3324,12 +3531,13 @@ async function renderAdminContent(id) {
                 <input type="file" accept="image/*" style="display:none" onchange="onBdAdmImg(this)">
               </label>
               <span id="bd-adm-img-name" style="font-size:0.75rem;color:#ff9900;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-              <button style="padding:8px 18px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;box-shadow:0 2px 8px rgba(255,180,0,0.3);" onclick="adminPostBirthday()">投稿する</button>
+              <button style="padding:8px 18px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;" onclick="adminPostBirthday()">投稿する</button>
             </div>
           </div>
         </div>
 
-        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,180,0,0.15);">
+        <!-- 音楽管理 -->
+        <div style="padding:12px 16px;">
           <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🎵 音楽管理（最大4曲）</div>
           <div id="bd-adm-music-list" style="margin-bottom:10px;">
             ${bdMusic && Object.keys(bdMusic).length > 0
@@ -3339,7 +3547,6 @@ async function renderAdminContent(id) {
                   <div style="flex:1;min-width:0;">
                     <div style="font-size:0.85rem;color:#3a2800;font-weight:500;">${esc(v.title||'（タイトルなし）')}</div>
                     ${v.artist?'<div style="font-size:0.72rem;color:#b08000;">'+esc(v.artist)+'</div>':''}
-                    <div style="font-size:0.7rem;color:#b08000;">${v.audioDataUrl?'🎵 音楽あり':'🎵 音楽なし'} ${v.lyrics?'/ 📝 歌詞あり':'/ 📝 歌詞なし'}</div>
                   </div>
                   <button style="background:none;border:none;color:#b08000;cursor:pointer;font-size:0.9rem;" onclick="adminDelBdMusic('${k}')">🗑</button>
                 </div>`).join('')
@@ -3347,13 +3554,9 @@ async function renderAdminContent(id) {
             }
           </div>
           <div style="background:white;border:1.5px solid rgba(255,180,0,0.25);border-radius:10px;padding:12px;">
-            <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;">＋ 曲を追加</div>
-            <input type="text" id="bd-music-title" placeholder="曲名 *" maxlength="40"
-              style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;margin-bottom:6px;box-sizing:border-box;">
-            <input type="text" id="bd-music-artist" placeholder="アーティスト名（任意）" maxlength="40"
-              style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;margin-bottom:6px;box-sizing:border-box;">
-            <textarea id="bd-music-lyrics" placeholder="歌詞（任意）" rows="4"
-              style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;resize:vertical;line-height:1.6;margin-bottom:6px;box-sizing:border-box;"></textarea>
+            <input type="text" id="bd-music-title" placeholder="曲名 *" maxlength="40" style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <input type="text" id="bd-music-artist" placeholder="アーティスト名（任意）" maxlength="40" style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <textarea id="bd-music-lyrics" placeholder="歌詞（任意）" rows="4" style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;resize:vertical;line-height:1.6;margin-bottom:6px;box-sizing:border-box;"></textarea>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(255,180,0,0.25);border-radius:8px;font-size:0.82rem;color:#a06000;cursor:pointer;background:#fffbe0;white-space:nowrap;">
                 🎵 MP3選択（10MB以下）
@@ -3364,21 +3567,7 @@ async function renderAdminContent(id) {
             </div>
           </div>
         </div>
-
-        <div style="padding:12px 16px;">
-          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🖼 フォト管理</div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">${imgItems}</div>
-          <label style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;background:white;border:2px dashed rgba(255,180,0,0.3);border-radius:10px;cursor:pointer;font-size:0.85rem;color:#a06000;">
-            📷 写真を追加（3MB以下）
-            <input type="file" accept="image/*" style="display:none" onchange="adminUploadBdImg(this)">
-          </label>
-        </div>
-        <div style="padding:12px 16px;border-top:1px solid rgba(255,180,0,0.15);">
-          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🧮 割り勘編集</div>
-          <div id="wk-adm-birthday"></div>
-        </div>
       </div>`;
-    await renderAdminWarikan('birthday', document.getElementById('wk-adm-birthday'));
     return;
   }
 
@@ -4168,6 +4357,34 @@ window.onBdAdmImg = function(inp){
     if(el)el.textContent=f.name;
   };
   r.readAsDataURL(f);
+};
+
+window.adminAddBdTimeline = async function(){
+  const time  = document.getElementById('bd-tl-time')?.value.trim()||'';
+  const icon  = document.getElementById('bd-tl-icon')?.value.trim()||'📌';
+  const label = document.getElementById('bd-tl-label')?.value.trim()||'';
+  const note  = document.getElementById('bd-tl-note')?.value.trim()||'';
+  if(!time||!label){ showToast('時刻とラベルを入力してください'); return; }
+  await fbPush('birthday/timeline', {time, icon, label, note, ts:Date.now()});
+  showToast('✓ タイムラインに追加しました');
+  // 管理タブからの呼び出しか、タブ内からの呼び出しかで挙動を分ける
+  const inAdmin = !!document.getElementById('bd-tl-time')?.closest('.birthday-sec');
+  if(!inAdmin) await renderAdminContent('birthday');
+};
+
+window.adminDelBdTimeline = async function(key){
+  if(!confirm('このアイテムを削除しますか？')) return;
+  await fbRemove('birthday/timeline/'+key);
+  showToast('✓ 削除しました');
+  await renderAdminContent('birthday');
+};
+
+window.adminSaveBdSurprise = async function(){
+  const emoji = document.getElementById('bd-sur-emoji')?.value.trim()||'🎂🎉🎊';
+  const title = document.getElementById('bd-sur-title')?.value.trim()||'';
+  const body  = document.getElementById('bd-sur-body')?.value.trim()||'';
+  await fbSet('birthday/surprise', {emoji, title, body, ts:Date.now()});
+  showToast('✓ サプライズメッセージを保存しました');
 };
 
 window.adminPostBirthday = async function(){
