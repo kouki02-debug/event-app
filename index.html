@@ -2433,9 +2433,15 @@ async function renderLovePanel() {
           </div>
 
           <!-- マイルストーン 2601 -->
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);padding-bottom:12px;">
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
             <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">🎯 マイルストーン</div>
             <div id="love-milestone-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
+          </div>
+
+          <!-- 音楽プレビュー 2601 -->
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);padding-bottom:12px;">
+            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">🎵 音楽プレビュー</div>
+            <div id="love-music-list"><div style="text-align:center;color:#d090a8;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
           </div>
         </div>
       </div>
@@ -2448,23 +2454,12 @@ async function renderLovePanel() {
           <div style="font-size:0.8rem;color:rgba(160,100,220,0.4);letter-spacing:0.06em;line-height:1.8;">恋愛2610はまだ開始前です。<br>開始されたらここに表示されます。</div>
         </div>
       </div>
-
-      <!-- 音楽プレビュー共通 -->
-
-      <!-- 音楽プレビュー 2601/2610 -->
-      <div class="love-sec" style="margin-top:20px;">
-        <div class="love-sec-hd"><h2>🎵 音楽プレビュー</h2><div class="love-sec-line"></div></div>
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#c0305a;margin:0 0 8px 2px;">💕 恋愛2601</div>
-        <div id="love-music-list"><div style="text-align:center;color:#d090a8;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#8040b0;margin:16px 0 8px 2px;">💜 恋愛2610</div>
-        <div id="love-music-list-2610"><div style="text-align:center;color:#b090d0;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
-      </div>
     </div>`;
 
-  const [music, music2610, weekly, loveInfo, loveNotices, lovePlanImages,
+  const [music, weekly, loveInfo, loveNotices, lovePlanImages,
          info2610, curStage2610raw, calmarks2610, love2610Started,
          log2601, score2601, ms2601, checklist2601] = await Promise.all([
-    fbGet('love/music'), fbGet('love/music2610'), fbGet('love/weekly'),
+    fbGet('love/music'), fbGet('love/weekly'),
     fbGet('love/info'), fbGet('settings/loveNotices'), fbGet('love/planImages'),
     fbGet('love/info2610'), fbGet('love/currentStage2610'), fbGet('love/calmarks2610'),
     fbGet('settings/love2610started'),
@@ -2493,7 +2488,6 @@ async function renderLovePanel() {
   window._loveCalMarks2610 = calmarks2610 || {};
   renderLoveCalGrid('love-cal-wrap-2610', '2610');
   renderLoveMusicList(music);
-  renderLoveMusicList2610(music2610);
   renderLove2025(weekly);
   renderLoveLog('2601', log2601);
   renderLoveScore('2601', score2601);
@@ -2518,7 +2512,6 @@ async function renderLovePanel() {
     listeners['love'].push(fbListen('love/milestones2601',val=>renderLoveMilestones('2601',val)));
     listeners['love'].push(fbListen('love/checklist2601', val=>renderLoveChecklist('2601',val,window._curStage2601||4)));
     listeners['love'].push(fbListen('love/music',    val=>renderLoveMusicList(val)));
-    listeners['love'].push(fbListen('love/music2610', val=>renderLoveMusicList2610(val)));
     listeners['love'].push(fbListen('love/weekly',   val=>renderLove2025(val)));
   }
 }
@@ -2805,34 +2798,6 @@ function renderLoveInfo(val){
     abEl.innerHTML = label + rowsHtml;
   }
 }
-
-function renderLoveMusicList2610(val){
-  const el=document.getElementById('love-music-list-2610'); if(!el)return;
-  if(!val||!Object.keys(val).length){
-    el.innerHTML='<div style="text-align:center;color:#b090d0;padding:12px;font-size:0.85rem;">🎵 準備中です</div>';
-    return;
-  }
-  const tracks=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
-  el.innerHTML=tracks.map((t,i)=>`
-    <div onclick="openLoveLyricsPage2610('${t.fbKey}')"
-      style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(160,100,220,0.06);border:1.5px solid rgba(160,100,220,0.2);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;"
-      onmouseover="this.style.transform='translateY(-2px)';this.style.background='rgba(160,100,220,0.12)'"
-      onmouseout="this.style.transform='';this.style.background='rgba(160,100,220,0.06)'">
-      <div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,#9040ff,#c0a0ff);"></div>
-      <div style="width:36px;height:36px;background:linear-gradient(135deg,#9040ff,#6020c0);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">🎵</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#e8d0ff;font-weight:600;">${esc(t.title||'曲 '+(i+1))}</div>
-        ${t.artist?'<div style="font-size:0.75rem;color:#b090d0;margin-top:2px;">'+esc(t.artist)+'</div>':''}
-      </div>
-      <div style="font-size:0.75rem;color:#b090d0;flex-shrink:0;">歌詞を見る →</div>
-    </div>`).join('');
-}
-
-window.openLoveLyricsPage2610 = async function(fbKey){
-  const track = await fbGet('love/music2610/'+fbKey);
-  if(!track){ alert('曲データが見つかりません'); return; }
-  await window.openLoveLyricsPage(fbKey, track, 'love/music2610/');
-};
 
 function renderLoveMusicList(val){
   const el=document.getElementById('love-music-list'); if(!el)return;
