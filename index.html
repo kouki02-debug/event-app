@@ -2373,17 +2373,24 @@ async function renderLovePanel() {
       <!-- 更新日時 -->
       <div id="love-updated-at" style="padding:6px 18px 0;text-align:right;font-size:0.68rem;color:rgba(208,144,168,0.5);letter-spacing:0.06em;"></div>
 
+      <!-- 区切り線 -->
+      <div style="margin:16px 14px 0;display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(208,144,168,0.35),transparent);"></div>
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.62rem;color:rgba(208,144,168,0.4);letter-spacing:0.2em;white-space:nowrap;">— 恋愛 —</div>
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(208,144,168,0.35),transparent);"></div>
+      </div>
+
       <!-- ===== 内部タブスイッチャー ===== -->
       <div style="display:flex;gap:0;margin:12px 14px 0;background:rgba(255,255,255,0.04);border:1px solid rgba(208,144,168,0.2);border-radius:12px;overflow:hidden;">
         <button id="love-inner-tab-2601" onclick="switchLoveInnerTab('2601')"
-          style="flex:1;padding:10px 8px;border:none;font-family:'Shippori Mincho',serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.08em;
+          style="flex:1;padding:10px 6px;border:none;font-family:'Shippori Mincho',serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em;
                  background:linear-gradient(135deg,#fff0f5,#ffe0ea);color:#c0305a;border-right:1px solid rgba(208,144,168,0.2);">
-          💕 2601
+          💕 2603（社内恋愛25）
         </button>
         <button id="love-inner-tab-2610" onclick="switchLoveInnerTab('2610')"
-          style="flex:1;padding:10px 8px;border:none;font-family:'Shippori Mincho',serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.08em;
+          style="flex:1;padding:10px 6px;border:none;font-family:'Shippori Mincho',serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em;
                  background:rgba(255,255,255,0.02);color:rgba(160,100,220,0.5);">
-          💜 2610
+          🕐 準備中
         </button>
       </div>
 
@@ -3767,7 +3774,7 @@ async function renderAdminContent(id) {
         <div class="admin-love-subsec">
           <div class="admin-love-subsec-title">📓 発展ログ（2601 / 2610）</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-<span style="font-size:0.78rem;color:#d090a8;">💕 2601</span>
+<span style="font-size:0.78rem;color:#d090a8;">💕 2603（社内恋愛25）</span>
             <input type="date" id="love-log-date" style="flex:1;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;">
             <select id="love-log-emotion" style="padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.9rem;background:#fff8fa;outline:none;">
               <option>💗</option><option>😊</option><option>😐</option><option>😔</option><option>😰</option><option>✨</option>
@@ -3782,7 +3789,7 @@ async function renderAdminContent(id) {
         <div class="admin-love-subsec">
           <div class="admin-love-subsec-title">📊 接触スコア記録（2601 / 2610）</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-<span style="font-size:0.78rem;color:#d090a8;">💕 2601</span>
+<span style="font-size:0.78rem;color:#d090a8;">💕 2603（社内恋愛25）</span>
             <input type="week" id="love-score-week" style="flex:1;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;">
           </div>
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
@@ -3822,7 +3829,7 @@ async function renderAdminContent(id) {
         <div class="admin-love-subsec">
           <div class="admin-love-subsec-title">🎯 マイルストーン設定（2601 / 2610）</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-<span style="font-size:0.78rem;color:#d090a8;">💕 2601</span>
+<span style="font-size:0.78rem;color:#d090a8;">💕 2603（社内恋愛25）</span>
             <input type="date" id="love-ms-deadline" style="flex:1;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;">
           </div>
           <div style="display:flex;gap:8px;">
