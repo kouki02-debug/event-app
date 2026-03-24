@@ -2370,91 +2370,101 @@ async function renderLovePanel() {
       <!-- 計画資料（ロードマップの上） -->
       <div id="love-plan-images-wrap" style="padding:14px 14px 0;"></div>
 
-      <!-- ===== 恋愛2601 ===== -->
+      <!-- 更新日時 -->
+      <div id="love-updated-at" style="padding:6px 18px 0;text-align:right;font-size:0.68rem;color:rgba(208,144,168,0.5);letter-spacing:0.06em;"></div>
 
-      <div style="margin:24px 14px 0;padding:12px 16px 4px;background:rgba(255,220,235,0.18);border:1.5px solid rgba(220,60,100,0.18);border-radius:14px;">
-        <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:#c0305a;font-weight:700;letter-spacing:0.1em;margin-bottom:12px;text-align:center;">💕 恋愛2601</div>
+      <!-- ===== 内部タブスイッチャー ===== -->
+      <div style="display:flex;gap:0;margin:12px 14px 0;background:rgba(255,255,255,0.04);border:1px solid rgba(208,144,168,0.2);border-radius:12px;overflow:hidden;">
+        <button id="love-inner-tab-2601" onclick="switchLoveInnerTab('2601')"
+          style="flex:1;padding:10px 8px;border:none;font-family:'Shippori Mincho',serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.08em;
+                 background:linear-gradient(135deg,#fff0f5,#ffe0ea);color:#c0305a;border-right:1px solid rgba(208,144,168,0.2);">
+          💕 2601
+        </button>
+        <button id="love-inner-tab-2610" onclick="switchLoveInnerTab('2610')"
+          style="flex:1;padding:10px 8px;border:none;font-family:'Shippori Mincho',serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.08em;
+                 background:rgba(255,255,255,0.02);color:rgba(160,100,220,0.5);">
+          💜 2610
+        </button>
+      </div>
 
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:8px;">— ステージロードマップ —</div>
-        <div id="love-roadmap-grid" style="display:flex;flex-direction:column;gap:0;margin-bottom:12px;"></div>
+      <!-- ===== 恋愛2601 コンテンツ ===== -->
+      <div id="love-inner-2601" style="display:block;">
+        <div style="margin:14px 14px 0;padding:12px 16px 4px;background:rgba(255,220,235,0.18);border:1.5px solid rgba(220,60,100,0.18);border-radius:14px;">
 
-        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
-          <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;">
-            <div style="font-size:0.68rem;color:#9a8880;margin-bottom:4px;letter-spacing:0.05em;">📅 次の重要日</div>
-            <div id="love-info-nextday" style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#3a2820;font-weight:700;line-height:1.6;">—</div>
+          <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:8px;">— ステージロードマップ —</div>
+          <div id="love-roadmap-grid" style="display:flex;flex-direction:column;gap:0;margin-bottom:12px;"></div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+            <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;">
+              <div style="font-size:0.68rem;color:#9a8880;margin-bottom:4px;letter-spacing:0.05em;">📅 次の重要日</div>
+              <div id="love-info-nextday" style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#3a2820;font-weight:700;line-height:1.6;">—</div>
+            </div>
+            <div id="love-info-about" style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;">
+              <div style="font-size:0.68rem;color:#9a8880;margin-bottom:4px;letter-spacing:0.05em;">👤 相手について</div>
+              <div style="font-size:0.82rem;color:#3a2820;">読み込み中...</div>
+            </div>
           </div>
-          <div id="love-info-about" style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;">
-            <div style="font-size:0.68rem;color:#9a8880;margin-bottom:4px;letter-spacing:0.05em;">👤 相手について</div>
-            <div style="font-size:0.82rem;color:#3a2820;">読み込み中...</div>
+
+          <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:6px;">📅 発展カレンダー</div>
+          <div id="love-cal-wrap" style="overflow:hidden;width:100%;box-sizing:border-box;"></div>
+
+          <!-- 恋愛2025 週報（2601内） -->
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
+            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📰 恋愛2025</div>
+            <div id="love2025-wrap"><div style="text-align:center;color:#d090a8;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
           </div>
-        </div>
 
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:6px;">📅 発展カレンダー</div>
-        <div id="love-cal-wrap" style="overflow:hidden;width:100%;box-sizing:border-box;"></div>
+          <!-- 発展ログ 2601 -->
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
+            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📓 発展ログ</div>
+            <div id="love-log-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
+          </div>
 
-        <!-- 恋愛2025 週報（2601内） -->
-        <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-          <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📰 恋愛2025</div>
-          <div id="love2025-wrap"><div style="text-align:center;color:#d090a8;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
-        </div>
+          <!-- 接触スコア 2601 -->
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
+            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📊 接触スコア</div>
+            <div id="love-score-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
+          </div>
 
-        <!-- 発展ログ 2601 -->
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-          <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📓 発展ログ</div>
-          <div id="love-log-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
-        </div>
+          <!-- 次の一手チェックリスト 2601 -->
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
+            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">✅ 次の一手チェックリスト</div>
+            <div id="love-checklist-2601"></div>
+          </div>
 
-        <!-- 接触スコア 2601 -->
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-          <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📊 接触スコア</div>
-          <div id="love-score-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
-        </div>
-
-        <!-- 次の一手チェックリスト 2601 -->
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-          <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">✅ 次の一手チェックリスト</div>
-          <div id="love-checklist-2601"></div>
-        </div>
-
-        <!-- マイルストーン 2601 -->
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);padding-bottom:12px;">
-          <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">🎯 マイルストーン</div>
-          <div id="love-milestone-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
+          <!-- マイルストーン 2601 -->
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);padding-bottom:12px;">
+            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">🎯 マイルストーン</div>
+            <div id="love-milestone-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
+          </div>
         </div>
       </div>
 
-      <!-- ===== 区切り ===== -->
-      <div style="margin:20px 14px;display:flex;align-items:center;gap:10px;">
-        <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(160,100,220,0.4),transparent);"></div>
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.7rem;color:rgba(160,100,220,0.5);letter-spacing:0.15em;">💜 恋愛2610</div>
-        <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(160,100,220,0.4),transparent);"></div>
-      </div>
+      <!-- ===== 恋愛2610 コンテンツ ===== -->
+      <div id="love-inner-2610" style="display:none;">
+        <div id="love-2610-section" style="margin:14px 14px 0;padding:12px 16px 4px;background:rgba(220,200,255,0.12);border:1.5px solid rgba(160,100,220,0.2);border-radius:14px;transition:opacity 0.4s;">
 
-      <!-- ===== 恋愛2610 ===== -->
-      <div id="love-2610-section" style="margin:0 14px 24px;padding:12px 16px 4px;background:rgba(220,200,255,0.12);border:1.5px solid rgba(160,100,220,0.2);border-radius:14px;transition:opacity 0.4s;">
-        <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:#8040b0;font-weight:700;letter-spacing:0.1em;margin-bottom:12px;text-align:center;">💜 恋愛2610</div>
+          <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#b090d0;letter-spacing:0.1em;text-align:center;margin-bottom:8px;">— ステージロードマップ —</div>
+          <div id="love-roadmap-grid-2610" style="display:flex;flex-direction:column;gap:0;margin-bottom:12px;"></div>
 
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#b090d0;letter-spacing:0.1em;text-align:center;margin-bottom:8px;">— ステージロードマップ —</div>
-        <div id="love-roadmap-grid-2610" style="display:flex;flex-direction:column;gap:0;margin-bottom:12px;"></div>
-
-        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
-          <div style="background:#f0eef8;border:1.5px solid #d8d0e8;border-radius:10px;padding:10px 14px;">
-            <div style="font-size:0.68rem;color:#9080b0;margin-bottom:4px;letter-spacing:0.05em;">📅 次の重要日</div>
-            <div id="love-info-nextday-2610" style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#3a2860;font-weight:700;line-height:1.6;">—</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+            <div style="background:#f0eef8;border:1.5px solid #d8d0e8;border-radius:10px;padding:10px 14px;">
+              <div style="font-size:0.68rem;color:#9080b0;margin-bottom:4px;letter-spacing:0.05em;">📅 次の重要日</div>
+              <div id="love-info-nextday-2610" style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#3a2860;font-weight:700;line-height:1.6;">—</div>
+            </div>
+            <div id="love-info-about-2610" style="background:#f0eef8;border:1.5px solid #d8d0e8;border-radius:10px;padding:10px 14px;">
+              <div style="font-size:0.68rem;color:#9080b0;margin-bottom:4px;letter-spacing:0.05em;">👤 相手について</div>
+              <div style="font-size:0.82rem;color:#3a2860;">読み込み中...</div>
+            </div>
           </div>
-          <div id="love-info-about-2610" style="background:#f0eef8;border:1.5px solid #d8d0e8;border-radius:10px;padding:10px 14px;">
-            <div style="font-size:0.68rem;color:#9080b0;margin-bottom:4px;letter-spacing:0.05em;">👤 相手について</div>
-            <div style="font-size:0.82rem;color:#3a2860;">読み込み中...</div>
-          </div>
+
+          <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#b090d0;letter-spacing:0.1em;text-align:center;margin-bottom:6px;">📅 発展カレンダー</div>
+          <div id="love-cal-wrap-2610" style="overflow:hidden;width:100%;box-sizing:border-box;padding-bottom:12px;"></div>
         </div>
-
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#b090d0;letter-spacing:0.1em;text-align:center;margin-bottom:6px;">📅 発展カレンダー</div>
-        <div id="love-cal-wrap-2610" style="overflow:hidden;width:100%;box-sizing:border-box;"></div>
-
-
       </div>
 
-      <div class="love-sec" style="margin-top:0;">
+      <!-- 共通：掲示板・音楽 -->
+      <div class="love-sec" style="margin-top:16px;">
         <div class="love-sec-hd"><h2>📋 掲示板</h2><div class="love-sec-line"></div></div>
         <div id="love-posts"><div style="text-align:center;color:#d090a8;padding:20px;font-size:0.85rem">読み込み中...</div></div>
       </div>
@@ -2482,6 +2492,9 @@ async function renderLovePanel() {
   const curStage2610 = curStage2610raw !== null && curStage2610raw !== undefined ? curStage2610raw : 0;
   renderLoveNotices(loveNotices);
   renderLovePlanImages(lovePlanImages);
+  renderLoveUpdatedAt();
+  // 前回のタブを復元
+  switchLoveInnerTab(localStorage.getItem('love_inner_tab') || '2601');
   // 2610不透明度
   const sec2610 = document.getElementById('love-2610-section');
   if(sec2610) sec2610.style.opacity = love2610Started ? '1' : '0.4';
@@ -2748,6 +2761,33 @@ function renderLoveInfo2610(val){
       : '<div style="font-size:0.8rem;color:#9080b0;">未設定</div>';
     abEl.innerHTML = label + rowsHtml;
   }
+}
+
+// 恋愛タブ内タブ切替
+window.switchLoveInnerTab = function(tab){
+  const t2601 = document.getElementById('love-inner-tab-2601');
+  const t2610 = document.getElementById('love-inner-tab-2610');
+  const c2601 = document.getElementById('love-inner-2601');
+  const c2610 = document.getElementById('love-inner-2610');
+  if(!t2601||!t2610||!c2601||!c2610) return;
+  if(tab==='2601'){
+    c2601.style.display='block'; c2610.style.display='none';
+    t2601.style.background='linear-gradient(135deg,#fff0f5,#ffe0ea)'; t2601.style.color='#c0305a'; t2601.style.opacity='1';
+    t2610.style.background='rgba(255,255,255,0.02)'; t2610.style.color='rgba(160,100,220,0.5)'; t2610.style.opacity='0.7';
+  } else {
+    c2601.style.display='none'; c2610.style.display='block';
+    t2610.style.background='linear-gradient(135deg,#f5f0ff,#ece0ff)'; t2610.style.color='#8040b0'; t2610.style.opacity='1';
+    t2601.style.background='rgba(255,255,255,0.02)'; t2601.style.color='rgba(220,60,100,0.4)'; t2601.style.opacity='0.7';
+  }
+  localStorage.setItem('love_inner_tab', tab);
+};
+
+// 更新日時表示
+function renderLoveUpdatedAt(){
+  const el = document.getElementById('love-updated-at'); if(!el) return;
+  const now = new Date();
+  const fmt = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} 更新`;
+  el.textContent = fmt;
 }
 
 // 恋愛お知らせ表示
