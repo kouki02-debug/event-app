@@ -2107,6 +2107,23 @@ async function renderBirthdayPanel() {
   window._bdTimelineCache = timeline;
   renderBdTimeline(timeline);
 
+  // タイムライン未設定の場合のみデフォルトデータを登録
+  if(!timeline || Object.keys(timeline).length === 0){
+    const defaultTimeline = [
+      {time:'09:30', icon:'🚩', label:'集合', note:'セブン-イレブン 入間上藤沢北店'},
+      {time:'11:00', icon:'🛍', label:'エミテラス所沢', note:'昼食含む'},
+      {time:'16:30', icon:'🥩', label:'焼肉きんぐ 入間店', note:''},
+      {time:'18:30', icon:'💬', label:'クロージングトーク', note:''},
+      {time:'20:00', icon:'👋', label:'解散', note:'セブン-イレブン 入間上藤沢北店'},
+    ];
+    for(const item of defaultTimeline){
+      await fbPush('birthday/timeline', {...item, ts: Date.now()});
+    }
+    const newTimeline = await fbGet('birthday/timeline');
+    window._bdTimelineCache = newTimeline;
+    renderBdTimeline(newTimeline);
+  }
+
   // 音楽のみ時刻制限（09:30〜）
   if(isBirthdayContentVisible()){
     renderBdMusicList(music);
@@ -2394,9 +2411,12 @@ async function renderLovePanel() {
         </button>
       </div>
 
-      <!-- ===== 恋愛2601 コンテンツ ===== -->
+      <!-- ===== 恋愛2603 コンテンツ ===== -->
       <div id="love-inner-2601" style="display:block;">
         <div style="margin:14px 14px 0;padding:12px 16px 4px;background:rgba(255,220,235,0.18);border:1.5px solid rgba(220,60,100,0.18);border-radius:14px;">
+
+          <!-- 次週目標・スローガン -->
+          <div id="love-weekly-goal-wrap"></div>
 
           <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:8px;">— ステージロードマップ —</div>
           <div id="love-roadmap-grid" style="display:flex;flex-direction:column;gap:0;margin-bottom:12px;"></div>
@@ -2439,11 +2459,6 @@ async function renderLovePanel() {
             <div id="love-checklist-2601"></div>
           </div>
 
-          <!-- マイルストーン 2601 -->
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">🎯 マイルストーン</div>
-            <div id="love-milestone-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
-          </div>
 
           <!-- 音楽プレビュー 2601 -->
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);padding-bottom:12px;">
@@ -2456,6 +2471,8 @@ async function renderLovePanel() {
       <!-- ===== 恋愛2610 コンテンツ（準備中） ===== -->
       <div id="love-inner-2610" style="display:none;">
         <div style="margin:14px 14px 24px;padding:32px 20px;background:rgba(220,200,255,0.08);border:1.5px solid rgba(160,100,220,0.18);border-radius:14px;text-align:center;">
+          <!-- 次週目標・スローガン（2610用） -->
+          <div id="love-weekly-goal-wrap-2610" style="text-align:left;"></div>
           <div style="font-size:2rem;margin-bottom:12px;">💜</div>
           <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:rgba(160,100,220,0.7);font-weight:700;letter-spacing:0.15em;margin-bottom:10px;">準備中</div>
           <div style="font-size:0.8rem;color:rgba(160,100,220,0.4);letter-spacing:0.06em;line-height:1.8;">恋愛2610はまだ開始前です。<br>開始されたらここに表示されます。</div>
@@ -2465,13 +2482,13 @@ async function renderLovePanel() {
 
   const [music, weekly, loveInfo, loveNotices, lovePlanImages,
          info2610, curStage2610raw, calmarks2610, love2610Started,
-         log2601, score2601, ms2601, checklist2601] = await Promise.all([
+         log2601, score2601, checklist2601] = await Promise.all([
     fbGet('love/music'), fbGet('love/weekly'),
     fbGet('love/info'), fbGet('settings/loveNotices'), fbGet('love/planImages'),
     fbGet('love/info2610'), fbGet('love/currentStage2610'), fbGet('love/calmarks2610'),
     fbGet('settings/love2610started'),
     fbGet('love/log2601'), fbGet('love/score2601'),
-    fbGet('love/milestones2601'), fbGet('love/checklist2601')
+    fbGet('love/checklist2601')
   ]);
   const curStage2610 = curStage2610raw !== null && curStage2610raw !== undefined ? curStage2610raw : 0;
   renderLoveNotices(loveNotices);
@@ -2479,9 +2496,9 @@ async function renderLovePanel() {
   renderLoveUpdatedAt();
   // 前回のタブを復元
   switchLoveInnerTab(localStorage.getItem('love_inner_tab') || '2601');
-  // 2610不透明度
 
-  // 恋愛2601
+  // 恋愛2603
+  renderLoveWeeklyGoal(weekly);
   renderLoveInfo(loveInfo);
   const curStage2601 = await fbGet('love/currentStage') || 4;
   renderLoveRoadmap(curStage2601, 'love-roadmap-grid');
@@ -2500,7 +2517,6 @@ async function renderLovePanel() {
   renderLoveScore('2601', score2601);
   window._curStage2601 = curStage2601;
   renderLoveChecklist('2601', checklist2601, curStage2601);
-  renderLoveMilestones('2601', ms2601);
   await renderLoveCal();
   await initBgm();
 
@@ -2516,10 +2532,9 @@ async function renderLovePanel() {
     listeners['love'].push(fbListen('love/calmarks2610',     val=>{ window._loveCalMarks2610=val||{}; renderLoveCalGrid('love-cal-wrap-2610','2610'); }));
     listeners['love'].push(fbListen('love/log2601',       val=>renderLoveLog('2601',val)));
     listeners['love'].push(fbListen('love/score2601',     val=>renderLoveScore('2601',val)));
-    listeners['love'].push(fbListen('love/milestones2601',val=>renderLoveMilestones('2601',val)));
     listeners['love'].push(fbListen('love/checklist2601', val=>renderLoveChecklist('2601',val,window._curStage2601||4)));
     listeners['love'].push(fbListen('love/music',    val=>renderLoveMusicList(val)));
-    listeners['love'].push(fbListen('love/weekly',   val=>renderLove2025(val)));
+    listeners['love'].push(fbListen('love/weekly',   val=>{ renderLove2025(val); renderLoveWeeklyGoal(val); }));
   }
 }
 
@@ -2612,31 +2627,7 @@ function renderLoveChecklist(suffix, val, curStage){
 // ============================================================
 // マイルストーン
 // ============================================================
-function renderLoveMilestones(suffix, val){
-  const el = document.getElementById('love-milestone-'+suffix); if(!el) return;
-  const isP = suffix==='2610';
-  const c = isP?'#8040b0':'#c0305a', cb=isP?'rgba(160,100,220,0.08)':'rgba(220,60,100,0.06)';
-  if(!val||!Object.keys(val).length){
-    el.innerHTML=`<div style="text-align:center;color:${c};opacity:0.4;padding:8px;font-size:0.82rem;">目標がありません</div>`;
-    return;
-  }
-  const items = Object.entries(val).map(([k,v])=>({key:k,...v})).sort((a,b)=>(a.deadline||'').localeCompare(b.deadline||''));
-  el.innerHTML = items.map(m=>{
-    const done = !!m.done;
-    const overdue = !done && m.deadline && m.deadline < new Date().toISOString().slice(0,10);
-    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${done?'rgba(60,160,60,0.06)':cb};border:1px solid ${done?'rgba(60,160,60,0.2)':c+'25'};border-radius:10px;margin-bottom:6px;${done?'opacity:0.7':''}">
-      <input type="checkbox" ${done?'checked':''} onchange="loveMilestoneToggle('${suffix}','${m.key}',this.checked)" style="width:18px;height:18px;cursor:pointer;accent-color:${c};">
-      <div style="flex:1;">
-        <div style="font-size:0.88rem;color:var(--ink);${done?'text-decoration:line-through;':''}">${esc(m.goal||'')}</div>
-        ${m.deadline?`<div style="font-size:0.7rem;color:${overdue?'#c04040':done?'#3a7a3a':c};margin-top:2px;">${overdue?'⚠️ 期限超過：':done?'✓ 達成：期限 ':'期限：'}${esc(m.deadline)}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-}
 
-window.loveMilestoneToggle = async function(suffix, key, done){
-  await fbSet('love/milestones'+suffix+'/'+key+'/done', done);
-};
 
 
 function renderLove2025(val){
@@ -2654,6 +2645,39 @@ function renderLove2025(val){
           <img src="${src}" style="width:100%;display:block;" alt="週報 p.${i+1}" loading="lazy">
         </div>`).join('')}
     </div>`;
+}
+
+// 次週目標・スローガン表示（love/weekly の goal・slogan フィールドを使用）
+function renderLoveWeeklyGoal(val){
+  // 2603タブ と 準備中タブ の両方に表示
+  ['love-weekly-goal-wrap','love-weekly-goal-wrap-2610'].forEach(id=>{
+    const wrap = document.getElementById(id); if(!wrap) return;
+    if(!val || (!val.goal && !val.slogan)){
+      wrap.innerHTML = ''; return;
+    }
+    const goal   = val.goal   ? esc(val.goal)   : '';
+    const slogan = val.slogan ? esc(val.slogan) : '';
+    const is2610 = id.includes('2610');
+    const col  = is2610 ? '#8040b0' : '#c0305a';
+    const colA = is2610 ? 'rgba(160,100,220,0.5)' : 'rgba(220,60,100,0.5)';
+    const colB = is2610 ? 'rgba(160,100,220,0.12)' : 'rgba(255,220,235,0.4)';
+    const updAt = val.updatedAt
+      ? `<div style="font-size:0.65rem;color:${colA};opacity:0.6;text-align:right;margin-top:6px;">${new Date(val.updatedAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',weekday:'short'})} 更新</div>`
+      : '';
+    wrap.innerHTML = `
+      <div style="background:${colB};border:1px solid ${colA};border-radius:12px;padding:12px 14px;margin-bottom:12px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,${colA},transparent);"></div>
+        ${goal?`<div style="${slogan?'margin-bottom:8px;':''}">
+          <div style="font-size:0.65rem;color:${colA};letter-spacing:0.15em;margin-bottom:3px;">📌 次週目標</div>
+          <div style="font-family:'Shippori Mincho',serif;font-size:0.9rem;color:${col};font-weight:600;line-height:1.6;">${goal}</div>
+        </div>`:''}
+        ${slogan?`<div>
+          <div style="font-size:0.65rem;color:${colA};letter-spacing:0.15em;margin-bottom:3px;">💬 スローガン</div>
+          <div style="font-family:'Shippori Mincho',serif;font-size:0.85rem;color:${col};opacity:0.8;font-style:italic;line-height:1.6;">${slogan}</div>
+        </div>`:''}
+        ${updAt}
+      </div>`;
+  });
 }
 
 // ステージロードマップ描画（currentStage連動）
@@ -3687,6 +3711,19 @@ async function renderAdminContent(id) {
         <div class="admin-love-subsec">
           <div class="admin-love-subsec-title">📰 恋愛2025 週報（毎週日曜19時更新）</div>
           <div style="font-size:0.78rem;color:#d090a8;margin-bottom:8px;">PDFをアップロードすると自動で画像変換して表示します</div>
+
+          <!-- 次週目標・スローガン入力 -->
+          <div style="background:rgba(255,220,235,0.15);border:1px solid rgba(220,60,100,0.15);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+            <div style="font-size:0.75rem;color:#d090a8;font-weight:600;margin-bottom:8px;">📌 次週目標・スローガン（両タブに表示）</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <input type="text" id="love-weekly-goal" value="${esc(weekly?.goal||'')}" placeholder="次週目標（例：笑顔で挨拶を返す）" maxlength="60"
+                style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
+              <input type="text" id="love-weekly-slogan" value="${esc(weekly?.slogan||'')}" placeholder="スローガン（例：焦らず、でも確実に）" maxlength="60"
+                style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
+              <button onclick="adminSaveWeeklyGoal()" class="love-admin-btn" style="margin-top:2px;">💾 保存</button>
+            </div>
+          </div>
+
           ${weekly ? `
           <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:white;border:1px solid rgba(220,60,100,0.15);border-radius:8px;margin-bottom:8px;">
             <span style="font-size:1rem;">📰</span>
@@ -3823,19 +3860,6 @@ async function renderAdminContent(id) {
             </div>
           </div>
           <button onclick="adminSaveChecklist()" class="love-admin-btn">💾 保存</button>
-        </div>
-
-        <!-- マイルストーン管理 -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">🎯 マイルストーン設定（2601 / 2610）</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-<span style="font-size:0.78rem;color:#d090a8;">💕 2603（社内恋愛25）</span>
-            <input type="date" id="love-ms-deadline" style="flex:1;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;">
-          </div>
-          <div style="display:flex;gap:8px;">
-            <input type="text" id="love-ms-goal" placeholder="目標（例：連絡先交換）" maxlength="40" style="flex:1;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;">
-            <button onclick="adminAddLoveMilestone()" class="love-admin-btn" style="white-space:nowrap;">追加</button>
-          </div>
         </div>
 
         <!-- 掲示板 -->
@@ -4345,6 +4369,15 @@ window.adminDelBdImg = async function(fbKey){
 };
 
 // 恋愛2025 週報管理
+window.adminSaveWeeklyGoal = async function(){
+  const goal   = document.getElementById('love-weekly-goal')?.value.trim()||'';
+  const slogan = document.getElementById('love-weekly-slogan')?.value.trim()||'';
+  // 既存の love/weekly データを取得してフィールドを追加・保存
+  const existing = await fbGet('love/weekly') || {};
+  await fbSet('love/weekly', {...existing, goal, slogan, updatedAt: Date.now()});
+  showToast('✓ 次週目標・スローガンを保存しました💕');
+};
+
 window.adminUploadWeekly = async function(inp){
   const files = Array.from(inp.files).slice(0, 4).sort((a,b)=>a.name.localeCompare(b.name, 'ja'));
   if(!files.length) return;
@@ -4491,15 +4524,6 @@ window.adminSaveLoveScore = async function(){
   showToast('✓ 接触スコアを保存しました');
 };
 
-window.adminAddLoveMilestone = async function(){
-  const suffix   = '2601';
-  const goal     = document.getElementById('love-ms-goal')?.value.trim()||'';
-  const deadline = document.getElementById('love-ms-deadline')?.value||'';
-  if(!goal){ showToast('目標を入力してください'); return; }
-  await fbPush('love/milestones'+suffix, {goal, deadline, done:false, ts:Date.now()});
-  showToast('✓ マイルストーンを追加しました');
-  document.getElementById('love-ms-goal').value='';
-};
 
 window.adminSaveLove2610Started = async function(val){
   await fbSet('settings/love2610started', val);
