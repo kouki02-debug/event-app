@@ -2435,6 +2435,15 @@ async function renderLovePanel() {
           <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:6px;">📅 発展カレンダー</div>
           <div id="love-cal-wrap" style="overflow:hidden;width:100%;box-sizing:border-box;"></div>
 
+          <!-- 4月カレンダー -->
+          <div id="love-cal-apr-wrap" style="overflow:hidden;width:100%;box-sizing:border-box;margin-top:8px;"></div>
+
+          <!-- 週間恋音楽 -->
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
+            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">🎵 週間恋音楽</div>
+            <div id="love-weekly-music-wrap"><div style="text-align:center;color:#d090a8;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
+          </div>
+
           <!-- 恋愛2025 週報（2601内） -->
           <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
             <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📰 恋愛2025</div>
@@ -2451,6 +2460,12 @@ async function renderLovePanel() {
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
             <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📊 接触スコア</div>
             <div id="love-score-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
+          </div>
+
+          <!-- 恋愛成功率グラフ -->
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
+            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">💯 恋愛成功率・可能性</div>
+            <div id="love-success-rate-wrap"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
           </div>
 
           <!-- 次の一手チェックリスト 2601 -->
@@ -2482,13 +2497,13 @@ async function renderLovePanel() {
 
   const [music, weekly, loveInfo, loveNotices, lovePlanImages,
          info2610, curStage2610raw, calmarks2610, love2610Started,
-         log2601, score2601, checklist2601] = await Promise.all([
+         log2601, score2601, checklist2601, weeklyMusic] = await Promise.all([
     fbGet('love/music'), fbGet('love/weekly'),
     fbGet('love/info'), fbGet('settings/loveNotices'), fbGet('love/planImages'),
     fbGet('love/info2610'), fbGet('love/currentStage2610'), fbGet('love/calmarks2610'),
     fbGet('settings/love2610started'),
     fbGet('love/log2601'), fbGet('love/score2601'),
-    fbGet('love/checklist2601')
+    fbGet('love/checklist2601'), fbGet('love/weeklyMusic')
   ]);
   const curStage2610 = curStage2610raw !== null && curStage2610raw !== undefined ? curStage2610raw : 0;
   renderLoveNotices(loveNotices);
@@ -2515,8 +2530,14 @@ async function renderLovePanel() {
   renderLove2025(weekly);
   renderLoveLog('2601', log2601);
   renderLoveScore('2601', score2601);
+  window._loveLog2601   = log2601   || {};
+  window._loveScore2601 = score2601 || {};
+  renderLoveSuccessRate(null);
   window._curStage2601 = curStage2601;
   renderLoveChecklist('2601', checklist2601, curStage2601);
+  renderLoveSuccessRate(null);
+  renderLoveWeeklyMusic(weeklyMusic);
+  renderLoveCalApr();
   await renderLoveCal();
   await initBgm();
 
@@ -2530,9 +2551,10 @@ async function renderLovePanel() {
     listeners['love'].push(fbListen('love/currentStage2610', val=>renderLoveRoadmap((val!==null&&val!==undefined)?val:0,'love-roadmap-grid-2610')));
     listeners['love'].push(fbListen('love/info2610',         val=>renderLoveInfo2610(val)));
     listeners['love'].push(fbListen('love/calmarks2610',     val=>{ window._loveCalMarks2610=val||{}; renderLoveCalGrid('love-cal-wrap-2610','2610'); }));
-    listeners['love'].push(fbListen('love/log2601',       val=>renderLoveLog('2601',val)));
-    listeners['love'].push(fbListen('love/score2601',     val=>renderLoveScore('2601',val)));
+    listeners['love'].push(fbListen('love/log2601',       val=>{ window._loveLog2601=val||{}; renderLoveLog('2601',val); renderLoveSuccessRate(null); }));
+    listeners['love'].push(fbListen('love/score2601',     val=>{ window._loveScore2601=val||{}; renderLoveScore('2601',val); renderLoveSuccessRate(null); }));
     listeners['love'].push(fbListen('love/checklist2601', val=>renderLoveChecklist('2601',val,window._curStage2601||4)));
+    listeners['love'].push(fbListen('love/weeklyMusic',  val=>renderLoveWeeklyMusic(val)));
     listeners['love'].push(fbListen('love/music',    val=>renderLoveMusicList(val)));
     listeners['love'].push(fbListen('love/weekly',   val=>{ renderLove2025(val); renderLoveWeeklyGoal(val); }));
   }
@@ -2648,36 +2670,126 @@ function renderLove2025(val){
 }
 
 // 次週目標・スローガン表示（love/weekly の goal・slogan フィールドを使用）
+// 恋愛成功率・可能性グラフ（発展ログ・接触スコアから自動計算）
+function renderLoveSuccessRate(val){
+  const el = document.getElementById('love-success-rate-wrap'); if(!el) return;
+  // 発展ログと接触スコアを使って計算
+  const logs   = window._loveLog2601   ? Object.values(window._loveLog2601)   : [];
+  const scores = window._loveScore2601 ? Object.values(window._loveScore2601) : [];
+  const stage  = window._curStage2601  || 1;
+
+  // 接触スコア：直近4週の平均count × quality
+  const recentScores = scores.slice(-4);
+  const avgScore = recentScores.length
+    ? recentScores.reduce((s,w)=>s+(w.count||0)*(w.quality||1),0) / recentScores.length
+    : 0;
+
+  // 発展ログ：ポジティブ感情（💗✨😊）の割合
+  const positiveEmoji = ['💗','✨','😊'];
+  const positiveLogs  = logs.filter(l=>positiveEmoji.includes(l.emotion));
+  const logRatio = logs.length ? positiveLogs.length / logs.length : 0.5;
+
+  // 成功率 = ステージ進捗(1-6) × 16.7% + 接触スコア補正 + ログ補正
+  const stageBase  = Math.min(stage / 6, 1) * 55;
+  const scoreBonus = Math.min(avgScore / 20, 1) * 25;
+  const logBonus   = logRatio * 20;
+  const success    = Math.round(Math.min(99, stageBase + scoreBonus + logBonus));
+
+  // 可能性 = 最近の接触頻度 × ポジティブ比率 から算出
+  const recentCount = recentScores.reduce((s,w)=>s+(w.count||0),0);
+  const chance = Math.round(Math.min(99, Math.min(recentCount / 20, 1) * 50 + logRatio * 50));
+
+  const comment = val?.comment || '';
+
+  el.innerHTML = [
+    {label:'成功率', pct:success, color:'#e8406a', bg:'rgba(232,64,106,0.12)'},
+    {label:'可能性', pct:chance,  color:'#f0a060', bg:'rgba(240,160,96,0.12)'},
+  ].map(item=>`
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+        <span style="font-size:0.8rem;color:#6a5a54;">${item.label}</span>
+        <span style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:${item.color};font-weight:700;">${item.pct}%</span>
+      </div>
+      <div style="background:${item.bg};border-radius:20px;height:10px;overflow:hidden;">
+        <div style="height:100%;width:${item.pct}%;background:linear-gradient(90deg,${item.color},${item.color}88);border-radius:20px;transition:width 0.8s ease;"></div>
+      </div>
+    </div>`).join('')
+  + (comment ? `<div style="font-size:0.78rem;color:#d090a8;font-style:italic;margin-top:4px;padding:6px 10px;background:rgba(220,60,100,0.05);border-radius:8px;">${esc(comment)}</div>` : '')
+  + `<div style="font-size:0.62rem;color:rgba(220,60,100,0.35);text-align:right;margin-top:6px;">ステージ・接触スコア・発展ログから自動計算</div>`;
+}
+
+// 週間恋音楽（独立1曲差し替え式）
+function renderLoveWeeklyMusic(val){
+  const el = document.getElementById('love-weekly-music-wrap'); if(!el) return;
+  if(!val || !val.title){
+    el.innerHTML='<div style="text-align:center;color:#d090a8;opacity:0.4;padding:12px;font-size:0.82rem;">今週の曲は準備中です</div>';
+    return;
+  }
+  el.innerHTML=`
+    <div onclick="openLoveWeeklyMusicPage()"
+      style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,180,210,0.08);border:1.5px solid rgba(220,60,100,0.2);border-radius:12px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;"
+      onmouseover="this.style.transform='translateY(-2px)';this.style.background='rgba(220,60,100,0.1)'"
+      onmouseout="this.style.transform='';this.style.background='rgba(255,180,210,0.08)'">
+      <div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,#ff80b0,#e8406a);"></div>
+      <div style="width:38px;height:38px;background:linear-gradient(135deg,#ff80b0,#e8406a);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;">🎵</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.65rem;color:rgba(220,60,100,0.5);letter-spacing:0.12em;margin-bottom:2px;">今週の1曲</div>
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#f5e8f0;font-weight:600;">${esc(val.title)}</div>
+        ${val.artist?'<div style="font-size:0.72rem;color:#d090a8;margin-top:2px;">'+esc(val.artist)+'</div>':''}
+      </div>
+      <div style="font-size:0.72rem;color:#d090a8;flex-shrink:0;">再生 →</div>
+    </div>`;
+}
+
+window.openLoveWeeklyMusicPage = async function(){
+  const track = await fbGet('love/weeklyMusic');
+  if(!track){ alert('楽曲データが見つかりません'); return; }
+  const lyrics  = (track.lyrics||'（歌詞なし）').replace(/\n/g,'<br>');
+  const title   = esc(track.title||'');
+  const artist  = esc(track.artist||'');
+  const audioSrc = track.audioDataUrl||'';
+  // openLoveLyricsPage と同じページ生成ロジックを使用
+  const tmpKey = '__weeklyMusicTmp__';
+  window[tmpKey] = track;
+  const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{background:linear-gradient(160deg,#1a0818,#38102a);min-height:100vh;font-family:'Hiragino Mincho ProN',serif;color:#f5e8f0;padding:32px 20px 48px;}</style></head><body><div style="max-width:560px;margin:0 auto;text-align:center;"><div style="font-size:0.72rem;letter-spacing:0.2em;color:rgba(220,140,180,0.7);border:1px solid rgba(220,60,100,0.3);padding:3px 14px;border-radius:20px;display:inline-block;margin-bottom:16px;">🎵 週間恋音楽</div><h1 style="font-size:1.8rem;color:#f8d0e0;letter-spacing:0.06em;margin-bottom:8px;">${title}</h1>${artist?'<p style="font-size:0.85rem;color:rgba(220,140,180,0.6);margin-bottom:20px;">'+artist+'</p>':''}${audioSrc?'<audio controls src="'+audioSrc+'" style="width:100%;border-radius:12px;margin-bottom:24px;"></audio>':''}<div style="text-align:left;font-size:0.98rem;line-height:2.4;letter-spacing:0.06em;color:rgba(240,200,230,0.85);">${lyrics}</div></div></body></html>`;
+  const blob = new Blob([html],{type:'text/html'});
+  window.open(URL.createObjectURL(blob),'_blank');
+};
+
+// 4月カレンダー（3月の直下）
+function renderLoveCalApr(){
+  const wrap = document.getElementById('love-cal-apr-wrap'); if(!wrap) return;
+  // 4月用にloveCal_2601_apr として管理
+  if(!window['loveCal_2601_apr']) window['loveCal_2601_apr'] = {year:2026, month:3}; // 3=April(0-indexed)
+  renderLoveCalGrid('love-cal-apr-wrap', '2601_apr');
+}
+
 function renderLoveWeeklyGoal(val){
-  // 2603タブ と 準備中タブ の両方に表示
-  ['love-weekly-goal-wrap','love-weekly-goal-wrap-2610'].forEach(id=>{
-    const wrap = document.getElementById(id); if(!wrap) return;
-    if(!val || (!val.goal && !val.slogan)){
-      wrap.innerHTML = ''; return;
-    }
-    const goal   = val.goal   ? esc(val.goal)   : '';
-    const slogan = val.slogan ? esc(val.slogan) : '';
-    const is2610 = id.includes('2610');
-    const col  = is2610 ? '#8040b0' : '#c0305a';
-    const colA = is2610 ? 'rgba(160,100,220,0.5)' : 'rgba(220,60,100,0.5)';
-    const colB = is2610 ? 'rgba(160,100,220,0.12)' : 'rgba(255,220,235,0.4)';
-    const updAt = val.updatedAt
-      ? `<div style="font-size:0.65rem;color:${colA};opacity:0.6;text-align:right;margin-top:6px;">${new Date(val.updatedAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',weekday:'short'})} 更新</div>`
-      : '';
-    wrap.innerHTML = `
-      <div style="background:${colB};border:1px solid ${colA};border-radius:12px;padding:12px 14px;margin-bottom:12px;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,${colA},transparent);"></div>
-        ${goal?`<div style="${slogan?'margin-bottom:8px;':''}">
-          <div style="font-size:0.65rem;color:${colA};letter-spacing:0.15em;margin-bottom:3px;">📌 次週目標</div>
-          <div style="font-family:'Shippori Mincho',serif;font-size:0.9rem;color:${col};font-weight:600;line-height:1.6;">${goal}</div>
-        </div>`:''}
-        ${slogan?`<div>
-          <div style="font-size:0.65rem;color:${colA};letter-spacing:0.15em;margin-bottom:3px;">💬 スローガン</div>
-          <div style="font-family:'Shippori Mincho',serif;font-size:0.85rem;color:${col};opacity:0.8;font-style:italic;line-height:1.6;">${slogan}</div>
-        </div>`:''}
-        ${updAt}
-      </div>`;
-  });
+  const wrap = document.getElementById('love-weekly-goal-wrap'); if(!wrap) return;
+  if(!val || (!val.goal && !val.headlineThis && !val.headlineNext)){
+    wrap.innerHTML = ''; return;
+  }
+  const goal  = val.goal         ? esc(val.goal)         : '';
+  const hThis = val.headlineThis ? esc(val.headlineThis) : '';
+  const hNext = val.headlineNext ? esc(val.headlineNext) : '';
+  wrap.innerHTML = `
+    <div style="background:linear-gradient(135deg,rgba(255,220,235,0.4),rgba(255,240,248,0.6));border:1px solid rgba(220,60,100,0.2);border-radius:12px;padding:12px 14px;margin-bottom:12px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(220,60,100,0.4),transparent);"></div>
+      ${goal?`<div style="margin-bottom:8px;">
+        <div style="font-size:0.65rem;color:rgba(220,60,100,0.5);letter-spacing:0.15em;margin-bottom:3px;">📌 次週目標</div>
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.9rem;color:#c0305a;font-weight:600;line-height:1.6;">${goal}</div>
+      </div>`:''}
+      ${hThis||hNext?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        ${hThis?`<div style="background:rgba(255,255,255,0.5);border-radius:8px;padding:8px 10px;">
+          <div style="font-size:0.62rem;color:rgba(220,60,100,0.45);letter-spacing:0.1em;margin-bottom:3px;">📰 今週の見出し</div>
+          <div style="font-size:0.8rem;color:#c0305a;font-style:italic;line-height:1.5;">${hThis}</div>
+        </div>`:'<div></div>'}
+        ${hNext?`<div style="background:rgba(255,255,255,0.5);border-radius:8px;padding:8px 10px;">
+          <div style="font-size:0.62rem;color:rgba(220,60,100,0.45);letter-spacing:0.1em;margin-bottom:3px;">🔮 来週の見出し</div>
+          <div style="font-size:0.8rem;color:#c0305a;font-style:italic;line-height:1.5;">${hNext}</div>
+        </div>`:'<div></div>'}
+      </div>`:''}
+    </div>`;
 }
 
 // ステージロードマップ描画（currentStage連動）
@@ -3550,6 +3662,7 @@ async function renderAdminContent(id) {
     let posts = null, bgm = null, loveMusic = null, weekly = null, loveInfo = null;
     let loveCurStage = 4, lovePlanImgs = null;
     let loveCurStage2610 = 0, love2610Started = false;
+    let weeklyMusicAdm = null;
     try {
       bgm   = await fbGet('love/bgm');
       loveMusic = await fbGet('love/music');
@@ -3560,6 +3673,7 @@ async function renderAdminContent(id) {
       loveCurStage2610 = (_cs2610raw!==null&&_cs2610raw!==undefined)?_cs2610raw:0;
       lovePlanImgs = await fbGet('love/planImages');
       love2610Started = !!(await fbGet('settings/love2610started'));
+      weeklyMusicAdm  = await fbGet('love/weeklyMusic');
     } catch(e) {
       panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
       return;
@@ -3718,7 +3832,9 @@ async function renderAdminContent(id) {
             <div style="display:flex;flex-direction:column;gap:6px;">
               <input type="text" id="love-weekly-goal" value="${esc(weekly?.goal||'')}" placeholder="次週目標（例：笑顔で挨拶を返す）" maxlength="60"
                 style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
-              <input type="text" id="love-weekly-slogan" value="${esc(weekly?.slogan||'')}" placeholder="スローガン（例：焦らず、でも確実に）" maxlength="60"
+              <input type="text" id="love-weekly-headline-this" value="${esc(weekly?.headlineThis||'')}" placeholder="今週の見出し（例：笑顔で視線が合った）" maxlength="60"
+                style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
+              <input type="text" id="love-weekly-headline-next" value="${esc(weekly?.headlineNext||'')}" placeholder="来週の見出し（例：声をかけるタイミングを作る）" maxlength="60"
                 style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
               <button onclick="adminSaveWeeklyGoal()" class="love-admin-btn" style="margin-top:2px;">💾 保存</button>
             </div>
@@ -3748,6 +3864,37 @@ async function renderAdminContent(id) {
         </div>
 
         <!-- 音楽管理 -->
+        <div class="admin-love-subsec">
+          <div class="admin-love-subsec-title">🎵 週間恋音楽（毎週1曲差し替え・20MB以下）</div>
+          ${(()=>{ const wm = typeof weeklyMusicAdm !== 'undefined' ? weeklyMusicAdm : null; return wm ? `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,180,210,0.08);border:1px solid rgba(220,60,100,0.15);border-radius:8px;margin-bottom:8px;">
+            <span style="font-size:1rem;">🎵</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.85rem;color:#3a1a28;font-weight:500;">${esc(wm.title||'')}</div>
+              ${wm.artist?'<div style="font-size:0.72rem;color:#d090a8;">'+esc(wm.artist)+'</div>':''}
+            </div>
+            <button style="background:none;border:none;color:#d090a8;cursor:pointer;font-size:0.9rem;" onclick="adminDelWeeklyMusic()">🗑</button>
+          </div>` : '<div style="font-size:0.82rem;color:#d090a8;margin-bottom:8px;">未登録</div>'; })()}
+          <div style="background:white;border:1.5px solid rgba(220,60,100,0.2);border-radius:10px;padding:12px;">
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
+              <input type="text" id="wm-title" placeholder="曲名 *" maxlength="40"
+                style="padding:7px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;">
+              <input type="text" id="wm-artist" placeholder="アーティスト名（任意）" maxlength="40"
+                style="padding:7px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;">
+              <textarea id="wm-lyrics" placeholder="歌詞（任意）" rows="3"
+                style="padding:7px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;"></textarea>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#c06080;cursor:pointer;background:#fff8fa;white-space:nowrap;">
+                🎵 MP3選択（20MB以下）
+                <input type="file" accept="audio/*" style="display:none" onchange="onWeeklyMusicFile(this)">
+              </label>
+              <span id="wm-fname" style="font-size:0.75rem;color:#e8406a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+              <button onclick="adminSaveWeeklyMusic()" class="love-admin-btn" style="white-space:nowrap;">保存</button>
+            </div>
+          </div>
+        </div>
+
         <div class="admin-love-subsec">
           <div class="admin-love-subsec-title">🎵 音楽プレゼント管理（最大3曲）</div>
           <div style="margin-bottom:10px;">
@@ -4370,12 +4517,12 @@ window.adminDelBdImg = async function(fbKey){
 
 // 恋愛2025 週報管理
 window.adminSaveWeeklyGoal = async function(){
-  const goal   = document.getElementById('love-weekly-goal')?.value.trim()||'';
-  const slogan = document.getElementById('love-weekly-slogan')?.value.trim()||'';
-  // 既存の love/weekly データを取得してフィールドを追加・保存
+  const goal         = document.getElementById('love-weekly-goal')?.value.trim()||'';
+  const headlineThis = document.getElementById('love-weekly-headline-this')?.value.trim()||'';
+  const headlineNext = document.getElementById('love-weekly-headline-next')?.value.trim()||'';
   const existing = await fbGet('love/weekly') || {};
-  await fbSet('love/weekly', {...existing, goal, slogan, updatedAt: Date.now()});
-  showToast('✓ 次週目標・スローガンを保存しました💕');
+  await fbSet('love/weekly', {...existing, goal, headlineThis, headlineNext, updatedAt: Date.now()});
+  showToast('✓ 次週目標・見出しを保存しました💕');
 };
 
 window.adminUploadWeekly = async function(inp){
@@ -4524,6 +4671,39 @@ window.adminSaveLoveScore = async function(){
   showToast('✓ 接触スコアを保存しました');
 };
 
+
+let _wmBuf = null;
+window.onWeeklyMusicFile = function(inp){
+  const f = inp.files[0]; if(!f) return;
+  if(f.size > 20*1024*1024){ showToast('20MB以下のファイルを選択してください'); inp.value=''; return; }
+  const r = new FileReader();
+  r.onload = e => {
+    _wmBuf = {dataUrl: e.target.result, name: f.name};
+    const el = document.getElementById('wm-fname');
+    if(el) el.textContent = f.name;
+  };
+  r.readAsDataURL(f);
+};
+
+window.adminSaveWeeklyMusic = async function(){
+  const title  = document.getElementById('wm-title')?.value.trim()||'';
+  const artist = document.getElementById('wm-artist')?.value.trim()||'';
+  const lyrics = document.getElementById('wm-lyrics')?.value.trim()||'';
+  if(!title){ showToast('曲名を入力してください'); return; }
+  const data = {title, artist, lyrics, ts: Date.now()};
+  if(_wmBuf) data.audioDataUrl = _wmBuf.dataUrl;
+  await fbSet('love/weeklyMusic', data);
+  _wmBuf = null;
+  showToast('✓ 週間恋音楽を保存しました🎵');
+  await renderAdminContent('love');
+};
+
+window.adminDelWeeklyMusic = async function(){
+  if(!confirm('週間恋音楽を削除しますか？')) return;
+  await fbRemove('love/weeklyMusic');
+  showToast('✓ 削除しました');
+  await renderAdminContent('love');
+};
 
 window.adminSaveLove2610Started = async function(val){
   await fbSet('settings/love2610started', val);
