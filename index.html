@@ -792,13 +792,14 @@ function renderTabs() {
   }
 
   const labels = {
-    A:         ()=> '📋 ' + tabDisplayLabel('A'),
-    B:         ()=> '📋 ' + tabDisplayLabel('B'),
-    love:      ()=> '💕 恋愛',
-    birthday:  ()=> '🎂 birthday0330',
-    anniv:     ()=> '🌸 20th Anniversary',
-    admin:     ()=> '⚙️ 管理パネル',
-    sample:    ()=> '📋 サンプル',
+    A:            ()=> '📋 ' + tabDisplayLabel('A'),
+    B:            ()=> '📋 ' + tabDisplayLabel('B'),
+    love:         ()=> '💕 恋愛',
+    birthday:     ()=> '🎂 birthday0330',
+    anniv:        ()=> '🌸 20th Anniversary',
+    admin:        ()=> '⚙️ 管理パネル',
+    sample:       ()=> '📋 サンプル',
+    musicpreview: ()=> '🎵 音楽プレビュー',
   };
   const fn = labels[activeTab];
   titleLabel.textContent = fn ? fn() : ('📋 ' + tabDisplayLabel(activeTab));
@@ -809,7 +810,7 @@ function renderTabs() {
 // HOME
 // ============================================================
 function renderHome() {
-  const cards=TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday'&&t.id!=='anniv'&&t.id!=='sample').map(t=>{
+  const cards=TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday'&&t.id!=='anniv'&&t.id!=='sample'&&t.id!=='musicpreview').map(t=>{
     const ul=unlocked.includes(t.id);
     const sn=snCache[t.id]||'';
     return`<div class="tab-card${ul?' unlocked':''}" onclick="openTab('${t.id}')">
@@ -4252,6 +4253,9 @@ async function renderAdminContent(id) {
     }
     return;
   }
+
+  const [pv, mv, ev] = await Promise.all([
+    fbGet(`tabs/${id}/posts`),
     fbGet(`tabs/${id}/memo`),
     fbGet(`tabs/${id}/events`)
   ]);
