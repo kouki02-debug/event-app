@@ -2514,14 +2514,19 @@ async function renderLovePanel() {
       <!-- ===== 内部タブスイッチャー ===== -->
       <div style="display:flex;gap:0;margin:12px 14px 0;background:rgba(255,255,255,0.04);border:1px solid rgba(208,144,168,0.2);border-radius:12px;overflow:hidden;">
         <button id="love-inner-tab-2601" onclick="switchLoveInnerTab('2601')"
-          style="flex:1;padding:10px 6px;border:none;font-family:'Shippori Mincho',serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em;
+          style="flex:1;padding:10px 4px;border:none;font-family:'Shippori Mincho',serif;font-size:0.76rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;
                  background:linear-gradient(135deg,#fff0f5,#ffe0ea);color:#c0305a;border-right:1px solid rgba(208,144,168,0.2);">
-          💕 2603（社内恋愛25）
+          💕 2603
         </button>
         <button id="love-inner-tab-2610" onclick="switchLoveInnerTab('2610')"
-          style="flex:1;padding:10px 6px;border:none;font-family:'Shippori Mincho',serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em;
-                 background:rgba(255,255,255,0.02);color:rgba(160,100,220,0.5);">
+          style="flex:1;padding:10px 4px;border:none;font-family:'Shippori Mincho',serif;font-size:0.76rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;
+                 background:rgba(255,255,255,0.02);color:rgba(160,100,220,0.5);border-right:1px solid rgba(208,144,168,0.2);">
           🕐 準備中
+        </button>
+        <button id="love-inner-tab-pr" onclick="switchLoveInnerTab('pr')"
+          style="flex:1;padding:10px 4px;border:none;font-family:'Shippori Mincho',serif;font-size:0.76rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;
+                 background:rgba(255,255,255,0.02);color:rgba(180,120,100,0.6);">
+          📄 PR
         </button>
       </div>
 
@@ -2536,6 +2541,14 @@ async function renderLovePanel() {
           <div id="love-roadmap-grid" style="display:flex;flex-direction:column;gap:0;margin-bottom:12px;"></div>
 
           <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+            <!-- 恋期限 -->
+            <div style="background:linear-gradient(135deg,#fff0f0,#ffe8e8);border:1.5px solid rgba(200,40,40,0.2);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+              <div style="font-size:1.2rem;">⏳</div>
+              <div>
+                <div style="font-size:0.68rem;color:rgba(180,40,40,0.6);margin-bottom:2px;letter-spacing:0.05em;">恋期限</div>
+                <div style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#b02020;font-weight:700;">4月16日（木）</div>
+              </div>
+            </div>
             <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;">
               <div style="font-size:0.68rem;color:#9a8880;margin-bottom:4px;letter-spacing:0.05em;">📅 次の重要日</div>
               <div id="love-info-nextday" style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#3a2820;font-weight:700;line-height:1.6;">—</div>
@@ -2584,12 +2597,6 @@ async function renderLovePanel() {
           </div>
 
 
-          <!-- プレスリリース -->
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📄 プレスリリース</div>
-            <div id="love-pressrelease-list"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
-          </div>
-
           <!-- 音楽プレビュー 2601 -->
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);padding-bottom:12px;">
             <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">🎵 音楽プレビュー</div>
@@ -2606,6 +2613,14 @@ async function renderLovePanel() {
           <div style="font-size:2rem;margin-bottom:12px;">💜</div>
           <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:rgba(160,100,220,0.7);font-weight:700;letter-spacing:0.15em;margin-bottom:10px;">準備中</div>
           <div style="font-size:0.8rem;color:rgba(160,100,220,0.4);letter-spacing:0.06em;line-height:1.8;">恋愛2610はまだ開始前です。<br>開始されたらここに表示されます。</div>
+        </div>
+      </div>
+
+      <!-- ===== プレスリリース コンテンツ ===== -->
+      <div id="love-inner-pr" style="display:none;">
+        <div style="margin:14px 14px 24px;padding:14px 16px;background:rgba(255,220,235,0.1);border:1.5px solid rgba(220,60,100,0.15);border-radius:14px;">
+          <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:#c0305a;letter-spacing:0.1em;margin-bottom:12px;text-align:center;">— プレスリリース —</div>
+          <div id="love-pressrelease-list-tab"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
         </div>
       </div>
     </div>`;
@@ -2766,24 +2781,27 @@ function renderLove2025(val){
 // 恋愛成功率・可能性グラフ（発展ログ・接触スコアから自動計算）
 // プレスリリース表示（PDFリンク一覧）
 function renderLovePressRelease(val){
-  const el = document.getElementById('love-pressrelease-list'); if(!el) return;
-  if(!val || !Object.keys(val).length){
-    el.innerHTML='<div style="text-align:center;color:#d090a8;opacity:0.4;padding:8px;font-size:0.82rem;">プレスリリースはありません</div>';
-    return;
-  }
-  const items = Object.entries(val).map(([k,v])=>({key:k,...v})).sort((a,b)=>b.ts-a.ts);
-  el.innerHTML = items.map(item=>`
-    <div onclick="openLovePressRelease('${item.key}')"
-      style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,220,235,0.1);border:1px solid rgba(220,60,100,0.15);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;"
-      onmouseover="this.style.background='rgba(220,60,100,0.08)'"
-      onmouseout="this.style.background='rgba(255,220,235,0.1)'">
-      <div style="width:32px;height:32px;background:linear-gradient(135deg,#e8406a,#c0305a);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">📄</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.9rem;color:#c0305a;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.title||'無題')}</div>
-        ${item.date?`<div style="font-size:0.7rem;color:#d090a8;margin-top:2px;">${esc(item.date)}</div>`:''}
-      </div>
-      <div style="font-size:0.7rem;color:#d090a8;flex-shrink:0;">開く →</div>
-    </div>`).join('');
+  // タブ内と旧セクション両方に対応
+  ['love-pressrelease-list','love-pressrelease-list-tab'].forEach(id=>{
+    const el = document.getElementById(id); if(!el) return;
+    if(!val || !Object.keys(val).length){
+      el.innerHTML='<div style="text-align:center;color:#d090a8;opacity:0.4;padding:8px;font-size:0.82rem;">プレスリリースはありません</div>';
+      return;
+    }
+    const items = Object.entries(val).map(([k,v])=>({key:k,...v})).sort((a,b)=>b.ts-a.ts);
+    el.innerHTML = items.map(item=>`
+      <div onclick="openLovePressRelease('${item.key}')"
+        style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,220,235,0.1);border:1px solid rgba(220,60,100,0.15);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;"
+        onmouseover="this.style.background='rgba(220,60,100,0.08)'"
+        onmouseout="this.style.background='rgba(255,220,235,0.1)'">
+        <div style="width:32px;height:32px;background:linear-gradient(135deg,#e8406a,#c0305a);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">📄</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Shippori Mincho',serif;font-size:0.9rem;color:#c0305a;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.title||'無題')}</div>
+          ${item.date?`<div style="font-size:0.7rem;color:#d090a8;margin-top:2px;">${esc(item.date)}</div>`:''}
+        </div>
+        <div style="font-size:0.7rem;color:#d090a8;flex-shrink:0;">開く →</div>
+      </div>`).join('');
+  });
 }
 
 window.openLovePressRelease = async function(key){
@@ -3026,17 +3044,32 @@ function renderLoveInfo2610(val){
 window.switchLoveInnerTab = function(tab){
   const t2601 = document.getElementById('love-inner-tab-2601');
   const t2610 = document.getElementById('love-inner-tab-2610');
+  const tpr   = document.getElementById('love-inner-tab-pr');
   const c2601 = document.getElementById('love-inner-2601');
   const c2610 = document.getElementById('love-inner-2610');
+  const cpr   = document.getElementById('love-inner-pr');
   if(!t2601||!t2610||!c2601||!c2610) return;
+
+  // 全て非アクティブに
+  [c2601,c2610,cpr].forEach(el=>{ if(el) el.style.display='none'; });
+  [t2601,t2610,tpr].forEach(el=>{
+    if(!el) return;
+    el.style.background='rgba(255,255,255,0.02)';
+    el.style.opacity='0.7';
+  });
+  if(t2601) t2601.style.color='rgba(220,60,100,0.4)';
+  if(t2610) t2610.style.color='rgba(160,100,220,0.5)';
+  if(tpr)   tpr.style.color='rgba(180,120,100,0.5)';
+
   if(tab==='2601'){
-    c2601.style.display='block'; c2610.style.display='none';
-    t2601.style.background='linear-gradient(135deg,#fff0f5,#ffe0ea)'; t2601.style.color='#c0305a'; t2601.style.opacity='1';
-    t2610.style.background='rgba(255,255,255,0.02)'; t2610.style.color='rgba(160,100,220,0.5)'; t2610.style.opacity='0.7';
-  } else {
-    c2601.style.display='none'; c2610.style.display='block';
-    t2610.style.background='linear-gradient(135deg,#f5f0ff,#ece0ff)'; t2610.style.color='#8040b0'; t2610.style.opacity='1';
-    t2601.style.background='rgba(255,255,255,0.02)'; t2601.style.color='rgba(220,60,100,0.4)'; t2601.style.opacity='0.7';
+    if(c2601) c2601.style.display='block';
+    if(t2601){ t2601.style.background='linear-gradient(135deg,#fff0f5,#ffe0ea)'; t2601.style.color='#c0305a'; t2601.style.opacity='1'; }
+  } else if(tab==='2610'){
+    if(c2610) c2610.style.display='block';
+    if(t2610){ t2610.style.background='linear-gradient(135deg,#f5f0ff,#ece0ff)'; t2610.style.color='#8040b0'; t2610.style.opacity='1'; }
+  } else if(tab==='pr'){
+    if(cpr) cpr.style.display='block';
+    if(tpr){ tpr.style.background='linear-gradient(135deg,#fff5f0,#ffece0)'; tpr.style.color='#a04020'; tpr.style.opacity='1'; }
   }
   localStorage.setItem('love_inner_tab', tab);
 };
@@ -5136,6 +5169,17 @@ async function init() {
     await preloadSubnames();
     // 管理者パスワードを強制設定（常に上書き）
     await setTabPwHash('admin', '13240622Ko');
+
+    // 恋愛お知らせ：4月16日判断期限の告知（未設定の場合のみ設定）
+    const existingNotice = await fbGet('settings/loveNotices');
+    if(!existingNotice){
+      await fbSet('settings/loveNotices', [
+        {
+          title: '📣 重要なお知らせ',
+          text: '4月16日（木）をひとつの節目として、\nこの恋愛を継続するかどうかの判断をおこないます。\n\n現在、これ以上ステージを上げず\n今の関係性を維持していく方向が\n濃厚になってきています。\n\n残り16日間、誠実に向き合い\n判断の結果と、4月以降の「コミュニティ強化」の詳細についても同日までにご報告します。'
+        }
+      ]);
+    }
 
     // load stage
     const loveStageVal = await fbGet('love/stage');
