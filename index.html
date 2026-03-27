@@ -2688,7 +2688,7 @@ async function renderLovePanel() {
     listeners['love'].push(fbListen('love/planImages',      val=>renderLovePlanImages(val)));
     listeners['love'].push(fbListen('love/currentStage',   val=>renderLoveRoadmap(val||4,'love-roadmap-grid')));
     listeners['love'].push(fbListen('love/info',             val=>renderLoveInfo(val)));
-    listeners['love'].push(fbListen('love/calmarks',         val=>{ window._loveCalMarks=val||{}; renderLoveCalGrid('love-cal-wrap','2601'); }));
+    listeners['love'].push(fbListen('love/calmarks',         val=>{ window._loveCalMarks=val||{}; renderLoveCalGrid('love-cal-wrap','2601'); renderLoveCalGrid('love-cal-apr-wrap','2601'); }));
     listeners['love'].push(fbListen('love/currentStage2610', val=>renderLoveRoadmap((val!==null&&val!==undefined)?val:0,'love-roadmap-grid-2610')));
     listeners['love'].push(fbListen('love/info2610',         val=>renderLoveInfo2610(val)));
     listeners['love'].push(fbListen('love/calmarks2610',     val=>{ window._loveCalMarks2610=val||{}; renderLoveCalGrid('love-cal-wrap-2610','2610'); }));
@@ -3242,32 +3242,38 @@ function renderLoveCalGrid(wrapId, suffix) {
   wrapId = wrapId || 'love-cal-wrap';
   suffix = suffix || '2601';
   const wrap = document.getElementById(wrapId); if(!wrap) return;
-  const calKey = 'loveCal_'+suffix;
-  if(!window[calKey]) window[calKey] = { year: new Date().getFullYear(), month: new Date().getMonth() };
-  const { year, month } = window[calKey];
-  const marksKey = suffix==='2610' ? '_loveCalMarks2610' : '_loveCalMarks';
+
+  // wrapId ごとに固定年月を決める（ナビなし）
+  let year, month;
+  if(wrapId === 'love-cal-apr-wrap') {
+    year = 2026; month = 3; // 4月（0-indexed）
+  } else {
+    year = 2026; month = 2; // 3月（0-indexed）
+  }
+
+  const marksKey = suffix.startsWith('2610') ? '_loveCalMarks2610' : '_loveCalMarks';
   const marks = window[marksKey] || {};
   const label = `${year}年 ${month+1}月`;
   const DOW = ['日','月','火','水','木','金','土'];
   const first = new Date(year, month, 1).getDay();
   const days  = new Date(year, month+1, 0).getDate();
   const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
-
-  // 2026年3月より前には戻れない
-  const isMinMonth = (year === 2026 && month === 2); // 3月=index2
-  const canGoPrev = !(year === 2026 && month <= 2);
+  const deadline  = new Date('2026-04-16T23:59:59+09:00');
+  const afterDeadline = new Date('2026-04-17T00:00:00+09:00');
 
   let grid = DOW.map((d,i)=>`<div style="text-align:center;font-size:0.72rem;color:${i===0?'#c06080':i===6?'#6080b0':'#d090a8'};padding:4px 0;font-weight:500;">${d}</div>`).join('');
   for(let i=0;i<first;i++) grid+=`<div></div>`;
   for(let d=1;d<=days;d++){
     const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    // 4/16は固定「発表」マーク
+    const dateObj = new Date(ds+'T00:00:00+09:00');
+    const dow = dateObj.getDay();
+
+    // 4/16固定「発表」マーク
     const isAnnounceDay = (ds === '2026-04-16');
-    // 3/31〜4/16の火・水・木を重要日ハイライト（3/31を除く）
-    const deadline  = new Date('2026-04-16T23:59:59+09:00');
-    const dateObj   = new Date(ds + 'T00:00:00+09:00');
-    const dow = dateObj.getDay(); // 0=日
-    const isTueWedThu = [2,3,4].includes(dow); // 火=2 水=3 木=4
+    // 4/17以降はグレーアウト
+    const isAfterDeadline = dateObj >= afterDeadline;
+    // 火水木ハイライト（〜4/16、3/31除く）
+    const isTueWedThu = [2,3,4].includes(dow);
     const isExclude   = ds === '2026-03-31';
     const isImportant = isTueWedThu && !isExclude && dateObj <= deadline;
 
@@ -3275,10 +3281,14 @@ function renderLoveCalGrid(wrapId, suffix) {
       ? LOVE_MARKS.find(m=>m.key==='announce')
       : marks[ds] ? LOVE_MARKS.find(m=>m.key===marks[ds]) : null;
     const isToday = ds===todayStr;
-    const dayColor = isToday ? 'white' : dow===0 ? '#c06080' : dow===6 ? '#6080b0' : '#3a1a28';
+    const dayColor = isAfterDeadline ? 'rgba(160,140,140,0.4)'
+      : isToday ? 'white'
+      : dow===0 ? '#c06080'
+      : dow===6 ? '#6080b0'
+      : '#3a1a28';
 
     let innerHtml;
-    if(mark && mark.key!=='none'){
+    if(mark && mark.key!=='none' && !isAfterDeadline){
       innerHtml =
         `<span style="font-size:1.2rem;line-height:1;">${mark.emoji}</span>` +
         `<span style="font-size:0.7rem;font-weight:700;color:${isToday?'white':mark.color};margin-top:1px;">${d}</span>` +
@@ -3287,37 +3297,31 @@ function renderLoveCalGrid(wrapId, suffix) {
       innerHtml = `<span style="font-size:0.88rem;">${d}</span>`;
     }
 
-    // 重要日の背景（火水木 3/31除く 〜4/16）
-    const importantBg = (!mark && !isToday && isImportant)
-      ? 'rgba(255,180,50,0.12)'
-      : (mark ? mark.bg : 'transparent');
-    const importantBorder = (!mark && !isToday && isImportant)
-      ? '1px solid rgba(255,160,30,0.3)'
-      : (mark ? '2px solid '+mark.color+'80' : '1px solid transparent');
+    const bg = isAfterDeadline ? 'rgba(160,140,140,0.06)'
+      : isToday ? '#e8406a'
+      : mark ? mark.bg
+      : isImportant ? 'rgba(255,180,50,0.12)'
+      : 'transparent';
+    const border = isAfterDeadline ? '1px solid rgba(160,140,140,0.1)'
+      : isToday ? '2px solid #c0305a'
+      : mark ? '2px solid '+mark.color+'80'
+      : isImportant ? '1px solid rgba(255,160,30,0.3)'
+      : '1px solid transparent';
 
     const isAdmin = unlocked.includes('admin');
-    grid += `<div onclick="${isAdmin&&!isAnnounceDay?`loveDayClick('${ds}','${suffix}')`:'void 0'}" style="`+
+    const clickable = isAdmin && !isAnnounceDay && !isAfterDeadline;
+    grid += `<div onclick="${clickable?`loveDayClick('${ds}','${suffix}')`:'void 0'}" style="`+
       `display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;`+
-      `padding:4px 2px;min-height:48px;`+
-      `border-radius:6px;cursor:${isAdmin&&!isAnnounceDay?'pointer':'default'};`+
+      `padding:4px 2px;min-height:48px;border-radius:6px;cursor:${clickable?'pointer':'default'};`+
       `min-width:0;overflow:hidden;box-sizing:border-box;`+
-      `background:${isToday?'#e8406a':importantBg};`+
-      `border:${isToday?'2px solid #c0305a':importantBorder};`+
-      `transition:all 0.15s;color:${dayColor};`+
-      `box-shadow:${mark&&!isToday?'0 2px 8px '+mark.color+'50':'none'};`+
-      `" ${isAdmin&&!isAnnounceDay?'onmouseover="this.style.opacity=\'0.8\'" onmouseout="this.style.opacity=\'1\'"':''}>` +
+      `background:${bg};border:${border};transition:all 0.15s;color:${dayColor};`+
+      `box-shadow:${mark&&!isToday&&!isAfterDeadline?'0 2px 8px '+mark.color+'50':'none'};`+
+      `" ${clickable?'onmouseover="this.style.opacity=\'0.8\'" onmouseout="this.style.opacity=\'1\'"':''}>` +
       innerHtml + `</div>`;
   }
 
-  const calObj = window['loveCal_'+suffix];
   wrap.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <button onclick="${canGoPrev?`window['loveCal_${suffix}'].month--;if(window['loveCal_${suffix}'].month<0){window['loveCal_${suffix}'].month=11;window['loveCal_${suffix}'].year--;}renderLoveCalGrid('${wrapId}','${suffix}');`:'void 0'}"
-        style="background:none;border:none;color:${canGoPrev?'#d090a8':'rgba(208,144,168,0.2)'};font-size:1.3rem;cursor:${canGoPrev?'pointer':'default'};padding:4px 10px;">‹</button>
-      <span style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#c06080;">${label}</span>
-      <button onclick="window['loveCal_${suffix}'].month++;if(window['loveCal_${suffix}'].month>11){window['loveCal_${suffix}'].month=0;window['loveCal_${suffix}'].year++;}renderLoveCalGrid('${wrapId}','${suffix}');"
-        style="background:none;border:none;color:#d090a8;font-size:1.3rem;cursor:pointer;padding:4px 10px;">›</button>
-    </div>
+    <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#c06080;text-align:center;margin-bottom:8px;letter-spacing:0.06em;">${label}</div>
     <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;width:100%;box-sizing:border-box;">${grid}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;justify-content:center;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;">
       ${LOVE_MARKS.filter(m=>m.key!=='none').map(m=>`
@@ -3328,11 +3332,11 @@ function renderLoveCalGrid(wrapId, suffix) {
     </div>`;
 }
 
+
 window.loveDayClick = async function(ds, suffix){
   suffix = suffix || '2601';
-  const marksKey = suffix==='2610' ? '_loveCalMarks2610' : '_loveCalMarks';
-  const fbPath = suffix==='2610' ? 'love/calmarks2610' : 'love/calmarks';
-  const wrapId = suffix==='2610' ? 'love-cal-wrap-2610' : 'love-cal-wrap';
+  const marksKey = suffix.startsWith('2610') ? '_loveCalMarks2610' : '_loveCalMarks';
+  const fbPath   = suffix.startsWith('2610') ? 'love/calmarks2610' : 'love/calmarks';
   const marks = window[marksKey] || {};
   const cur = marks[ds] || 'none';
   const keys = LOVE_MARKS.map(m=>m.key);
@@ -3341,7 +3345,9 @@ window.loveDayClick = async function(ds, suffix){
   else { marks[ds]=next; }
   window[marksKey] = marks;
   await fbSet(fbPath, marks);
-  renderLoveCalGrid(wrapId, suffix);
+  // 3月・4月両方を再描画
+  renderLoveCalGrid('love-cal-wrap', suffix);
+  renderLoveCalGrid('love-cal-apr-wrap', suffix);
 };
 
 // BGM
