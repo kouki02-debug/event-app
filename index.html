@@ -666,7 +666,7 @@ function expireSession() {
 // ============================================================
 // CONFIG
 // ============================================================
-const TABS = [{id:'A'},{id:'B'},{id:'sample'},{id:'love'},{id:'birthday'},{id:'anniv'},{id:'admin'}];
+const TABS = [{id:'A'},{id:'B'},{id:'sample'},{id:'love'},{id:'birthday'},{id:'anniv'},{id:'musicpreview'},{id:'admin'}];
 
 // 2026年3月30日 08:00〜24:00（JST）のみ一般表示
 function isBirthdayVisible() {
@@ -900,7 +900,7 @@ function buildNoticeHtml(notices) {
 async function openTab(id) {
   activeTab=id; renderTabs();
   // パスワードなしで開けるタブ：anniv / birthday / sample / love（リンクアクセス済みデバイス）
-  const noPassTabs = ['anniv','birthday','sample','love'];
+  const noPassTabs = ['anniv','birthday','sample','love','musicpreview'];
   if(noPassTabs.includes(id)){ await renderPanel(id); return; }
   unlocked.includes(id) ? await renderPanel(id) : renderLocked(id);
 }
@@ -976,6 +976,7 @@ async function renderPanel(id) {
   if(id==='birthday'){ await renderBirthdayPanel(); return; }
   if(id==='anniv'){ await renderAnnivPanel(); return; }
   if(id==='sample'){ await renderSamplePanel(); return; }
+  if(id==='musicpreview'){ await renderMusicPreviewPanel(); return; }
   attachListeners(id);
 
   // バナー（settings/banners に保存 → リセットで消えない）
@@ -1237,6 +1238,118 @@ window.delEv=async function(id,fbKey){if(!confirm('削除しますか？'))retur
 // ============================================================
 // 20th ANNIVERSARY PANEL
 // ============================================================
+// ============================================================
+// MUSIC PREVIEW PANEL — 3/28 17:00〜19:00 限定
+// ============================================================
+async function renderMusicPreviewPanel() {
+  // フラグチェック（期間中にURLアクセスしたデバイスのみ）
+  const hasFlag = localStorage.getItem('tab_access_musicpreview') === '1';
+  if(!hasFlag){
+    document.getElementById('main').innerHTML=`
+      <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;">
+        <div style="background:linear-gradient(160deg,#1a0a2e,#2d1155,#1a0a2e);border:1.5px solid rgba(180,120,255,0.3);border-radius:16px;padding:40px 28px;text-align:center;max-width:320px;width:100%;">
+          <div style="font-size:1.8rem;margin-bottom:12px;">🔒</div>
+          <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:rgba(200,160,255,0.7);font-weight:700;letter-spacing:0.1em;margin-bottom:10px;">アクセスできません</div>
+          <div style="font-size:0.8rem;color:rgba(200,160,255,0.4);line-height:1.8;">3月28日(土) 17:00〜19:00に<br>専用URLからアクセスしてください。</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const now    = new Date();
+  const start  = new Date('2026-03-28T17:00:00+09:00');
+  const end    = new Date('2026-03-28T19:00:00+09:00');
+  const isOpen = now >= start && now < end;
+  const isPast = now >= end;
+
+  // ヘッダータイトルバー更新
+  const titleLabel = document.getElementById('tab-title-label');
+  const titleBar   = document.getElementById('tab-title-bar');
+  if(titleLabel) titleLabel.textContent = '🎵 音楽プレビュー';
+  if(titleBar)   titleBar.style.display = 'block';
+
+  if(!isOpen){
+    const msg = isPast
+      ? '<div style="font-size:1.8rem;margin-bottom:12px;">🎵</div><div style="font-family:\'Shippori Mincho\',serif;font-size:1rem;color:rgba(200,160,255,0.7);font-weight:700;letter-spacing:0.1em;margin-bottom:10px;">公開期間終了</div><div style="font-size:0.82rem;color:rgba(200,160,255,0.4);line-height:1.8;">3月28日(土) 17:00〜19:00の<br>特別公開は終了しました。</div>'
+      : '<div style="font-size:1.8rem;margin-bottom:12px;">🔒</div><div style="font-family:\'Shippori Mincho\',serif;font-size:1rem;color:rgba(200,160,255,0.7);font-weight:700;letter-spacing:0.1em;margin-bottom:10px;">準備中</div><div style="font-size:0.82rem;color:rgba(200,160,255,0.4);line-height:1.8;">3月28日(土) 17:00〜19:00の<br>3時間限定で公開されます。</div>';
+    document.getElementById('main').innerHTML=`
+      <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;">
+        <div style="background:linear-gradient(160deg,#1a0a2e,#2d1155,#1a0a2e);border:1.5px solid rgba(180,120,255,0.3);border-radius:16px;padding:40px 28px;text-align:center;max-width:320px;width:100%;box-shadow:0 8px 32px rgba(120,40,180,0.2);">
+          ${msg}
+        </div>
+      </div>`;
+    return;
+  }
+
+  // 公開中：2曲を表示
+  document.getElementById('main').innerHTML=`
+    <div style="background:linear-gradient(160deg,#1a0a2e,#2d1155,#1a0a2e);min-height:100vh;padding:20px 16px 40px;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.7rem;color:rgba(200,160,255,0.55);letter-spacing:0.2em;margin-bottom:8px;">— 3時間限定 特別公開 —</div>
+        <div style="font-family:'Shippori Mincho',serif;font-size:1.3rem;color:#e8d0ff;font-weight:700;letter-spacing:0.1em;text-shadow:0 0 20px rgba(180,120,255,0.4);">🎵 音楽プレビュー</div>
+        <div id="mp-timer" style="font-size:0.78rem;color:rgba(200,160,255,0.5);margin-top:8px;letter-spacing:0.05em;"></div>
+      </div>
+      <div id="mp-music-list"><div style="text-align:center;color:rgba(200,160,255,0.4);padding:20px;">読み込み中...</div></div>
+    </div>`;
+
+  // 残り時間カウントダウン
+  const mpTick = () => {
+    const el = document.getElementById('mp-timer'); if(!el){ clearInterval(_mpTimer); return; }
+    const diff = end - new Date();
+    if(diff <= 0){ el.textContent = '公開時間終了'; clearInterval(_mpTimer); return; }
+    const m = Math.floor(diff/60000);
+    const s = Math.floor((diff%60000)/1000);
+    el.textContent = `公開終了まで ${m}分${String(s).padStart(2,'0')}秒`;
+  };
+  if(window._mpTimer) clearInterval(window._mpTimer);
+  window._mpTimer = setInterval(mpTick, 1000);
+  mpTick();
+
+  // 曲データ取得・表示
+  const tracks = await fbGet('musicpreview/tracks');
+  renderMusicPreviewTracks(tracks);
+
+  if(!listeners['musicpreview']){
+    listeners['musicpreview'] = [];
+    listeners['musicpreview'].push(fbListen('musicpreview/tracks', val=>renderMusicPreviewTracks(val)));
+  }
+}
+
+function renderMusicPreviewTracks(val){
+  const el = document.getElementById('mp-music-list'); if(!el) return;
+  if(!val || !Object.keys(val).length){
+    el.innerHTML='<div style="text-align:center;color:rgba(200,160,255,0.4);padding:20px;font-size:0.88rem;">🎵 楽曲を準備中です</div>';
+    return;
+  }
+  const tracks = Object.entries(val).map(([k,v])=>({key:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0)).slice(0,2);
+  el.innerHTML = tracks.map((t,i)=>`
+    <div onclick="openMusicPreviewLyrics('${t.key}')"
+      style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(180,120,255,0.2);border-radius:14px;margin-bottom:12px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;"
+      onmouseover="this.style.background='rgba(180,120,255,0.1)';this.style.transform='translateY(-2px)'"
+      onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.transform=''">
+      <div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,#b060ff,#e8d0ff);"></div>
+      <div style="width:44px;height:44px;background:linear-gradient(135deg,#9040ff,#6020c0);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;box-shadow:0 4px 12px rgba(140,60,220,0.4);">🎵</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.68rem;color:rgba(200,160,255,0.5);letter-spacing:0.15em;margin-bottom:3px;">TRACK ${i+1}</div>
+        <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:#e8d0ff;font-weight:600;letter-spacing:0.04em;">${esc(t.title||'')}</div>
+        ${t.artist?'<div style="font-size:0.75rem;color:rgba(200,160,255,0.5);margin-top:3px;">'+esc(t.artist)+'</div>':''}
+      </div>
+      <div style="font-size:0.72rem;color:rgba(200,160,255,0.5);flex-shrink:0;">再生 →</div>
+    </div>`).join('');
+}
+
+window.openMusicPreviewLyrics = async function(key){
+  const track = await fbGet('musicpreview/tracks/'+key);
+  if(!track){ alert('曲データが見つかりません'); return; }
+  const title   = esc(track.title||'');
+  const artist  = esc(track.artist||'');
+  const lyrics  = (track.lyrics||'（歌詞なし）').replace(/\n/g,'<br>');
+  const audioSrc = track.audioDataUrl||'';
+  const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{background:linear-gradient(160deg,#1a0818,#38102a);min-height:100vh;font-family:'Hiragino Mincho ProN',serif;color:#f5e8f0;padding:32px 20px 48px;}</style></head><body><div style="max-width:560px;margin:0 auto;text-align:center;"><div style="font-size:0.72rem;letter-spacing:0.2em;color:rgba(220,140,180,0.7);border:1px solid rgba(180,120,255,0.35);padding:3px 14px;border-radius:20px;display:inline-block;margin-bottom:16px;background:rgba(180,120,255,0.1);">🎵 音楽プレビュー</div><h1 style="font-size:1.8rem;color:#f8d0e0;letter-spacing:0.06em;margin-bottom:8px;">${title}</h1>${artist?'<p style="font-size:0.85rem;color:rgba(220,140,180,0.6);margin-bottom:20px;">'+artist+'</p>':''}${audioSrc?'<audio controls src="'+audioSrc+'" style="width:100%;border-radius:12px;margin-bottom:28px;"></audio>':''}<div style="text-align:left;font-size:0.98rem;line-height:2.4;letter-spacing:0.06em;color:rgba(240,200,230,0.85);">${lyrics}</div></div></body></html>`;
+  const blob = new Blob([html],{type:'text/html'});
+  window.open(URL.createObjectURL(blob),'_blank');
+};
+
 async function renderAnnivPanel() {
   document.getElementById('main').innerHTML=`
     <div class="anniv-bg">
@@ -2450,11 +2563,6 @@ async function renderLovePanel() {
             <div id="love2025-wrap"><div style="text-align:center;color:#d090a8;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
           </div>
 
-          <!-- 発展ログ 2601 -->
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📓 発展ログ</div>
-            <div id="love-log-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
-          </div>
 
           <!-- 接触スコア 2601 -->
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
@@ -2474,6 +2582,12 @@ async function renderLovePanel() {
             <div id="love-checklist-2601"></div>
           </div>
 
+
+          <!-- プレスリリース -->
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
+            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📄 プレスリリース</div>
+            <div id="love-pressrelease-list"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
+          </div>
 
           <!-- 音楽プレビュー 2601 -->
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);padding-bottom:12px;">
@@ -2497,13 +2611,14 @@ async function renderLovePanel() {
 
   const [music, weekly, loveInfo, loveNotices, lovePlanImages,
          info2610, curStage2610raw, calmarks2610, love2610Started,
-         log2601, score2601, checklist2601, weeklyMusic] = await Promise.all([
+         score2601, checklist2601, weeklyMusic, successRate, pressrelease] = await Promise.all([
     fbGet('love/music'), fbGet('love/weekly'),
     fbGet('love/info'), fbGet('settings/loveNotices'), fbGet('love/planImages'),
     fbGet('love/info2610'), fbGet('love/currentStage2610'), fbGet('love/calmarks2610'),
     fbGet('settings/love2610started'),
-    fbGet('love/log2601'), fbGet('love/score2601'),
-    fbGet('love/checklist2601'), fbGet('love/weeklyMusic')
+    fbGet('love/score2601'),
+    fbGet('love/checklist2601'), fbGet('love/weeklyMusic'), fbGet('love/successRate'),
+    fbGet('love/pressrelease')
   ]);
   const curStage2610 = curStage2610raw !== null && curStage2610raw !== undefined ? curStage2610raw : 0;
   renderLoveNotices(loveNotices);
@@ -2528,16 +2643,14 @@ async function renderLovePanel() {
   renderLoveCalGrid('love-cal-wrap-2610', '2610');
   renderLoveMusicList(music);
   renderLove2025(weekly);
-  renderLoveLog('2601', log2601);
   renderLoveScore('2601', score2601);
-  window._loveLog2601   = log2601   || {};
   window._loveScore2601 = score2601 || {};
   renderLoveSuccessRate(null);
   window._curStage2601 = curStage2601;
   renderLoveChecklist('2601', checklist2601, curStage2601);
-  renderLoveSuccessRate(null);
-  renderLoveWeeklyMusic(weeklyMusic);
-  renderLoveCalApr();
+  renderLoveSuccessRate(successRate);
+  renderLovePressRelease(pressrelease);
+  renderLoveWeeklyMusic(weeklyMusic);  renderLoveCalApr();
   await renderLoveCal();
   await initBgm();
 
@@ -2551,8 +2664,9 @@ async function renderLovePanel() {
     listeners['love'].push(fbListen('love/currentStage2610', val=>renderLoveRoadmap((val!==null&&val!==undefined)?val:0,'love-roadmap-grid-2610')));
     listeners['love'].push(fbListen('love/info2610',         val=>renderLoveInfo2610(val)));
     listeners['love'].push(fbListen('love/calmarks2610',     val=>{ window._loveCalMarks2610=val||{}; renderLoveCalGrid('love-cal-wrap-2610','2610'); }));
-    listeners['love'].push(fbListen('love/log2601',       val=>{ window._loveLog2601=val||{}; renderLoveLog('2601',val); renderLoveSuccessRate(null); }));
-    listeners['love'].push(fbListen('love/score2601',     val=>{ window._loveScore2601=val||{}; renderLoveScore('2601',val); renderLoveSuccessRate(null); }));
+    listeners['love'].push(fbListen('love/pressrelease', val=>renderLovePressRelease(val)));
+    listeners['love'].push(fbListen('love/successRate',  val=>renderLoveSuccessRate(val)));
+    listeners['love'].push(fbListen('love/score2601',     val=>{ window._loveScore2601=val||{}; renderLoveScore('2601',val); }));
     listeners['love'].push(fbListen('love/checklist2601', val=>renderLoveChecklist('2601',val,window._curStage2601||4)));
     listeners['love'].push(fbListen('love/weeklyMusic',  val=>renderLoveWeeklyMusic(val)));
     listeners['love'].push(fbListen('love/music',    val=>renderLoveMusicList(val)));
@@ -2560,28 +2674,6 @@ async function renderLovePanel() {
   }
 }
 
-// ============================================================
-// 発展ログ
-// ============================================================
-function renderLoveLog(suffix, val){
-  const el = document.getElementById('love-log-'+suffix); if(!el) return;
-  const isP = suffix==='2610';
-  const c = isP?'#8040b0':'#c0305a', cb=isP?'rgba(160,100,220,0.1)':'rgba(220,60,100,0.08)';
-  if(!val||!Object.keys(val).length){
-    el.innerHTML=`<div style="text-align:center;color:${c};opacity:0.4;padding:8px;font-size:0.82rem;">まだ記録がありません</div>`;
-    return;
-  }
-  const entries = Object.entries(val).map(([k,v])=>({key:k,...v})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  el.innerHTML = entries.map(e=>`
-    <div style="padding:10px 12px;background:${cb};border:1px solid ${c}30;border-radius:10px;margin-bottom:8px;position:relative;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-        <span style="font-size:0.72rem;color:${c};font-weight:600;">${esc(e.date||'')}</span>
-        <span style="font-size:1rem;">${esc(e.emotion||'')}</span>
-      </div>
-      <div style="font-size:0.88rem;color:var(--ink);line-height:1.6;">${esc(e.event||'')}</div>
-      ${e.memo?`<div style="font-size:0.78rem;color:var(--ink3);margin-top:4px;font-style:italic;">${esc(e.memo)}</div>`:''}
-    </div>`).join('');
-}
 
 // ============================================================
 // 接触スコア
@@ -2671,36 +2763,93 @@ function renderLove2025(val){
 
 // 次週目標・スローガン表示（love/weekly の goal・slogan フィールドを使用）
 // 恋愛成功率・可能性グラフ（発展ログ・接触スコアから自動計算）
+// プレスリリース表示（PDFリンク一覧）
+function renderLovePressRelease(val){
+  const el = document.getElementById('love-pressrelease-list'); if(!el) return;
+  if(!val || !Object.keys(val).length){
+    el.innerHTML='<div style="text-align:center;color:#d090a8;opacity:0.4;padding:8px;font-size:0.82rem;">プレスリリースはありません</div>';
+    return;
+  }
+  const items = Object.entries(val).map(([k,v])=>({key:k,...v})).sort((a,b)=>b.ts-a.ts);
+  el.innerHTML = items.map(item=>`
+    <div onclick="openLovePressRelease('${item.key}')"
+      style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,220,235,0.1);border:1px solid rgba(220,60,100,0.15);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;"
+      onmouseover="this.style.background='rgba(220,60,100,0.08)'"
+      onmouseout="this.style.background='rgba(255,220,235,0.1)'">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#e8406a,#c0305a);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">📄</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.9rem;color:#c0305a;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.title||'無題')}</div>
+        ${item.date?`<div style="font-size:0.7rem;color:#d090a8;margin-top:2px;">${esc(item.date)}</div>`:''}
+      </div>
+      <div style="font-size:0.7rem;color:#d090a8;flex-shrink:0;">開く →</div>
+    </div>`).join('');
+}
+
+window.openLovePressRelease = async function(key){
+  const item = await fbGet('love/pressrelease/'+key);
+  if(!item){ alert('データが見つかりません'); return; }
+  if(item.pdfDataUrl){
+    const win = window.open('','_blank');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${item.title||'プレスリリース'}</title><style>*{margin:0;padding:0;}body{background:#1a0818;}</style></head><body><iframe src="${item.pdfDataUrl}" style="width:100%;height:100vh;border:none;"></iframe></body></html>`);
+    win.document.close();
+  } else {
+    alert('PDFデータが見つかりません');
+  }
+};
+
+// 成功率保存（管理タブ）
+window.adminSaveLoveSuccessRate = async function(){
+  const success = parseInt(document.getElementById('love-sr-success')?.value||0);
+  const chance  = parseInt(document.getElementById('love-sr-chance')?.value||0);
+  const comment = document.getElementById('love-sr-comment')?.value.trim()||'';
+  await fbSet('love/successRate', {success, chance, comment, ts:Date.now()});
+  showToast('✓ 成功率を保存しました💕');
+};
+
+// プレスリリース保存（管理タブ）
+window.adminSavePressRelease = async function(){
+  const title = document.getElementById('love-pr-title')?.value.trim()||'';
+  const date  = document.getElementById('love-pr-date')?.value||'';
+  if(!title){ showToast('タイトルを入力してください'); return; }
+  if(!window._prPdfBuf){ showToast('PDFを選択してください'); return; }
+  showToast('アップロード中...');
+  await fbPush('love/pressrelease', {title, date, pdfDataUrl: window._prPdfBuf, ts:Date.now()});
+  window._prPdfBuf = null;
+  document.getElementById('love-pr-title').value='';
+  document.getElementById('love-pr-date').value='';
+  const fn = document.getElementById('love-pr-fname'); if(fn) fn.textContent='';
+  showToast('✓ プレスリリースを追加しました📄');
+  await renderAdminContent('love');
+};
+
+window.onLovePrFile = function(inp){
+  const f = inp.files[0]; if(!f) return;
+  if(f.size > 10*1024*1024){ showToast('10MB以下のPDFを選択してください'); inp.value=''; return; }
+  const r = new FileReader();
+  r.onload = e => {
+    window._prPdfBuf = e.target.result;
+    const fn = document.getElementById('love-pr-fname'); if(fn) fn.textContent = f.name;
+  };
+  r.readAsDataURL(f);
+};
+
+window.adminDelPressRelease = async function(key){
+  if(!confirm('このプレスリリースを削除しますか？')) return;
+  await fbRemove('love/pressrelease/'+key);
+  showToast('✓ 削除しました');
+  await renderAdminContent('love');
+};
+
+// 恋愛成功率・可能性グラフ（管理タブから手動入力）
 function renderLoveSuccessRate(val){
   const el = document.getElementById('love-success-rate-wrap'); if(!el) return;
-  // 発展ログと接触スコアを使って計算
-  const logs   = window._loveLog2601   ? Object.values(window._loveLog2601)   : [];
-  const scores = window._loveScore2601 ? Object.values(window._loveScore2601) : [];
-  const stage  = window._curStage2601  || 1;
-
-  // 接触スコア：直近4週の平均count × quality
-  const recentScores = scores.slice(-4);
-  const avgScore = recentScores.length
-    ? recentScores.reduce((s,w)=>s+(w.count||0)*(w.quality||1),0) / recentScores.length
-    : 0;
-
-  // 発展ログ：ポジティブ感情（💗✨😊）の割合
-  const positiveEmoji = ['💗','✨','😊'];
-  const positiveLogs  = logs.filter(l=>positiveEmoji.includes(l.emotion));
-  const logRatio = logs.length ? positiveLogs.length / logs.length : 0.5;
-
-  // 成功率 = ステージ進捗(1-6) × 16.7% + 接触スコア補正 + ログ補正
-  const stageBase  = Math.min(stage / 6, 1) * 55;
-  const scoreBonus = Math.min(avgScore / 20, 1) * 25;
-  const logBonus   = logRatio * 20;
-  const success    = Math.round(Math.min(99, stageBase + scoreBonus + logBonus));
-
-  // 可能性 = 最近の接触頻度 × ポジティブ比率 から算出
-  const recentCount = recentScores.reduce((s,w)=>s+(w.count||0),0);
-  const chance = Math.round(Math.min(99, Math.min(recentCount / 20, 1) * 50 + logRatio * 50));
-
-  const comment = val?.comment || '';
-
+  if(!val || (val.success == null && val.chance == null)){
+    el.innerHTML='<div style="text-align:center;color:#d090a8;opacity:0.4;padding:8px;font-size:0.82rem;">未設定（管理タブから入力）</div>';
+    return;
+  }
+  const success = Math.min(99, Math.max(0, parseInt(val.success)||0));
+  const chance  = Math.min(99, Math.max(0, parseInt(val.chance)||0));
+  const comment = val.comment ? esc(val.comment) : '';
   el.innerHTML = [
     {label:'成功率', pct:success, color:'#e8406a', bg:'rgba(232,64,106,0.12)'},
     {label:'可能性', pct:chance,  color:'#f0a060', bg:'rgba(240,160,96,0.12)'},
@@ -2714,8 +2863,7 @@ function renderLoveSuccessRate(val){
         <div style="height:100%;width:${item.pct}%;background:linear-gradient(90deg,${item.color},${item.color}88);border-radius:20px;transition:width 0.8s ease;"></div>
       </div>
     </div>`).join('')
-  + (comment ? `<div style="font-size:0.78rem;color:#d090a8;font-style:italic;margin-top:4px;padding:6px 10px;background:rgba(220,60,100,0.05);border-radius:8px;">${esc(comment)}</div>` : '')
-  + `<div style="font-size:0.62rem;color:rgba(220,60,100,0.35);text-align:right;margin-top:6px;">ステージ・接触スコア・発展ログから自動計算</div>`;
+  + (comment ? `<div style="font-size:0.78rem;color:#d090a8;font-style:italic;margin-top:4px;padding:6px 10px;background:rgba(220,60,100,0.05);border-radius:8px;">${comment}</div>` : '');
 }
 
 // 週間恋音楽（独立1曲差し替え式）
@@ -2798,8 +2946,6 @@ function renderLoveRoadmap(cur, gridId){
   const grid = document.getElementById(gridId); if(!grid) return;
   cur = parseInt(cur) || 4;
   const stages = [
-    {n:1, label:'ステージ 1', desc:'挨拶・視線が合う程度'},
-    {n:2, label:'ステージ 2', desc:'笑顔・手振り・短い会話'},
     {n:3, label:'ステージ 3', desc:'相手発信の会話・ボディータッチ・個人的な共有'},
     {n:4, label:'ステージ 4', desc:'会話量増加・約束・来てほしい発言'},
     {n:5, label:'ステージ 5', desc:'苗字呼び・連絡先交換・プライベートな誘い'},
@@ -3295,6 +3441,14 @@ async function renderAdmin() {
             style="width:100%;padding:6px;background:linear-gradient(90deg,#ffcc00,#ff9900);color:white;border:none;border-radius:7px;font-size:0.8rem;cursor:pointer;">コピー</button>
         </div>
 
+        <!-- 音楽プレビュー（3時間限定） -->
+        <div style="margin-bottom:10px;">
+          <div style="font-size:0.78rem;color:#6020c0;font-weight:600;margin-bottom:4px;">🎵 音楽プレビュー（3/28 17:00〜19:00限定）</div>
+          <div style="background:white;border:1px solid rgba(160,100,220,0.25);border-radius:8px;padding:7px 10px;font-size:0.75rem;color:#2a0a40;word-break:break-all;user-select:all;margin-bottom:4px;">https://kouki02-debug.github.io/event-app/?tab=musicpreview</div>
+          <button onclick="navigator.clipboard?.writeText('https://kouki02-debug.github.io/event-app/?tab=musicpreview').then(()=>showToast('✓ コピーしました'))"
+            style="width:100%;padding:6px;background:linear-gradient(90deg,#9040ff,#6020c0);color:white;border:none;border-radius:7px;font-size:0.8rem;cursor:pointer;">コピー</button>
+        </div>
+
         <div style="font-size:0.7rem;color:var(--ink4);">※ 今後追加するタブも同様に ?tab=タブID で共有できます。</div>
       </div>
       <div class="admin-card">
@@ -3314,7 +3468,7 @@ async function renderAdmin() {
     <div class="sec admin-content-wrap">
       <div class="sec-hd"><h2>📝 コンテンツ編集</h2><div class="sec-line"></div></div>
       <div class="admin-tab-switcher" id="admin-tab-switcher">
-        ${TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday'&&t.id!=='anniv'&&t.id!=='sample').map(t=>`
+        ${TABS.filter(t=>t.id!=='admin'&&t.id!=='love'&&t.id!=='birthday'&&t.id!=='anniv'&&t.id!=='sample'&&t.id!=='musicpreview').map(t=>`
           <button class="admin-ts-btn${adminActiveTab===t.id?' active':''}" onclick="switchAdminTab('${t.id}')">
             ${tabDisplayLabel(t.id)}
           </button>`).join('')}
@@ -3327,6 +3481,9 @@ async function renderAdmin() {
         <button class="admin-ts-btn${adminActiveTab==='love'?' active':''}" onclick="switchAdminTab('love')"
           style="border-color:rgba(220,60,100,0.3);color:${adminActiveTab==='love'?'white':'#c06080'};${adminActiveTab==='love'?'background:linear-gradient(135deg,#e8406a,#c0305a);border-color:transparent;':''}"
         >💕 【特別】恋愛</button>
+        <button class="admin-ts-btn${adminActiveTab==='musicpreview'?' active':''}" onclick="switchAdminTab('musicpreview')"
+          style="border-color:rgba(160,100,220,0.3);color:${adminActiveTab==='musicpreview'?'white':'#6020c0'};${adminActiveTab==='musicpreview'?'background:linear-gradient(135deg,#9040ff,#6020c0);border-color:transparent;':''}"
+        >🎵 音楽プレビュー</button>
         <button class="admin-ts-btn${adminActiveTab==='warikan'?' active':''}" onclick="switchAdminTab('warikan')"
           style="border-color:rgba(60,130,60,0.3);color:${adminActiveTab==='warikan'?'white':'#3a7a3a'};${adminActiveTab==='warikan'?'background:linear-gradient(135deg,#3a7a3a,#1a5a1a);border-color:transparent;':''}"
         >🧮 割り勘計算</button>
@@ -3552,6 +3709,54 @@ async function renderAdminContent(id) {
     return;
   }
 
+  // 音楽プレビュー専用UI
+  if(id==='musicpreview'){
+    let mpTracks = null;
+    try { mpTracks = await fbGet('musicpreview/tracks'); } catch(e){}
+    const trackList = mpTracks
+      ? Object.entries(mpTracks).map(([k,v])=>({key:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0)).slice(0,2)
+      : [];
+    panel.innerHTML=`
+      <div style="background:linear-gradient(135deg,#1a0a2e,#2d1155);border:1px solid rgba(180,120,255,0.3);border-radius:10px;overflow:hidden;padding:16px;">
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#e8d0ff;margin-bottom:4px;font-weight:600;">🎵 音楽プレビュー管理</div>
+        <div style="font-size:0.72rem;color:rgba(200,160,255,0.5);margin-bottom:16px;">公開：3月28日(土) 17:00〜19:00限定（最大2曲）</div>
+
+        <div style="margin-bottom:12px;">
+          ${trackList.length ? trackList.map(t=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(180,120,255,0.2);border-radius:8px;margin-bottom:6px;">
+              <span style="font-size:0.95rem;">🎵</span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:0.85rem;color:#e8d0ff;font-weight:500;">${esc(t.title||'')}</div>
+                ${t.artist?'<div style="font-size:0.72rem;color:rgba(200,160,255,0.5);">'+esc(t.artist)+'</div>':''}
+              </div>
+              <button onclick="adminDelMpTrack('${t.key}')" style="background:none;border:none;color:rgba(200,160,255,0.5);cursor:pointer;font-size:0.9rem;">🗑</button>
+            </div>`).join('') : '<div style="font-size:0.82rem;color:rgba(200,160,255,0.4);margin-bottom:8px;">楽曲未登録</div>'}
+        </div>
+
+        ${trackList.length < 2 ? `
+        <div style="background:rgba(255,255,255,0.03);border:1.5px solid rgba(180,120,255,0.2);border-radius:10px;padding:12px;">
+          <div style="font-size:0.75rem;color:rgba(200,160,255,0.6);margin-bottom:8px;">＋ 楽曲追加（残り${2-trackList.length}枠）</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
+            <input type="text" id="mp-title" placeholder="曲名 *" maxlength="40"
+              style="padding:7px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">
+            <input type="text" id="mp-artist" placeholder="アーティスト名（任意）" maxlength="40"
+              style="padding:7px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">
+            <textarea id="mp-lyrics" placeholder="歌詞（任意）" rows="3"
+              style="padding:7px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#f8f4ff;outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;"></textarea>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(180,120,255,0.25);border-radius:8px;font-size:0.82rem;color:#6020c0;cursor:pointer;background:#f8f4ff;white-space:nowrap;">
+              🎵 MP3選択（20MB以下）
+              <input type="file" accept="audio/*" style="display:none" onchange="onMpTrackFile(this)">
+            </label>
+            <span id="mp-track-fname" style="font-size:0.75rem;color:#9040ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+            <button onclick="adminAddMpTrack(${trackList.length})" style="padding:8px 18px;background:linear-gradient(135deg,#9040ff,#6020c0);color:white;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;white-space:nowrap;">追加</button>
+          </div>
+        </div>` : '<div style="font-size:0.78rem;color:rgba(200,160,255,0.5);text-align:center;padding:8px;">最大2曲に達しています</div>'}
+      </div>`;
+    return;
+  }
+
   // Birthday専用UI
   if(id==='birthday'){
     let bdMusic = null, bdTimeline = null, bdSurprise = null;
@@ -3659,10 +3864,10 @@ async function renderAdminContent(id) {
 
   // 恋愛専用UI
   if(id==='love'){
-    let posts = null, bgm = null, loveMusic = null, weekly = null, loveInfo = null;
+    let bgm = null, loveMusic = null, weekly = null, loveInfo = null;
     let loveCurStage = 4, lovePlanImgs = null;
     let loveCurStage2610 = 0, love2610Started = false;
-    let weeklyMusicAdm = null;
+    let weeklyMusicAdm = null, successRateAdm = null, pressreleaseAdm = null;
     try {
       bgm   = await fbGet('love/bgm');
       loveMusic = await fbGet('love/music');
@@ -3674,32 +3879,13 @@ async function renderAdminContent(id) {
       lovePlanImgs = await fbGet('love/planImages');
       love2610Started = !!(await fbGet('settings/love2610started'));
       weeklyMusicAdm  = await fbGet('love/weeklyMusic');
+      successRateAdm  = await fbGet('love/successRate');
+      pressreleaseAdm = await fbGet('love/pressrelease');
     } catch(e) {
       panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
       return;
     }
 
-    // 投稿一覧HTML生成
-    let postItems = '';
-    if(posts && Object.keys(posts).length > 0){
-      const sorted = Object.entries(posts).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>b.ts-a.ts);
-      postItems = sorted.map(p=>{
-        const safeText = (p.text||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
-        return `<div class="love-post-admin-row" id="lpa-${p.fbKey}">
-          <div class="love-post-admin-body">
-            <div class="love-post-admin-text" id="lpa-text-${p.fbKey}">${esc(p.text)}</div>
-            ${p.img ? '<img src="'+p.img+'" style="margin-top:6px;max-width:100%;max-height:100px;object-fit:cover;border-radius:6px;" alt="">' : ''}
-            <div class="love-post-admin-meta">${p.time}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
-            <button class="love-post-admin-edit" onclick="lovePostEditMode('${p.fbKey}')">✏️</button>
-            <button class="love-post-admin-del" onclick="adminDelLovePost('${p.fbKey}')">🗑</button>
-          </div>
-        </div>`;
-      }).join('');
-    } else {
-      postItems = '<div style="padding:12px;color:#d090a8;font-size:0.85rem;text-align:center;">投稿がありません</div>';
-    }
 
     const bgmName = bgm ? bgm.name : null;
     const bgmCurrentHtml = bgmName
@@ -3954,19 +4140,46 @@ async function renderAdminContent(id) {
           <div style="font-size:0.72rem;color:#d090a8;">対象（2601/2610）を選んで日付・マークを設定します。</div>
         </div>
 
-        <!-- 発展ログ管理 -->
+        <!-- 成功率・可能性 -->
         <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">📓 発展ログ（2601 / 2610）</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-<span style="font-size:0.78rem;color:#d090a8;">💕 2603（社内恋愛25）</span>
-            <input type="date" id="love-log-date" style="flex:1;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;">
-            <select id="love-log-emotion" style="padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.9rem;background:#fff8fa;outline:none;">
-              <option>💗</option><option>😊</option><option>😐</option><option>😔</option><option>😰</option><option>✨</option>
-            </select>
+          <div class="admin-love-subsec-title">💯 恋愛成功率・可能性</div>
+          <div style="display:flex;gap:8px;margin-bottom:6px;">
+            <div style="flex:1;">
+              <div style="font-size:0.72rem;color:#d090a8;margin-bottom:3px;">成功率（0〜99）</div>
+              <input type="number" id="love-sr-success" min="0" max="99" placeholder="0"
+                style="width:100%;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:0.72rem;color:#d090a8;margin-bottom:3px;">可能性（0〜99）</div>
+              <input type="number" id="love-sr-chance" min="0" max="99" placeholder="0"
+                style="width:100%;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
+            </div>
           </div>
-          <textarea id="love-log-event" placeholder="出来事" rows="2" style="width:100%;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;resize:vertical;box-sizing:border-box;margin-bottom:4px;"></textarea>
-          <textarea id="love-log-memo" placeholder="感情メモ（任意）" rows="1" style="width:100%;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;resize:vertical;box-sizing:border-box;margin-bottom:6px;"></textarea>
-          <button onclick="adminAddLoveLog()" class="love-admin-btn">追加</button>
+          <input type="text" id="love-sr-comment" placeholder="コメント（任意）" maxlength="60"
+            style="width:100%;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;margin-bottom:6px;box-sizing:border-box;">
+          <button onclick="adminSaveLoveSuccessRate()" class="love-admin-btn" style="width:100%;">💾 保存</button>
+          <div id="love-sr-current" style="font-size:0.72rem;color:#d090a8;margin-top:6px;text-align:center;"></div>
+        </div>
+
+        <!-- プレスリリース管理 -->
+        <div class="admin-love-subsec">
+          <div class="admin-love-subsec-title">📄 プレスリリース管理</div>
+          <div id="love-pr-list" style="margin-bottom:10px;">読み込み中...</div>
+          <div style="background:white;border:1.5px solid rgba(220,60,100,0.2);border-radius:10px;padding:12px;">
+            <div style="font-size:0.75rem;color:#d090a8;margin-bottom:6px;">＋ 追加（PDF・10MB以下）</div>
+            <input type="text" id="love-pr-title" placeholder="タイトル *" maxlength="50"
+              style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <input type="date" id="love-pr-date"
+              style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#c06080;cursor:pointer;background:#fff8fa;white-space:nowrap;">
+                📎 PDFを選択
+                <input type="file" accept="application/pdf" style="display:none" onchange="onLovePrFile(this)">
+              </label>
+              <span id="love-pr-fname" style="font-size:0.75rem;color:#e8406a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+              <button onclick="adminSavePressRelease()" class="love-admin-btn" style="white-space:nowrap;">追加</button>
+            </div>
+          </div>
         </div>
 
         <!-- 接触スコア管理 -->
@@ -4009,33 +4222,36 @@ async function renderAdminContent(id) {
           <button onclick="adminSaveChecklist()" class="love-admin-btn">💾 保存</button>
         </div>
 
-        <!-- 掲示板 -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">📋 掲示板（追加・編集・削除）</div>
-
-          <!-- 新規投稿フォーム -->
-          <div style="background:white;border:1.5px solid rgba(220,60,100,0.2);border-radius:10px;padding:12px;margin-bottom:12px;">
-            <div style="font-size:0.78rem;color:#d090a8;margin-bottom:6px;font-weight:500;">＋ 新規投稿</div>
-            <textarea id="love-adm-post" style="width:100%;min-height:72px;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:0.9rem;color:#3a1a28;background:#fff8fa;resize:vertical;outline:none;line-height:1.6;transition:border-color 0.2s;box-sizing:border-box;" placeholder="投稿内容を入力..." onfocus="this.style.borderColor='#e8406a'" onblur="this.style.borderColor='rgba(220,60,100,0.15)'"></textarea>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#c06080;cursor:pointer;background:#fff8fa;white-space:nowrap;">
-                📷 画像添付
-                <input type="file" accept="image/*" style="display:none" onchange="onLoveAdmImg(this)">
-              </label>
-              <span id="love-adm-img-name" style="font-size:0.75rem;color:#e8406a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-              <button class="love-admin-btn" onclick="adminPostLove()">投稿する</button>
-            </div>
-          </div>
-
-          <!-- 投稿一覧 -->
-          <div id="love-admin-post-list">${postItems}</div>
-        </div>
       </div>`;
+
+    // 成功率の現在値をinputに設定
+    if(successRateAdm){
+      const srS  = document.getElementById('love-sr-success');
+      const srC  = document.getElementById('love-sr-chance');
+      const srCm = document.getElementById('love-sr-comment');
+      const srCur= document.getElementById('love-sr-current');
+      if(srS)  srS.value  = successRateAdm.success || 0;
+      if(srC)  srC.value  = successRateAdm.chance  || 0;
+      if(srCm) srCm.value = successRateAdm.comment || '';
+      if(srCur) srCur.textContent = '現在: 成功率 '+(successRateAdm.success||0)+'% / 可能性 '+(successRateAdm.chance||0)+'%';
+    }
+    // プレスリリース一覧
+    const prList = document.getElementById('love-pr-list');
+    if(prList){
+      if(pressreleaseAdm && Object.keys(pressreleaseAdm).length){
+        const items = Object.entries(pressreleaseAdm).map(([k,v])=>({key:k,...v})).sort((a,b)=>b.ts-a.ts);
+        prList.innerHTML = items.map(item=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,220,235,0.12);border:1px solid rgba(220,60,100,0.15);border-radius:8px;margin-bottom:5px;">
+            <span style="font-size:0.9rem;">📄</span>
+            <div style="flex:1;min-width:0;font-size:0.82rem;color:#3a1a28;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.title||'無題')}${item.date?' <span style="color:#d090a8;font-size:0.7rem;">'+esc(item.date)+'</span>':''}</div>
+            <button onclick="adminDelPressRelease('${item.key}')" style="background:none;border:none;color:#d090a8;cursor:pointer;font-size:0.88rem;">🗑</button>
+          </div>`).join('');
+      } else {
+        prList.innerHTML = '<div style="font-size:0.78rem;color:#d090a8;text-align:center;padding:6px;">未登録</div>';
+      }
+    }
     return;
   }
-
-  const [pv, mv, ev] = await Promise.all([
-    fbGet(`tabs/${id}/posts`),
     fbGet(`tabs/${id}/memo`),
     fbGet(`tabs/${id}/events`)
   ]);
@@ -4554,19 +4770,6 @@ window.adminDelWeekly = async function(){
 };
 
 // Love admin functions
-let loveAdmImgBuf = null;
-window.onLoveAdmImg = function(inp){
-  const f=inp.files[0]; if(!f)return;
-  if(f.size>3*1024*1024){showToast('画像は3MB以下にしてください');inp.value='';return;}
-  const r=new FileReader();
-  r.onload=e=>{
-    loveAdmImgBuf={dataUrl:e.target.result};
-    const el=document.getElementById('love-adm-img-name');
-    if(el)el.textContent=f.name;
-  };
-  r.readAsDataURL(f);
-};
-
 // Love music admin functions
 let loveMusicFileBuf = null;
 window.onLoveMusicFile = function(inp){
@@ -4647,19 +4850,6 @@ window.adminSaveChecklist = async function(){
   showToast('✓ ステージ'+stage+'のチェックリストを保存しました');
 };
 
-window.adminAddLoveLog = async function(){
-  const suffix = '2601';
-  const date   = document.getElementById('love-log-date')?.value;
-  const event  = document.getElementById('love-log-event')?.value.trim()||'';
-  const memo   = document.getElementById('love-log-memo')?.value.trim()||'';
-  const emotion= document.getElementById('love-log-emotion')?.value||'💗';
-  if(!date||!event){ showToast('日付と出来事を入力してください'); return; }
-  await fbPush('love/log'+suffix, {date, event, memo, emotion, ts:Date.now()});
-  showToast('✓ 発展ログを追加しました');
-  document.getElementById('love-log-event').value='';
-  document.getElementById('love-log-memo').value='';
-};
-
 window.adminSaveLoveScore = async function(){
   const suffix  = '2601';
   const week    = document.getElementById('love-score-week')?.value;
@@ -4696,6 +4886,39 @@ window.adminSaveWeeklyMusic = async function(){
   _wmBuf = null;
   showToast('✓ 週間恋音楽を保存しました🎵');
   await renderAdminContent('love');
+};
+
+let _mpTrackBuf = null;
+window.onMpTrackFile = function(inp){
+  const f = inp.files[0]; if(!f) return;
+  if(f.size > 20*1024*1024){ showToast('20MB以下のファイルを選択してください'); inp.value=''; return; }
+  const r = new FileReader();
+  r.onload = e => {
+    _mpTrackBuf = e.target.result;
+    const el = document.getElementById('mp-track-fname');
+    if(el) el.textContent = f.name;
+  };
+  r.readAsDataURL(f);
+};
+
+window.adminAddMpTrack = async function(order){
+  const title  = document.getElementById('mp-title')?.value.trim()||'';
+  const artist = document.getElementById('mp-artist')?.value.trim()||'';
+  const lyrics = document.getElementById('mp-lyrics')?.value.trim()||'';
+  if(!title){ showToast('曲名を入力してください'); return; }
+  const data = {title, artist, lyrics, order, ts: Date.now()};
+  if(_mpTrackBuf) data.audioDataUrl = _mpTrackBuf;
+  await fbPush('musicpreview/tracks', data);
+  _mpTrackBuf = null;
+  showToast('✓ 楽曲を追加しました🎵');
+  await renderAdminContent('musicpreview');
+};
+
+window.adminDelMpTrack = async function(key){
+  if(!confirm('この楽曲を削除しますか？')) return;
+  await fbRemove('musicpreview/tracks/'+key);
+  showToast('✓ 削除しました');
+  await renderAdminContent('musicpreview');
 };
 
 window.adminDelWeeklyMusic = async function(){
@@ -4782,73 +5005,6 @@ window.adminSetCalMark = async function(){
     await fbSet(fbPath, mark);
     showToast('✓ カレンダーに設定しました（'+target+'）');
   }
-};
-
-window.lovePostEditMode = async function(fbKey){
-  const row = document.getElementById('lpa-'+fbKey);
-  if(!row) return;
-  const textEl = document.getElementById('lpa-text-'+fbKey);
-
-  // 既に編集フォームがあれば閉じる
-  const existing = row.querySelector('.love-post-edit-form');
-  if(existing){ existing.remove(); if(textEl) textEl.style.display=''; return; }
-
-  // Firebaseから現在のテキストを取得
-  const postData = await fbGet('love/posts/'+fbKey);
-  const currentText = postData ? (postData.text||'') : '';
-
-  if(textEl) textEl.style.display='none';
-  const form = document.createElement('div');
-  form.className='love-post-edit-form';
-  const ta = document.createElement('textarea');
-  ta.className='love-post-edit-ta';
-  ta.id='lpa-edit-ta-'+fbKey;
-  ta.value=currentText;
-  const btns = document.createElement('div');
-  btns.className='love-post-edit-btns';
-  const saveBtn = document.createElement('button');
-  saveBtn.className='love-post-edit-save';
-  saveBtn.textContent='保存';
-  saveBtn.onclick=()=>adminUpdateLovePost(fbKey);
-  const cancelBtn = document.createElement('button');
-  cancelBtn.className='love-post-edit-cancel';
-  cancelBtn.textContent='キャンセル';
-  cancelBtn.onclick=()=>{ form.remove(); if(textEl)textEl.style.display=''; };
-  btns.appendChild(saveBtn);
-  btns.appendChild(cancelBtn);
-  form.appendChild(ta);
-  form.appendChild(btns);
-  row.querySelector('.love-post-admin-body').appendChild(form);
-  ta.focus();
-};
-
-window.adminUpdateLovePost = async function(fbKey){
-  const ta = document.getElementById('lpa-edit-ta-'+fbKey);
-  if(!ta) return;
-  const newText = ta.value.trim();
-  if(!newText){ showToast('テキストを入力してください'); return; }
-  await fbUpdate(`love/posts/${fbKey}`, {text: newText});
-  showToast('✓ 投稿を更新しました');
-  await renderAdminContent('love');
-};
-
-window.adminPostLove = async function(){
-  const ta=document.getElementById('love-adm-post');
-  const text=ta?ta.value.trim():'';
-  if(!text&&!loveAdmImgBuf){showToast('テキストか画像を入力してください');return;}
-  const t=new Date();
-  const time=`${t.getMonth()+1}/${t.getDate()} ${pad(t.getHours())}:${pad(t.getMinutes())}`;
-  await fbPush('love/posts',{text,img:loveAdmImgBuf?loveAdmImgBuf.dataUrl:null,time,ts:Date.now()});
-  if(ta)ta.value=''; loveAdmImgBuf=null;
-  showToast('✓ 投稿しました💕');
-  await renderAdminContent('love');
-};
-
-window.adminDelLovePost = async function(fbKey){
-  if(!confirm('削除しますか？'))return;
-  await fbRemove(`love/posts/${fbKey}`);
-  showToast('✓ 投稿を削除しました');
-  await renderAdminContent('love');
 };
 
 window.adminUploadLoveImg = async function(inp){
@@ -4993,16 +5149,27 @@ async function init() {
 
   // ============================================================
   // URL ?tab=xxx でアクセスしたデバイスに永続フラグを付与する仕組み
-  // 新しいリンク限定タブを追加する場合は LINK_ONLY_TABS に追加するだけでOK
+  // musicpreview は 3/28 17:00〜19:00 の間だけフラグ保存
   // ============================================================
-  const LINK_ONLY_TABS = ['birthday', 'love']; // 今後追加する際はここに追記：例 'special1','event2'
+  const LINK_ONLY_TABS = ['birthday', 'love', 'musicpreview'];
 
   const urlParams = new URLSearchParams(location.search);
   const tabParam = urlParams.get('tab');
 
   // アクセス時にlocalStorageへフラグ保存
   if(tabParam && LINK_ONLY_TABS.includes(tabParam)){
-    localStorage.setItem('tab_access_' + tabParam, '1');
+    if(tabParam === 'musicpreview'){
+      // 時刻制限：3/28 17:00〜19:00 の間だけフラグ保存
+      const _now   = new Date();
+      const _start = new Date('2026-03-28T17:00:00+09:00');
+      const _end   = new Date('2026-03-28T19:00:00+09:00');
+      if(_now >= _start && _now < _end){
+        localStorage.setItem('tab_access_musicpreview', '1');
+      }
+      // 期間外でフラグなしなら弾く → renderPanel内で期間チェックして表示切替
+    } else {
+      localStorage.setItem('tab_access_' + tabParam, '1');
+    }
   }
 
   // フラグがあるタブを解放済みリストとして管理
