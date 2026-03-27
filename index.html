@@ -455,8 +455,7 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
   box-shadow:0 4px 16px rgba(220,60,100,0.15);
   font-size:0.8rem;color:#c06080;
 }
-.love-bgm-bar.show{display:flex;}
-.love-bgm-btn{
+.love-bgm-bar.show{display:none;}/* 再生バーは非表示 */
   background:none;border:none;cursor:pointer;
   font-size:1.1rem;color:#e8406a;padding:0;line-height:1;
 }
@@ -564,8 +563,8 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
 <main id="main"></main>
 <audio id="love-bgm" loop></audio>
 <div class="love-bgm-bar" id="love-bgm-bar">
-  <button class="love-bgm-btn" id="love-bgm-toggle" onclick="toggleBgm()">▶️</button>
-  <div class="love-bgm-title" id="love-bgm-title">BGM</div>
+  <button class="love-bgm-btn" id="love-bgm-toggle" onclick="toggleBgm()" style="display:none;">▶️</button>
+  <div class="love-bgm-title" id="love-bgm-title" style="display:none;">BGM</div>
   <input type="range" class="love-bgm-vol" id="love-bgm-vol" min="0" max="100" value="70"
     oninput="setBgmVolume(this.value)" ontouchend="setBgmVolume(this.value)" title="音量">
 </div>
@@ -3323,13 +3322,7 @@ function renderLoveCalGrid(wrapId, suffix) {
   wrap.innerHTML=`
     <div style="font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#c06080;text-align:center;margin-bottom:8px;letter-spacing:0.06em;">${label}</div>
     <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;width:100%;box-sizing:border-box;">${grid}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;justify-content:center;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;">
-      ${LOVE_MARKS.filter(m=>m.key!=='none').map(m=>`
-        <div style="display:flex;align-items:center;gap:4px;font-size:0.72rem;">
-          <span style="font-size:0.9rem;">${m.emoji}</span>
-          <span style="color:${m.color};font-weight:600;">${m.label}</span>
-        </div>`).join('')}
-    </div>`;
+`;
 }
 
 
@@ -3837,7 +3830,7 @@ async function renderAdminContent(id) {
               <input type="file" accept="audio/*" style="display:none" onchange="onMpTrackFile(this)">
             </label>
             <span id="mp-track-fname" style="font-size:0.75rem;color:#9040ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-            <button onclick="adminAddMpTrack(${trackList.length})" style="padding:8px 18px;background:linear-gradient(135deg,#9040ff,#6020c0);color:white;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;white-space:nowrap;">追加</button>
+            <button onclick="adminAddMpTrack()" style="padding:8px 18px;background:linear-gradient(135deg,#9040ff,#6020c0);color:white;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;white-space:nowrap;">追加</button>
           </div>
         </div>` : '<div style="font-size:0.78rem;color:rgba(200,160,255,0.5);text-align:center;padding:8px;">最大2曲に達しています</div>'}
       </div>`;
@@ -4128,8 +4121,15 @@ async function renderAdminContent(id) {
 
         <!-- BGM -->
         <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">🎵 BGMファイル</div>
+          <div class="admin-love-subsec-title">🎵 BGMファイル＋音量設定</div>
           ${bgmCurrentHtml}
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,220,235,0.1);border:1px solid rgba(220,60,100,0.12);border-radius:8px;margin-bottom:8px;">
+            <span style="font-size:0.82rem;color:#d090a8;white-space:nowrap;">🔊 音量</span>
+            <input type="range" id="adm-bgm-vol" min="0" max="100" value="${parseInt(localStorage.getItem('bgm_volume'))||70}"
+              oninput="setBgmVolume(this.value);document.getElementById('adm-bgm-vol-label').textContent=this.value+'%'"
+              style="flex:1;accent-color:#e8406a;">
+            <span id="adm-bgm-vol-label" style="font-size:0.82rem;color:#c0305a;font-weight:700;width:36px;text-align:right;">${parseInt(localStorage.getItem('bgm_volume'))||70}%</span>
+          </div>
           <label style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:white;border:2px dashed rgba(220,60,100,0.25);border-radius:10px;cursor:pointer;font-size:0.88rem;color:#c06080;transition:all 0.2s;" onmouseover="this.style.borderColor='#e8406a'" onmouseout="this.style.borderColor='rgba(220,60,100,0.25)'">
             🎵 ${bgmBtnLabel}
             <input type="file" accept="audio/*" style="display:none" onchange="adminUploadBgm(this)">
@@ -4991,11 +4991,14 @@ window.onMpTrackFile = function(inp){
   r.readAsDataURL(f);
 };
 
-window.adminAddMpTrack = async function(order){
+window.adminAddMpTrack = async function(){
   const title  = document.getElementById('mp-title')?.value.trim()||'';
   const artist = document.getElementById('mp-artist')?.value.trim()||'';
   const lyrics = document.getElementById('mp-lyrics')?.value.trim()||'';
   if(!title){ showToast('曲名を入力してください'); return; }
+  const existing = await fbGet('musicpreview/tracks') || {};
+  const order = Object.keys(existing).length;
+  if(order >= 2){ showToast('最大2曲です'); return; }
   const data = {title, artist, lyrics, order, ts: Date.now()};
   if(_mpTrackBuf) data.audioDataUrl = _mpTrackBuf;
   await fbPush('musicpreview/tracks', data);
