@@ -910,6 +910,7 @@ function buildNoticeHtml(notices) {
 // OPEN TAB
 // ============================================================
 async function openTab(id) {
+  if(id !== 'love') stopBgm(); // 恋愛タブ以外に移動したらBGM停止
   activeTab=id; renderTabs();
   // パスワードなしで開けるタブ：anniv / birthday / sample / love（リンクアクセス済みデバイス）
   const noPassTabs = ['anniv','birthday','sample','love','musicpreview'];
@@ -918,7 +919,7 @@ async function openTab(id) {
 }
 
 function goHome() {
-  // プレビューバーが残っていれば削除
+  stopBgm(); // ホームに戻るときBGM停止
   if(window._bdPreviewBar){ window._bdPreviewBar.remove(); window._bdPreviewBar=null; }
   if(window._annivPreviewBar){ window._annivPreviewBar.remove(); window._annivPreviewBar=null; }
   activeTab=null; renderTabs(); renderHome();
@@ -3353,7 +3354,16 @@ window.setBgmVolume = function(val){
     slider.value = pct;
     slider.style.setProperty('--vol', pct+'%');
   }
-  localStorage.setItem('bgm_volume', pct);
+  localStorage.setItem('bgm_volume', pct); // ローカルキャッシュ
+};
+
+// Firebase に音量を保存（管理タブから呼ぶ）
+window.saveBgmVolume = async function(){
+  const slider = document.getElementById('adm-bgm-vol');
+  const pct = parseInt(slider?.value||70);
+  setBgmVolume(pct);
+  await fbSet('love/bgmVolume', pct);
+  showToast('✓ 音量を保存しました（全端末に反映）');
 };
 
 async function initBgm(){
@@ -3363,9 +3373,9 @@ async function initBgm(){
   const titleEl = document.getElementById('love-bgm-title');
   if(!bgmData||!audio) return;
   audio.src = bgmData.dataUrl;
-  // 保存済み音量を適用（デフォルト70%）
-  const savedVol = parseInt(localStorage.getItem('bgm_volume'))||70;
-  audio.volume = savedVol / 100;
+  // Firebase共通音量を優先、なければlocalStorage、デフォルト70%
+  const fbVol = await fbGet('love/bgmVolume');
+  const savedVol = (fbVol !== null && fbVol !== undefined) ? parseInt(fbVol) : (parseInt(localStorage.getItem('bgm_volume'))||70);
   setBgmVolume(savedVol);
   if(titleEl) titleEl.textContent = bgmData.name||'BGM';
   if(bar) bar.classList.add('show');
@@ -3376,6 +3386,16 @@ async function initBgm(){
     if(btn) btn.textContent = '⏸';
   } catch(e) {
     // autoplay blocked — show play button
+    loveBgmPlaying = false;
+  }
+}
+
+// BGM停止（タブ離脱時）
+function stopBgm(){
+  const audio = document.getElementById('love-bgm');
+  if(audio && loveBgmPlaying){
+    audio.pause();
+    audio.currentTime = 0;
     loveBgmPlaying = false;
   }
 }
@@ -3796,44 +3816,61 @@ async function renderAdminContent(id) {
     const trackList = mpTracks
       ? Object.entries(mpTracks).map(([k,v])=>({key:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0)).slice(0,2)
       : [];
-    panel.innerHTML=`
-      <div style="background:linear-gradient(135deg,#1a0a2e,#2d1155);border:1px solid rgba(180,120,255,0.3);border-radius:10px;overflow:hidden;padding:16px;">
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#e8d0ff;margin-bottom:4px;font-weight:600;">🎵 音楽プレビュー管理</div>
-        <div style="font-size:0.72rem;color:rgba(200,160,255,0.5);margin-bottom:16px;">公開：3月28日(土) 17:00〜19:00限定（最大2曲）</div>
 
-        <div style="margin-bottom:12px;">
-          ${trackList.length ? trackList.map(t=>`
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(180,120,255,0.2);border-radius:8px;margin-bottom:6px;">
-              <span style="font-size:0.95rem;">🎵</span>
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:0.85rem;color:#e8d0ff;font-weight:500;">${esc(t.title||'')}</div>
-                ${t.artist?'<div style="font-size:0.72rem;color:rgba(200,160,255,0.5);">'+esc(t.artist)+'</div>':''}
-              </div>
-              <button onclick="adminDelMpTrack('${t.key}')" style="background:none;border:none;color:rgba(200,160,255,0.5);cursor:pointer;font-size:0.9rem;">🗑</button>
-            </div>`).join('') : '<div style="font-size:0.82rem;color:rgba(200,160,255,0.4);margin-bottom:8px;">楽曲未登録</div>'}
-        </div>
+    let trackHtml = '';
+    if(trackList.length){
+      trackHtml = trackList.map(t=>
+        '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(180,120,255,0.2);border-radius:8px;margin-bottom:6px;">'
+        +'<span style="font-size:0.95rem;">🎵</span>'
+        +'<div style="flex:1;min-width:0;">'
+        +'<div style="font-size:0.85rem;color:#e8d0ff;font-weight:500;">'+esc(t.title||'')+'</div>'
+        +(t.artist?'<div style="font-size:0.72rem;color:rgba(200,160,255,0.5);">'+esc(t.artist)+'</div>':'')
+        +'</div>'
+        +'<button data-del-mp="'+t.key+'" style="background:none;border:none;color:rgba(200,160,255,0.5);cursor:pointer;font-size:0.9rem;">🗑</button>'
+        +'</div>'
+      ).join('');
+    } else {
+      trackHtml = '<div style="font-size:0.82rem;color:rgba(200,160,255,0.4);margin-bottom:8px;">楽曲未登録</div>';
+    }
 
-        ${trackList.length < 2 ? `
-        <div style="background:rgba(255,255,255,0.03);border:1.5px solid rgba(180,120,255,0.2);border-radius:10px;padding:12px;">
-          <div style="font-size:0.75rem;color:rgba(200,160,255,0.6);margin-bottom:8px;">＋ 楽曲追加（残り${2-trackList.length}枠）</div>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
-            <input type="text" id="mp-title" placeholder="曲名 *" maxlength="40"
-              style="padding:7px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">
-            <input type="text" id="mp-artist" placeholder="アーティスト名（任意）" maxlength="40"
-              style="padding:7px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">
-            <textarea id="mp-lyrics" placeholder="歌詞（任意）" rows="3"
-              style="padding:7px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#f8f4ff;outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;"></textarea>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(180,120,255,0.25);border-radius:8px;font-size:0.82rem;color:#6020c0;cursor:pointer;background:#f8f4ff;white-space:nowrap;">
-              🎵 MP3選択（20MB以下）
-              <input type="file" accept="audio/*" style="display:none" onchange="onMpTrackFile(this)">
-            </label>
-            <span id="mp-track-fname" style="font-size:0.75rem;color:#9040ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-            <button onclick="adminAddMpTrack()" style="padding:8px 18px;background:linear-gradient(135deg,#9040ff,#6020c0);color:white;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;white-space:nowrap;">追加</button>
-          </div>
-        </div>` : '<div style="font-size:0.78rem;color:rgba(200,160,255,0.5);text-align:center;padding:8px;">最大2曲に達しています</div>'}
-      </div>`;
+    let addFormHtml = '';
+    if(trackList.length < 2){
+      addFormHtml = '<div style="background:rgba(255,255,255,0.03);border:1.5px solid rgba(180,120,255,0.2);border-radius:10px;padding:12px;">'
+        +'<div style="font-size:0.75rem;color:rgba(200,160,255,0.6);margin-bottom:8px;">＋ 楽曲追加（残り'+(2-trackList.length)+'枠）</div>'
+        +'<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">'
+        +'<input type="text" id="mp-title" placeholder="曲名 *" maxlength="40" style="padding:7px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">'
+        +'<input type="text" id="mp-artist" placeholder="アーティスト名（任意）" maxlength="40" style="padding:7px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">'
+        +'<textarea id="mp-lyrics" placeholder="歌詞（任意）" rows="3" style="padding:7px 10px;border:1.5px solid rgba(180,120,255,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#f8f4ff;outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;"></textarea>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+        +'<label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(180,120,255,0.25);border-radius:8px;font-size:0.82rem;color:#6020c0;cursor:pointer;background:#f8f4ff;white-space:nowrap;">'
+        +'🎵 MP3選択（20MB以下）'
+        +'<input type="file" accept="audio/*" id="mp-file-input" style="display:none">'
+        +'</label>'
+        +'<span id="mp-track-fname" style="font-size:0.75rem;color:#9040ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>'
+        +'<button id="mp-add-btn" style="padding:8px 18px;background:linear-gradient(135deg,#9040ff,#6020c0);color:white;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;white-space:nowrap;">追加</button>'
+        +'</div></div>';
+    } else {
+      addFormHtml = '<div style="font-size:0.78rem;color:rgba(200,160,255,0.5);text-align:center;padding:8px;">最大2曲に達しています</div>';
+    }
+
+    panel.innerHTML = '<div style="background:linear-gradient(135deg,#1a0a2e,#2d1155);border:1px solid rgba(180,120,255,0.3);border-radius:10px;overflow:hidden;padding:16px;">'
+      +'<div style="font-family:\'Shippori Mincho\',serif;font-size:0.95rem;color:#e8d0ff;margin-bottom:4px;font-weight:600;">🎵 音楽プレビュー管理</div>'
+      +'<div style="font-size:0.72rem;color:rgba(200,160,255,0.5);margin-bottom:16px;">公開：3月28日(土) 17:00〜19:00限定（最大2曲）</div>'
+      +'<div id="mp-adm-track-list" style="margin-bottom:12px;">'+trackHtml+'</div>'
+      + addFormHtml
+      +'</div>';
+
+    // イベントリスナーを明示的に付与（innerHTML内のonclickが効かない場合の対策）
+    const addBtn = panel.querySelector('#mp-add-btn');
+    if(addBtn) addBtn.addEventListener('click', ()=>{ if(window.adminAddMpTrack) window.adminAddMpTrack(); });
+
+    const fileInput = panel.querySelector('#mp-file-input');
+    if(fileInput) fileInput.addEventListener('change', function(){ if(window.onMpTrackFile) window.onMpTrackFile(this); });
+
+    panel.querySelectorAll('[data-del-mp]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ const key=btn.dataset.delMp; if(window.adminDelMpTrack) window.adminDelMpTrack(key); });
+    });
     return;
   }
 
@@ -4129,6 +4166,7 @@ async function renderAdminContent(id) {
               oninput="setBgmVolume(this.value);document.getElementById('adm-bgm-vol-label').textContent=this.value+'%'"
               style="flex:1;accent-color:#e8406a;">
             <span id="adm-bgm-vol-label" style="font-size:0.82rem;color:#c0305a;font-weight:700;width:36px;text-align:right;">${parseInt(localStorage.getItem('bgm_volume'))||70}%</span>
+            <button onclick="saveBgmVolume()" style="padding:5px 12px;background:linear-gradient(135deg,#e8406a,#c0305a);color:white;border:none;border-radius:8px;font-size:0.78rem;cursor:pointer;white-space:nowrap;">💾 保存</button>
           </div>
           <label style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:white;border:2px dashed rgba(220,60,100,0.25);border-radius:10px;cursor:pointer;font-size:0.88rem;color:#c06080;transition:all 0.2s;" onmouseover="this.style.borderColor='#e8406a'" onmouseout="this.style.borderColor='rgba(220,60,100,0.25)'">
             🎵 ${bgmBtnLabel}
