@@ -461,6 +461,16 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
   font-size:1.1rem;color:#e8406a;padding:0;line-height:1;
 }
 .love-bgm-title{font-size:0.75rem;color:#c06080;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.love-bgm-vol{
+  -webkit-appearance:none;appearance:none;
+  width:64px;height:4px;border-radius:2px;outline:none;cursor:pointer;
+  background:linear-gradient(90deg,#e8406a var(--vol,70%),rgba(220,60,100,0.15) var(--vol,70%));
+}
+.love-bgm-vol::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:#e8406a;cursor:pointer;
+  box-shadow:0 1px 4px rgba(220,60,100,0.4);
+}
 
 /* ADMIN LOVE SECTION */
 .admin-love-card{
@@ -556,6 +566,8 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
 <div class="love-bgm-bar" id="love-bgm-bar">
   <button class="love-bgm-btn" id="love-bgm-toggle" onclick="toggleBgm()">▶️</button>
   <div class="love-bgm-title" id="love-bgm-title">BGM</div>
+  <input type="range" class="love-bgm-vol" id="love-bgm-vol" min="0" max="100" value="70"
+    oninput="setBgmVolume(this.value)" ontouchend="setBgmVolume(this.value)" title="音量">
 </div>
 <div class="love-lightbox" id="love-lightbox" onclick="closeLightbox()">
   <button class="love-lightbox-close" onclick="closeLightbox()">✕</button>
@@ -3209,12 +3221,13 @@ window.openLoveLyricsPage = async function(fbKey){
 // LOVE CALENDAR
 // ============================================================
 const LOVE_MARKS = [
-  { key:'big',    label:'大発展', color:'#e8406a', bg:'rgba(232,64,106,0.15)', emoji:'💗' },
-  { key:'mid',    label:'中発展', color:'#d090a8', bg:'rgba(208,144,168,0.15)', emoji:'💕' },
-  { key:'small',  label:'小発展', color:'#b0c8a8', bg:'rgba(176,200,168,0.15)', emoji:'🌸' },
-  { key:'sight',  label:'見発展', color:'#9080d0', bg:'rgba(144,128,208,0.15)', emoji:'👀' },
-  { key:'off',    label:'休暇',   color:'#a0a0a0', bg:'rgba(160,160,160,0.12)', emoji:'🏖' },
-  { key:'none',   label:'なし',   color:'transparent', bg:'transparent', emoji:'' },
+  { key:'big',      label:'大発展', color:'#e8406a', bg:'rgba(232,64,106,0.15)', emoji:'💗' },
+  { key:'mid',      label:'中発展', color:'#d090a8', bg:'rgba(208,144,168,0.15)', emoji:'💕' },
+  { key:'small',    label:'小発展', color:'#b0c8a8', bg:'rgba(176,200,168,0.15)', emoji:'🌸' },
+  { key:'sight',    label:'見発展', color:'#9080d0', bg:'rgba(144,128,208,0.15)', emoji:'👀' },
+  { key:'off',      label:'休暇',   color:'#a0a0a0', bg:'rgba(160,160,160,0.12)', emoji:'🏖' },
+  { key:'announce', label:'発表',   color:'#d06020', bg:'rgba(208,96,32,0.12)',   emoji:'📢' },
+  { key:'none',     label:'なし',   color:'transparent', bg:'transparent', emoji:'' },
 ];
 
 let loveCal = { year: new Date().getFullYear(), month: new Date().getMonth() };
@@ -3248,8 +3261,19 @@ function renderLoveCalGrid(wrapId, suffix) {
   for(let i=0;i<first;i++) grid+=`<div></div>`;
   for(let d=1;d<=days;d++){
     const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const mark = marks[ds] ? LOVE_MARKS.find(m=>m.key===marks[ds]) : null;
-    const dow = new Date(year,month,d).getDay();
+    // 4/16は固定「発表」マーク
+    const isAnnounceDay = (ds === '2026-04-16');
+    // 3/31〜4/16の火・水・木を重要日ハイライト（3/31を除く）
+    const deadline  = new Date('2026-04-16T23:59:59+09:00');
+    const dateObj   = new Date(ds + 'T00:00:00+09:00');
+    const dow = dateObj.getDay(); // 0=日
+    const isTueWedThu = [2,3,4].includes(dow); // 火=2 水=3 木=4
+    const isExclude   = ds === '2026-03-31';
+    const isImportant = isTueWedThu && !isExclude && dateObj <= deadline;
+
+    const mark = isAnnounceDay
+      ? LOVE_MARKS.find(m=>m.key==='announce')
+      : marks[ds] ? LOVE_MARKS.find(m=>m.key===marks[ds]) : null;
     const isToday = ds===todayStr;
     const dayColor = isToday ? 'white' : dow===0 ? '#c06080' : dow===6 ? '#6080b0' : '#3a1a28';
 
@@ -3263,17 +3287,25 @@ function renderLoveCalGrid(wrapId, suffix) {
       innerHtml = `<span style="font-size:0.88rem;">${d}</span>`;
     }
 
+    // 重要日の背景（火水木 3/31除く 〜4/16）
+    const importantBg = (!mark && !isToday && isImportant)
+      ? 'rgba(255,180,50,0.12)'
+      : (mark ? mark.bg : 'transparent');
+    const importantBorder = (!mark && !isToday && isImportant)
+      ? '1px solid rgba(255,160,30,0.3)'
+      : (mark ? '2px solid '+mark.color+'80' : '1px solid transparent');
+
     const isAdmin = unlocked.includes('admin');
-    grid += `<div onclick="${isAdmin?`loveDayClick('${ds}','${suffix}')`:'void 0'}" style="`+
+    grid += `<div onclick="${isAdmin&&!isAnnounceDay?`loveDayClick('${ds}','${suffix}')`:'void 0'}" style="`+
       `display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;`+
       `padding:4px 2px;min-height:48px;`+
-      `border-radius:6px;cursor:${isAdmin?'pointer':'default'};`+
+      `border-radius:6px;cursor:${isAdmin&&!isAnnounceDay?'pointer':'default'};`+
       `min-width:0;overflow:hidden;box-sizing:border-box;`+
-      `background:${isToday?'#e8406a':mark?mark.bg:'transparent'};`+
-      `border:${isToday?'2px solid #c0305a':mark?'2px solid '+mark.color+'80':'1px solid transparent'};`+
+      `background:${isToday?'#e8406a':importantBg};`+
+      `border:${isToday?'2px solid #c0305a':importantBorder};`+
       `transition:all 0.15s;color:${dayColor};`+
       `box-shadow:${mark&&!isToday?'0 2px 8px '+mark.color+'50':'none'};`+
-      `" ${isAdmin?'onmouseover="this.style.opacity=\'0.8\'" onmouseout="this.style.opacity=\'1\'"':''}>` +
+      `" ${isAdmin&&!isAnnounceDay?'onmouseover="this.style.opacity=\'0.8\'" onmouseout="this.style.opacity=\'1\'"':''}>` +
       innerHtml + `</div>`;
   }
 
@@ -3313,6 +3345,18 @@ window.loveDayClick = async function(ds, suffix){
 };
 
 // BGM
+window.setBgmVolume = function(val){
+  const audio = document.getElementById('love-bgm');
+  const slider = document.getElementById('love-bgm-vol');
+  const pct = parseInt(val)||70;
+  if(audio) audio.volume = pct / 100;
+  if(slider){
+    slider.value = pct;
+    slider.style.setProperty('--vol', pct+'%');
+  }
+  localStorage.setItem('bgm_volume', pct);
+};
+
 async function initBgm(){
   const bgmData = await fbGet('love/bgm');
   const audio = document.getElementById('love-bgm');
@@ -3320,7 +3364,10 @@ async function initBgm(){
   const titleEl = document.getElementById('love-bgm-title');
   if(!bgmData||!audio) return;
   audio.src = bgmData.dataUrl;
-  audio.volume = 0.22;
+  // 保存済み音量を適用（デフォルト70%）
+  const savedVol = parseInt(localStorage.getItem('bgm_volume'))||70;
+  audio.volume = savedVol / 100;
+  setBgmVolume(savedVol);
   if(titleEl) titleEl.textContent = bgmData.name||'BGM';
   if(bar) bar.classList.add('show');
   try {
@@ -5176,7 +5223,7 @@ async function init() {
       await fbSet('settings/loveNotices', [
         {
           title: '📣 重要なお知らせ',
-          text: '4月16日（木）をひとつの節目として、\nこの恋愛を継続するかどうかの判断をおこないます。\n\n現在、これ以上ステージを上げず\n今の関係性を維持していく方向が\n濃厚になってきています。\n\n残り16日間、誠実に向き合い\n判断の結果と、4月以降の「コミュニティ強化」の詳細についても同日までにご報告します。'
+          text: '4月16日（木）をひとつの節目として、\nこの恋愛を継続するかどうかの判断をおこないます。\n\n現在、これ以上ステージを上げず\n今の関係性を維持していく方向が\n濃厚になってきています。\n\n残り16日間、誠実に向き合い\n判断の結果と、4月以降の「コミュニティ強化」の\n詳細についても同日までにご報告します。'
         }
       ]);
     }
