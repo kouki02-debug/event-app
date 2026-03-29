@@ -683,7 +683,7 @@ const TABS = [{id:'A'},{id:'B'},{id:'sample'},{id:'love'},{id:'birthday'},{id:'a
 function isBirthdayVisible() {
   const now = new Date();
   const start = new Date('2026-03-30T08:00:00+09:00');
-  const end   = new Date('2026-03-30T00:00:00+09:00');
+  const end   = new Date('2026-04-06T23:59:59+09:00');
   return now >= start && now < end;
 }
 // 2026年3月24日 0:00〜3月30日 0:00（JST）
@@ -691,7 +691,7 @@ function isBirthdayVisible() {
 function isBirthdayContentVisible() {
   // 3月30日(月) 09:30以降に音楽を表示
   const now = new Date();
-  return now >= new Date('2026-03-30T18:30:00+09:00');
+  return now >= new Date('2026-03-30T17:00:00+09:00');
 }
 function isLoveMusicVisible() {
   // 3月21日(土) 20:50以降に音楽プレゼントを表示
@@ -701,7 +701,7 @@ function isLoveMusicVisible() {
 function isAnnivVisible() {
   const now = new Date();
   const start = new Date('2026-03-24T00:00:00+09:00');
-  const end   = new Date('2026-03-30T00:00:00+09:00');
+  const end   = new Date('2026-04-06T23:59:59+09:00');
   return now >= start && now < end;
 }
 
@@ -2197,7 +2197,7 @@ async function renderBirthdayPanel() {
             </div>
             <div style="display:flex;align-items:center;padding:10px 0;">
               <span style="font-size:0.78rem;color:#8a6800;width:88px;flex-shrink:0;letter-spacing:0.04em;">終了時刻</span>
-              <span style="font-size:0.92rem;color:#3a2800;font-weight:600;font-family:'Shippori Mincho',serif;">20時解散（予定）</span>
+              <span style="font-size:0.92rem;color:#3a2800;font-weight:600;font-family:'Shippori Mincho',serif;">17時解散（予定）</span>
             </div>
           </div>
         </div>
@@ -2217,15 +2217,22 @@ async function renderBirthdayPanel() {
       </div>
 
 
-      <!-- 音楽プレゼント（時刻制限） -->
-      <div class="birthday-sec" style="margin-top:12px;padding-bottom:24px;">
+      <!-- 音楽プレゼント（通常） -->
+      <div class="birthday-sec" style="margin-top:12px;">
         <div class="birthday-sec-hd"><h2>🎵 音楽プレゼント</h2><div class="birthday-sec-line"></div></div>
         <div id="bd-music-list"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
       </div>
+
+      <!-- 音楽プレゼント（解散後・17:00以降） -->
+      <div class="birthday-sec" style="margin-top:12px;padding-bottom:24px;">
+        <div class="birthday-sec-hd"><h2>🌙 解散後の音楽</h2><div class="birthday-sec-line"></div></div>
+        <div id="bd-music-list-after"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
+      </div>
     </div>`;
 
-  const [music, timeline, surprise] = await Promise.all([
+  const [music, musicAfter, timeline, surprise] = await Promise.all([
     fbGet('birthday/music'),
+    fbGet('birthday/musicAfter'),
     fbGet('birthday/timeline'),
     fbGet('birthday/surprise')
   ]);
@@ -2239,8 +2246,8 @@ async function renderBirthdayPanel() {
       {time:'09:30', icon:'🚩', label:'集合', note:'セブン-イレブン 入間上藤沢北店'},
       {time:'11:00', icon:'🛍', label:'エミテラス所沢', note:'昼食含む'},
       {time:'16:30', icon:'🥩', label:'焼肉きんぐ 入間店', note:''},
-      {time:'18:30', icon:'💬', label:'クロージングトーク', note:''},
-      {time:'20:00', icon:'👋', label:'解散', note:'セブン-イレブン 入間上藤沢北店'},
+      {time:'15:30', icon:'💬', label:'クロージングトーク', note:''},
+      {time:'17:00', icon:'👋', label:'解散', note:'セブン-イレブン 入間上藤沢北店'},
     ];
     for(const item of defaultTimeline){
       await fbPush('birthday/timeline', {...item, ts: Date.now()});
@@ -2250,12 +2257,14 @@ async function renderBirthdayPanel() {
     renderBdTimeline(newTimeline);
   }
 
-  // 音楽のみ時刻制限（09:30〜）
+  // 通常楽曲（常時表示）
+  renderBdMusicList(music, 'bd-music-list');
+  // 解散後楽曲（17:00以降）
   if(isBirthdayContentVisible()){
-    renderBdMusicList(music);
+    renderBdMusicList(musicAfter, 'bd-music-list-after');
   } else {
-    const el1=document.getElementById('bd-music-list');
-    if(el1) el1.innerHTML='<div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">🎵 準備中</div>';
+    const el2=document.getElementById('bd-music-list-after');
+    if(el2) el2.innerHTML='<div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">🌙 17:00以降に公開されます</div>';
   }
 
   // カウントダウン起動
@@ -2264,7 +2273,8 @@ async function renderBirthdayPanel() {
 
   if(!listeners['birthday']){
     listeners['birthday']=[];
-    listeners['birthday'].push(fbListen('birthday/music',   val=>{ if(isBirthdayContentVisible()) renderBdMusicList(val); }));
+    listeners['birthday'].push(fbListen('birthday/music',      val=>renderBdMusicList(val,'bd-music-list')));
+    listeners['birthday'].push(fbListen('birthday/musicAfter', val=>{ if(isBirthdayContentVisible()) renderBdMusicList(val,'bd-music-list-after'); }));
     listeners['birthday'].push(fbListen('birthday/timeline',val=>{ window._bdTimelineCache=val; renderBdTimeline(val); }));
     listeners['birthday'].push(fbListen('haisya/birthday',  ()=>renderHaisyaView('birthday')));
   }
@@ -2409,8 +2419,9 @@ function startBdGatherCountdown(){
   _bdGatherTimer = setInterval(tick, 1000);
 }
 
-function renderBdMusicList(val){
-  const el=document.getElementById('bd-music-list'); if(!el)return;
+function renderBdMusicList(val, elId){
+  elId = elId || 'bd-music-list';
+  const el=document.getElementById(elId); if(!el)return;
   if(!val||!Object.keys(val).length){
     el.innerHTML='<div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">🎵 準備中です</div>';
     return;
@@ -3876,11 +3887,12 @@ async function renderAdminContent(id) {
 
   // Birthday専用UI
   if(id==='birthday'){
-    let bdMusic = null, bdTimeline = null, bdSurprise = null;
+    let bdMusic = null, bdTimeline = null, bdSurprise = null, bdMusicAfter = null;
     try {
-      bdMusic    = await fbGet('birthday/music');
-      bdTimeline = await fbGet('birthday/timeline');
-      bdSurprise = await fbGet('birthday/surprise');
+      bdMusic      = await fbGet('birthday/music');
+      bdTimeline   = await fbGet('birthday/timeline');
+      bdSurprise   = await fbGet('birthday/surprise');
+      bdMusicAfter = await fbGet('birthday/musicAfter');
     } catch(e) {
       panel.innerHTML = '<div style="color:red;padding:16px;">Firebase接続エラー: '+e.message+'</div>';
       return;
@@ -3945,8 +3957,8 @@ async function renderAdminContent(id) {
         </div>
 
         <!-- 音楽管理 -->
-        <div style="padding:12px 16px;">
-          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🎵 音楽管理（最大4曲）</div>
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,180,0,0.15);">
+          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🎵 通常楽曲（1曲・常時表示）</div>
           <div id="bd-adm-music-list" style="margin-bottom:10px;">
             ${bdMusic && Object.keys(bdMusic).length > 0
               ? Object.entries(bdMusic).map(([k,v])=>`
@@ -3967,11 +3979,43 @@ async function renderAdminContent(id) {
             <textarea id="bd-music-lyrics" placeholder="歌詞（任意）" rows="4" style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;resize:vertical;line-height:1.6;margin-bottom:6px;box-sizing:border-box;"></textarea>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(255,180,0,0.25);border-radius:8px;font-size:0.82rem;color:#a06000;cursor:pointer;background:#fffbe0;white-space:nowrap;">
-                🎵 MP3選択（10MB以下）
+                🎵 MP3選択（20MB以下）
                 <input type="file" accept="audio/*" style="display:none" onchange="onBdMusicFile(this)">
               </label>
               <span id="bd-music-fname" style="font-size:0.75rem;color:#ff9900;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
               <button style="padding:8px 18px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;white-space:nowrap;" onclick="adminAddBdMusic()">追加</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 解散後楽曲管理 -->
+        <div style="padding:12px 16px;">
+          <div style="font-size:0.78rem;color:#b08000;margin-bottom:8px;font-weight:500;">🌙 解散後楽曲（最大3曲・17:00以降に表示）</div>
+          <div id="bd-adm-music-after-list" style="margin-bottom:10px;">
+            ${bdMusicAfter && Object.keys(bdMusicAfter).length > 0
+              ? Object.entries(bdMusicAfter).map(([k,v])=>`
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:white;border:1px solid rgba(255,180,0,0.2);border-radius:8px;margin-bottom:6px;">
+                  <span style="font-size:1rem;">🌙</span>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.85rem;color:#3a2800;font-weight:500;">${esc(v.title||'（タイトルなし）')}</div>
+                    ${v.artist?'<div style="font-size:0.72rem;color:#b08000;">'+esc(v.artist)+'</div>':''}
+                  </div>
+                  <button style="background:none;border:none;color:#b08000;cursor:pointer;font-size:0.9rem;" onclick="adminDelBdMusicAfter('${k}')">🗑</button>
+                </div>`).join('')
+              : '<div style="font-size:0.85rem;color:#b08000;padding:8px;text-align:center;">曲が登録されていません</div>'
+            }
+          </div>
+          <div style="background:white;border:1.5px solid rgba(255,180,0,0.25);border-radius:10px;padding:12px;">
+            <input type="text" id="bd-music-after-title" placeholder="曲名 *" maxlength="40" style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <input type="text" id="bd-music-after-artist" placeholder="アーティスト名（任意）" maxlength="40" style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;margin-bottom:6px;box-sizing:border-box;">
+            <textarea id="bd-music-after-lyrics" placeholder="歌詞（任意）" rows="4" style="width:100%;padding:8px 10px;border:1.5px solid rgba(255,180,0,0.2);border-radius:8px;font-size:0.88rem;color:#3a2800;background:#fffbe0;outline:none;resize:vertical;line-height:1.6;margin-bottom:6px;box-sizing:border-box;"></textarea>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(255,180,0,0.25);border-radius:8px;font-size:0.82rem;color:#a06000;cursor:pointer;background:#fffbe0;white-space:nowrap;">
+                🎵 MP3選択（20MB以下）
+                <input type="file" accept="audio/*" style="display:none" onchange="onBdMusicAfterFile(this)">
+              </label>
+              <span id="bd-music-after-fname" style="font-size:0.75rem;color:#ff9900;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+              <button style="padding:8px 18px;background:linear-gradient(135deg,#ffcc00,#ff9900);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;white-space:nowrap;" onclick="adminAddBdMusicAfter()">追加</button>
             </div>
           </div>
         </div>
@@ -4732,7 +4776,7 @@ window.adminAddAnnivMusic = async function(){
   const lyrics = document.getElementById('anniv-music-lyrics')?.value.trim()||'';
   const existing = await fbGet('anniv/music');
   const count = existing ? Object.keys(existing).length : 0;
-  if(count>=2){showToast('登録できる曲は最大2曲です');return;}
+  if(count>=2){showToast('通常楽曲は1曲のみです');return;}
   showToast('登録中...');
   await fbPush('anniv/music',{
     title, artist, lyrics,
@@ -4770,17 +4814,22 @@ window.previewAnnivPanel = async function(){
 
 // Birthday music admin functions
 let bdMusicFileBuf = null;
-window.onBdMusicFile = function(inp){
+let bdMusicAfterFileBuf = null;
+
+function _bdReadMusicFile(inp, bufKey, fnameId){
   const f=inp.files[0]; if(!f)return;
-  if(f.size>10*1024*1024){showToast('音楽ファイルは10MB以下にしてください');inp.value='';return;}
+  if(f.size>20*1024*1024){showToast('音楽ファイルは20MB以下にしてください');inp.value='';return;}
   const r=new FileReader();
   r.onload=e=>{
-    bdMusicFileBuf={dataUrl:e.target.result,name:f.name};
-    const el=document.getElementById('bd-music-fname');
+    if(bufKey==='normal') bdMusicFileBuf={dataUrl:e.target.result,name:f.name};
+    else bdMusicAfterFileBuf={dataUrl:e.target.result,name:f.name};
+    const el=document.getElementById(fnameId);
     if(el)el.textContent=f.name;
   };
   r.readAsDataURL(f);
-};
+}
+window.onBdMusicFile      = inp=>_bdReadMusicFile(inp,'normal','bd-music-fname');
+window.onBdMusicAfterFile = inp=>_bdReadMusicFile(inp,'after','bd-music-after-fname');
 
 window.adminAddBdMusic = async function(){
   const title = document.getElementById('bd-music-title')?.value.trim();
@@ -4789,7 +4838,7 @@ window.adminAddBdMusic = async function(){
   const lyrics = document.getElementById('bd-music-lyrics')?.value.trim()||'';
   const existing = await fbGet('birthday/music');
   const count = existing ? Object.keys(existing).length : 0;
-  if(count>=4){showToast('登録できる曲は最大4曲です');return;}
+  if(count>=1){showToast('通常楽曲は1曲のみです');return;}
   showToast('登録中...');
   await fbPush('birthday/music',{
     title, artist, lyrics,
@@ -4805,6 +4854,33 @@ window.adminAddBdMusic = async function(){
 window.adminDelBdMusic = async function(fbKey){
   if(!confirm('この曲を削除しますか？'))return;
   await fbRemove('birthday/music/'+fbKey);
+  showToast('✓ 曲を削除しました');
+  await renderAdminContent('birthday');
+};
+
+window.adminAddBdMusicAfter = async function(){
+  const title = document.getElementById('bd-music-after-title')?.value.trim();
+  if(!title){showToast('曲名を入力してください');return;}
+  const artist = document.getElementById('bd-music-after-artist')?.value.trim()||'';
+  const lyrics = document.getElementById('bd-music-after-lyrics')?.value.trim()||'';
+  const existing = await fbGet('birthday/musicAfter');
+  const count = existing ? Object.keys(existing).length : 0;
+  if(count>=3){showToast('解散後楽曲は最大3曲です');return;}
+  showToast('登録中...');
+  await fbPush('birthday/musicAfter',{
+    title, artist, lyrics,
+    audioDataUrl: bdMusicAfterFileBuf ? bdMusicAfterFileBuf.dataUrl : null,
+    order: count,
+    ts: Date.now()
+  });
+  bdMusicAfterFileBuf = null;
+  showToast('✓ 解散後楽曲を追加しました🎵');
+  await renderAdminContent('birthday');
+};
+
+window.adminDelBdMusicAfter = async function(fbKey){
+  if(!confirm('この曲を削除しますか？'))return;
+  await fbRemove('birthday/musicAfter/'+fbKey);
   showToast('✓ 曲を削除しました');
   await renderAdminContent('birthday');
 };
