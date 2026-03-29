@@ -688,10 +688,13 @@ function isBirthdayVisible() {
 }
 // 2026年3月24日 0:00〜3月30日 0:00（JST）
 // 日時制御ヘルパー
+function isBirthdayMusicVisible() {
+  // 通常楽曲：3月30日(月) 09:30以降
+  return new Date() >= new Date('2026-03-30T09:30:00+09:00');
+}
 function isBirthdayContentVisible() {
-  // 3月30日(月) 09:30以降に音楽を表示
-  const now = new Date();
-  return now >= new Date('2026-03-30T17:00:00+09:00');
+  // 解散後楽曲：3月30日(月) 17:00以降
+  return new Date() >= new Date('2026-03-30T17:00:00+09:00');
 }
 function isLoveMusicVisible() {
   // 3月21日(土) 20:50以降に音楽プレゼントを表示
@@ -2218,13 +2221,13 @@ async function renderBirthdayPanel() {
 
 
       <!-- 音楽プレゼント（通常） -->
-      <div class="birthday-sec" style="margin-top:12px;">
+      <div class="birthday-sec" id="bd-music-sec" style="margin-top:12px;">
         <div class="birthday-sec-hd"><h2>🎵 音楽プレゼント</h2><div class="birthday-sec-line"></div></div>
         <div id="bd-music-list"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
       </div>
 
       <!-- 音楽プレゼント（解散後・17:00以降） -->
-      <div class="birthday-sec" style="margin-top:12px;padding-bottom:24px;">
+      <div class="birthday-sec" id="bd-music-after-sec" style="margin-top:12px;padding-bottom:24px;">
         <div class="birthday-sec-hd"><h2>🌙 解散後の音楽</h2><div class="birthday-sec-line"></div></div>
         <div id="bd-music-list-after"><div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">読み込み中...</div></div>
       </div>
@@ -2257,14 +2260,21 @@ async function renderBirthdayPanel() {
     renderBdTimeline(newTimeline);
   }
 
-  // 通常楽曲（常時表示）
-  renderBdMusicList(music, 'bd-music-list');
-  // 解散後楽曲（17:00以降）
+  // 通常楽曲（09:30以降に枠ごと表示）
+  const bdMusicSec = document.getElementById('bd-music-sec');
+  if(isBirthdayMusicVisible()){
+    if(bdMusicSec) bdMusicSec.style.display='';
+    renderBdMusicList(music, 'bd-music-list');
+  } else {
+    if(bdMusicSec) bdMusicSec.style.display='none';
+  }
+  // 解散後楽曲（17:00以降に枠ごと表示）
+  const bdMusicAfterSec = document.getElementById('bd-music-after-sec');
   if(isBirthdayContentVisible()){
+    if(bdMusicAfterSec) bdMusicAfterSec.style.display='';
     renderBdMusicList(musicAfter, 'bd-music-list-after');
   } else {
-    const el2=document.getElementById('bd-music-list-after');
-    if(el2) el2.innerHTML='<div style="text-align:center;color:#b08000;padding:16px;font-size:0.85rem;">🌙 17:00以降に公開されます</div>';
+    if(bdMusicAfterSec) bdMusicAfterSec.style.display='none';
   }
 
   // カウントダウン起動
@@ -2273,7 +2283,7 @@ async function renderBirthdayPanel() {
 
   if(!listeners['birthday']){
     listeners['birthday']=[];
-    listeners['birthday'].push(fbListen('birthday/music',      val=>renderBdMusicList(val,'bd-music-list')));
+    listeners['birthday'].push(fbListen('birthday/music',      val=>{ if(isBirthdayMusicVisible()) renderBdMusicList(val,'bd-music-list'); }));
     listeners['birthday'].push(fbListen('birthday/musicAfter', val=>{ if(isBirthdayContentVisible()) renderBdMusicList(val,'bd-music-list-after'); }));
     listeners['birthday'].push(fbListen('birthday/timeline',val=>{ window._bdTimelineCache=val; renderBdTimeline(val); }));
     listeners['birthday'].push(fbListen('haisya/birthday',  ()=>renderHaisyaView('birthday')));
