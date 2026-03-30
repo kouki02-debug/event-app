@@ -822,7 +822,7 @@ function renderTabs() {
     A:            ()=> '📋 ' + tabDisplayLabel('A'),
     B:            ()=> '📋 ' + tabDisplayLabel('B'),
     love:         ()=> '💕 恋愛',
-    birthday:     ()=> '🎂 birthday0330',
+    birthday:     ()=> { const now=new Date(); return now >= new Date('2026-04-07T00:00:00+09:00') ? '🧑 佐藤のページ' : '🎂 birthday0330'; },
     anniv:        ()=> '🌸 20th Anniversary',
     admin:        ()=> '⚙️ 管理パネル',
     sample:       ()=> '📋 サンプル',
@@ -875,7 +875,7 @@ function renderHome() {
       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffcc00,#ff9900);"></div>
       <div style="font-size:1.8rem;">🎂</div>
-      <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#a06000;font-weight:700;letter-spacing:0.1em;">birthday0330</div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#a06000;font-weight:700;letter-spacing:0.1em;">${new Date()>=new Date('2026-04-07T00:00:00+09:00')?'佐藤のページ':'birthday0330'}</div>
       <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(255,180,0,0.15);color:#a06000;border:1px solid rgba(255,180,0,0.3);">🔓 アクセス済み</div>
     </div>` : '';
 
@@ -2098,7 +2098,7 @@ window.haisyaStop = async function(){
 async function renderHaisyaAdmin(){
   const wrap = document.getElementById('haisya-admin-wrap'); if(!wrap) return;
   const tabIds = ['A','B','birthday'];
-  const tabLabels = {A:'A',B:'B',birthday:'birthday0330'};
+  const tabLabels = {A:'A',B:'B',birthday: new Date()>=new Date('2026-04-07T00:00:00+09:00')?'佐藤のページ':'birthday0330'};
 
   const data = await fbGet(haisyaPath(haisyaAdminTab)) || {};
   const active = !!data.active;
@@ -2276,11 +2276,11 @@ async function renderBirthdayPanel() {
   document.getElementById('main').innerHTML=`
     <div class="birthday-bg">
       <div class="birthday-hero">
-        <div class="birthday-hero-title">🎂 birthday0330 🎉</div>
+        <div class="birthday-hero-title">${new Date()>=new Date('2026-04-07T00:00:00+09:00')?'🧑 佐藤のページ':'🎂 birthday0330 🎉'}</div>
       </div>
 
       <!-- 誕生日カウントダウン＆サプライズ -->
-      <div style="padding:14px 14px 0;">
+      <div id="bd-countdown-sec" style="padding:14px 14px 0;">
         <div id="bd-countdown-wrap" style="background:linear-gradient(135deg,#3a1800,#7a3800,#3a1800);border:2px solid rgba(255,180,0,0.5);border-radius:16px;padding:20px 18px;text-align:center;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(255,140,0,0.25);">
           <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffcc00,#ff6600,#ffcc00);"></div>
           <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,200,0,0.12),transparent 70%);pointer-events:none;"></div>
@@ -2340,6 +2340,13 @@ async function renderBirthdayPanel() {
   }
 
   // カウントダウン起動
+  // 3/30 23:59以降はカウントダウン枠を非表示
+  const bdCntSec = document.getElementById('bd-countdown-sec');
+  if(bdCntSec){
+    const now = new Date();
+    const hideAfter = new Date('2026-03-30T23:59:59+09:00');
+    bdCntSec.style.display = now > hideAfter ? 'none' : '';
+  }
   startBdCountdown(surprise);
 
   if(!listeners['birthday']){
@@ -2462,19 +2469,29 @@ function renderBdMusicList(val, elId){
     return;
   }
   const tracks=Object.entries(val).map(([k,v])=>({fbKey:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
-  el.innerHTML=tracks.map((t,i)=>`
-    <div onclick="openLyricsPage('${t.fbKey}', ''+elId+'')"
-      style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:linear-gradient(135deg,#fffbe0,#fff3c0);border:1.5px solid rgba(255,180,0,0.3);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;"
-      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(255,180,0,0.2)'"
-      onmouseout="this.style.transform='';this.style.boxShadow=''">
-      <div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,#ffcc00,#ff9900);"></div>
-      <div style="width:36px;height:36px;background:linear-gradient(135deg,#ffcc00,#ff9900);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">🎵</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#3a2800;font-weight:600;">${esc(t.title||'曲 '+(i+1))}</div>
-        ${t.artist?'<div style="font-size:0.75rem;color:#b08000;margin-top:2px;">'+esc(t.artist)+'</div>':''}
-      </div>
-      <div style="font-size:0.75rem;color:#b08000;flex-shrink:0;">歌詞を見る →</div>
-    </div>`).join('');
+  el.innerHTML=tracks.map((t,i)=>
+    '<div data-fbkey="'+t.fbKey+'" data-elid="'+elId+'"'
+    +' style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:linear-gradient(135deg,#fffbe0,#fff3c0);border:1.5px solid rgba(255,180,0,0.3);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;">'
+    +'<div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,#ffcc00,#ff9900);"></div>'
+    +'<div style="width:36px;height:36px;background:linear-gradient(135deg,#ffcc00,#ff9900);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">🎵</div>'
+    +'<div style="flex:1;min-width:0;">'
+    +'<div style="font-family:\'Shippori Mincho\',serif;font-size:0.95rem;color:#3a2800;font-weight:600;">'+esc(t.title||'曲 '+(i+1))+'</div>'
+    +(t.artist?'<div style="font-size:0.75rem;color:#b08000;margin-top:2px;">'+esc(t.artist)+'</div>':'')
+    +'</div>'
+    +'<div style="font-size:0.75rem;color:#b08000;flex-shrink:0;">歌詞を見る →</div>'
+    +'</div>'
+  ).join('');
+
+  // addEventListener で click を付与（innerHTML内onclickはmoduleスコープから呼べないため）
+  el.querySelectorAll('[data-fbkey]').forEach(div=>{
+    div.addEventListener('mouseover', ()=>{ div.style.transform='translateY(-2px)'; div.style.boxShadow='0 4px 16px rgba(255,180,0,0.2)'; });
+    div.addEventListener('mouseout',  ()=>{ div.style.transform=''; div.style.boxShadow=''; });
+    div.addEventListener('click', ()=>{
+      const key = div.dataset.fbkey;
+      const eid = div.dataset.elid;
+      if(window.openLyricsPage) window.openLyricsPage(key, eid);
+    });
+  });
 }
 
 window.openLyricsPage = async function(fbKey, elId){
@@ -3622,7 +3639,7 @@ async function renderAdmin() {
         >🌸 20th Anniversary</button>
         <button class="admin-ts-btn${adminActiveTab==='birthday'?' active':''}" onclick="switchAdminTab('birthday')"
           style="border-color:rgba(255,180,0,0.3);color:${adminActiveTab==='birthday'?'white':'#a06000'};${adminActiveTab==='birthday'?'background:linear-gradient(135deg,#ffcc00,#ff9900);border-color:transparent;':''}"
-        >🎂 birthday0330</button>
+        >${new Date()>=new Date('2026-04-07T00:00:00+09:00')?'🧑 佐藤のページ':'🎂 birthday0330'}</button>
         <button class="admin-ts-btn${adminActiveTab==='love'?' active':''}" onclick="switchAdminTab('love')"
           style="border-color:rgba(220,60,100,0.3);color:${adminActiveTab==='love'?'white':'#c06080'};${adminActiveTab==='love'?'background:linear-gradient(135deg,#e8406a,#c0305a);border-color:transparent;':''}"
         >💕 【特別】恋愛</button>
