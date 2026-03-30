@@ -884,15 +884,6 @@ function renderHome() {
       <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(255,180,0,0.15);color:#a06000;border:1px solid rgba(255,180,0,0.3);">🔓 アクセス済み</div>
     </div>` : '';
 
-  const tabSatoCard = (isSatoVisible() && localStorage.getItem('tab_access_sato')==='1') ? `
-    <div onclick="openTab('sato')" style="cursor:pointer;background:linear-gradient(135deg,#f0f8ff,#e0f0ff);border:1px solid rgba(40,120,220,0.25);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative;overflow:hidden;transition:all 0.18s;grid-column:1/-1;"
-      onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4080e0,#60a0ff);"></div>
-      <div style="font-size:1.8rem;">🌿</div>
-      <div style="font-family:'Shippori Mincho',serif;font-size:1.1rem;color:#2060b0;font-weight:700;letter-spacing:0.1em;">${snCache['sato']||'sato'}</div>
-      <div style="font-size:0.75rem;padding:3px 10px;border-radius:20px;background:rgba(40,120,220,0.1);color:#2060b0;border:1px solid rgba(40,120,220,0.2);">🔓 アクセス済み</div>
-    </div>` : '';
-
   // 告知枠（Firebase管理 + 3/24まで固定告知）
   const noticeHtml = buildNoticeHtml();
 
@@ -900,7 +891,7 @@ function renderHome() {
     <div class="home-view">
       <div id="home-notices-wrap">${noticeHtml}</div>
       <div class="home-greeting"><h2>イベントページ</h2><p>アクセスするタブを選んでください</p></div>
-      <div class="tab-cards">${cards}${loveCard}${annivCard}${birthdayCard}${tabSatoCard}</div>
+      <div class="tab-cards">${cards}${loveCard}${annivCard}${birthdayCard}</div>
       <button class="home-admin-btn" onclick="openTab('admin')">⚙️ 管理パネル</button>
     </div>`;
 
@@ -5465,6 +5456,8 @@ async function init() {
 
   // ============================================================
   // URL ?tab=xxx でアクセスしたデバイスに永続フラグを付与する仕組み
+  // love / birthday : フラグ保存 → 以降はホームカードからも開ける
+  // sato           : フラグ保存するがホームには表示しない（URL経由のみ）
   // ============================================================
   const LINK_ONLY_TABS = ['birthday', 'love', 'sato'];
 
@@ -5474,7 +5467,6 @@ async function init() {
   // アクセス時にlocalStorageへフラグ保存
   if(tabParam && LINK_ONLY_TABS.includes(tabParam)){
     if(tabParam === 'sato'){
-      // 4月7日以降のみフラグ保存
       if(isSatoVisible()){
         localStorage.setItem('tab_access_sato', '1');
       }
@@ -5483,22 +5475,16 @@ async function init() {
     }
   }
 
-  // フラグがあるタブを解放済みリストとして管理
-  const unlockedLinkTabs = LINK_ONLY_TABS.filter(t => localStorage.getItem('tab_access_' + t) === '1');
-
-  // URLパラメータ指定 or フラグ済みデバイスなら該当タブを開く
-  const targetTab = tabParam && LINK_ONLY_TABS.includes(tabParam) ? tabParam
-    : unlockedLinkTabs.includes(tabParam) ? tabParam
-    : null;
-
-  if(targetTab){
-    activeTab = targetTab;
+  // URLパラメータ指定があれば直接そのタブを開く（satoはURL経由のみ）
+  if(tabParam && LINK_ONLY_TABS.includes(tabParam)){
+    activeTab = tabParam;
     renderTabs();
-    await renderPanel(targetTab);
+    await renderPanel(tabParam);
     return;
   }
 
-  // フラグ済みのリンク限定タブがあればホームカードに表示できるよう公開
+  // love / birthday はフラグ済みデバイスでホームカードに表示
+  const unlockedLinkTabs = ['birthday', 'love'].filter(t => localStorage.getItem('tab_access_' + t) === '1');
   window._unlockedLinkTabs = unlockedLinkTabs;
 
   goHome();
