@@ -718,6 +718,10 @@ function isLoveMusicVisible() {
   const now = new Date();
   return now >= new Date('2026-03-21T20:50:00+09:00');
 }
+// 恋愛タブ更新：4月3日(金) 0:00以降
+function is0403LoveUpdate() {
+  return new Date() >= new Date('2026-04-03T00:00:00+09:00');
+}
 function isAnnivVisible() {
   const now = new Date();
   const start = new Date('2026-03-24T00:00:00+09:00');
@@ -2340,7 +2344,7 @@ async function renderBirthdayPanel() {
           このサイトは<strong style="color:#a06000;">4月6日(月) 23:59まで</strong>解放しています。<br>
           4月7日(火) 0時よりサイトは閉鎖されます。<br><br>
           4月7日(火)以降は下記の「佐藤のページ」で運用をおこないます。<br>
-          <div style="margin:10px 0 6px;background:white;border:1px solid rgba(40,120,220,0.25);border-radius:8px;padding:8px 12px;font-family:monospace;font-size:0.8rem;color:#2060b0;word-break:break-all;user-select:all;">https://kouki02-debug.github.io/event-app-eb4a5.web.app/?tab=sato</div>
+          <div style="margin:10px 0 6px;background:white;border:1px solid rgba(40,120,220,0.25);border-radius:8px;padding:8px 12px;font-family:monospace;font-size:0.8rem;color:#2060b0;word-break:break-all;user-select:all;">https://event-app-eb4a5.web.app/?tab=sato</div>
           <span style="font-size:0.78rem;color:#a08000;">※ 現時点でリンクを開いてもエラーメッセージになります。</span><br><br>
           引き続き birthday0330 は4月6日まで運用していますので、何卒よろしくお願いいたします。
         </div>
@@ -2666,11 +2670,6 @@ async function renderLovePanel() {
                  background:linear-gradient(135deg,#fff0f5,#ffe0ea);color:#c0305a;border-right:1px solid rgba(208,144,168,0.2);">
           💕 2603
         </button>
-        <button id="love-inner-tab-2610" onclick="switchLoveInnerTab('2610')"
-          style="flex:1;padding:10px 4px;border:none;font-family:'Shippori Mincho',serif;font-size:0.76rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;
-                 background:rgba(255,255,255,0.02);color:rgba(160,100,220,0.5);border-right:1px solid rgba(208,144,168,0.2);">
-          🕐 準備中
-        </button>
         <button id="love-inner-tab-pr" onclick="switchLoveInnerTab('pr')"
           style="flex:1;padding:10px 4px;border:none;font-family:'Shippori Mincho',serif;font-size:0.76rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;
                  background:rgba(255,255,255,0.02);color:rgba(180,120,100,0.6);">
@@ -2717,51 +2716,7 @@ async function renderLovePanel() {
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
             <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">🎵 週間恋音楽</div>
             <div id="love-weekly-music-wrap"><div style="text-align:center;color:#d090a8;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
-          </div>
-
-          <!-- 恋愛2025 週報（2601内） -->
-          <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📰 恋愛2025</div>
-            <div id="love2025-wrap"><div style="text-align:center;color:#d090a8;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
-          </div>
-
-
-          <!-- 接触スコア 2601 -->
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">📊 接触スコア</div>
-            <div id="love-score-2601"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
-          </div>
-
-          <!-- 恋愛成功率グラフ -->
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">💯 恋愛成功率・可能性</div>
-            <div id="love-success-rate-wrap"><div style="text-align:center;color:#d090a8;padding:8px;font-size:0.85rem;">読み込み中...</div></div>
-          </div>
-
-          <!-- 次の一手チェックリスト 2601 -->
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
-            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">✅ 次の一手チェックリスト</div>
-            <div id="love-checklist-2601"></div>
-          </div>
-
-
-          <!-- 音楽プレビュー 2601 -->
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);padding-bottom:12px;">
-            <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">🎵 音楽プレビュー</div>
-            <div id="love-music-list"><div style="text-align:center;color:#d090a8;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== 恋愛2610 コンテンツ（準備中） ===== -->
-      <div id="love-inner-2610" style="display:none;">
-        <div style="margin:14px 14px 24px;padding:32px 20px;background:rgba(220,200,255,0.08);border:1.5px solid rgba(160,100,220,0.18);border-radius:14px;text-align:center;">
-          <!-- 次週目標・スローガン（2610用） -->
-          <div id="love-weekly-goal-wrap-2610" style="text-align:left;"></div>
-          <div style="font-size:2rem;margin-bottom:12px;">💜</div>
-          <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:rgba(160,100,220,0.7);font-weight:700;letter-spacing:0.15em;margin-bottom:10px;">準備中</div>
-          <div style="font-size:0.8rem;color:rgba(160,100,220,0.4);letter-spacing:0.06em;line-height:1.8;">恋愛2610はまだ開始前です。<br>開始されたらここに表示されます。</div>
-        </div>
+          </div>        </div>
       </div>
 
       <!-- ===== プレスリリース コンテンツ ===== -->
@@ -2773,23 +2728,19 @@ async function renderLovePanel() {
       </div>
     </div>`;
 
-  const [music, weekly, loveInfo, loveNotices, lovePlanImages,
-         info2610, curStage2610raw, calmarks2610, love2610Started,
-         score2601, checklist2601, weeklyMusic, successRate, pressrelease] = await Promise.all([
-    fbGet('love/music'), fbGet('love/weekly'),
+  const [weekly, loveInfo, loveNotices, lovePlanImages,
+         weeklyMusic, successRate, pressrelease] = await Promise.all([
+    fbGet('love/weekly'),
     fbGet('love/info'), fbGet('settings/loveNotices'), fbGet('love/planImages'),
-    fbGet('love/info2610'), fbGet('love/currentStage2610'), fbGet('love/calmarks2610'),
-    fbGet('settings/love2610started'),
-    fbGet('love/score2601'),
-    fbGet('love/checklist2601'), fbGet('love/weeklyMusic'), fbGet('love/successRate'),
+    fbGet('love/weeklyMusic'), fbGet('love/successRate'),
     fbGet('love/pressrelease')
   ]);
-  const curStage2610 = curStage2610raw !== null && curStage2610raw !== undefined ? curStage2610raw : 0;
   renderLoveNotices(loveNotices);
   renderLovePlanImages(lovePlanImages);
   renderLoveUpdatedAt();
-  // 前回のタブを復元
-  switchLoveInnerTab(localStorage.getItem('love_inner_tab') || '2601');
+  // 前回のタブを復元（2610廃止のためデフォルトは2601）
+  const savedLoveTab = localStorage.getItem('love_inner_tab');
+  switchLoveInnerTab((savedLoveTab === 'pr') ? 'pr' : '2601');
 
   // 恋愛2603
   renderLoveWeeklyGoal(weekly);
@@ -2799,22 +2750,11 @@ async function renderLovePanel() {
   const calmarks2601 = await fbGet('love/calmarks');
   window._loveCalMarks = calmarks2601 || {};
   renderLoveCalGrid('love-cal-wrap', '2601');
-
-  // 恋愛2610
-  renderLoveInfo2610(info2610);
-  renderLoveRoadmap(curStage2610 || 4, 'love-roadmap-grid-2610');
-  window._loveCalMarks2610 = calmarks2610 || {};
-  renderLoveCalGrid('love-cal-wrap-2610', '2610');
-  renderLoveMusicList(music);
-  renderLove2025(weekly);
-  renderLoveScore('2601', score2601);
-  window._loveScore2601 = score2601 || {};
-  renderLoveSuccessRate(null);
   window._curStage2601 = curStage2601;
-  renderLoveChecklist('2601', checklist2601, curStage2601);
   renderLoveSuccessRate(successRate);
   renderLovePressRelease(pressrelease);
-  renderLoveWeeklyMusic(weeklyMusic);  renderLoveCalApr();
+  renderLoveWeeklyMusic(weeklyMusic);
+  renderLoveCalApr();
   await renderLoveCal();
   await initBgm();
 
@@ -2823,18 +2763,12 @@ async function renderLovePanel() {
     listeners['love'].push(fbListen('settings/loveNotices', val=>renderLoveNotices(val)));
     listeners['love'].push(fbListen('love/planImages',      val=>renderLovePlanImages(val)));
     listeners['love'].push(fbListen('love/currentStage',   val=>renderLoveRoadmap(val||4,'love-roadmap-grid')));
-    listeners['love'].push(fbListen('love/info',             val=>renderLoveInfo(val)));
-    listeners['love'].push(fbListen('love/calmarks',         val=>{ window._loveCalMarks=val||{}; renderLoveCalGrid('love-cal-wrap','2601'); renderLoveCalGrid('love-cal-apr-wrap','2601'); }));
-    listeners['love'].push(fbListen('love/currentStage2610', val=>renderLoveRoadmap((val!==null&&val!==undefined)?val:0,'love-roadmap-grid-2610')));
-    listeners['love'].push(fbListen('love/info2610',         val=>renderLoveInfo2610(val)));
-    listeners['love'].push(fbListen('love/calmarks2610',     val=>{ window._loveCalMarks2610=val||{}; renderLoveCalGrid('love-cal-wrap-2610','2610'); }));
-    listeners['love'].push(fbListen('love/pressrelease', val=>renderLovePressRelease(val)));
-    listeners['love'].push(fbListen('love/successRate',  val=>renderLoveSuccessRate(val)));
-    listeners['love'].push(fbListen('love/score2601',     val=>{ window._loveScore2601=val||{}; renderLoveScore('2601',val); }));
-    listeners['love'].push(fbListen('love/checklist2601', val=>renderLoveChecklist('2601',val,window._curStage2601||4)));
-    listeners['love'].push(fbListen('love/weeklyMusic',  val=>renderLoveWeeklyMusic(val)));
-    listeners['love'].push(fbListen('love/music',    val=>renderLoveMusicList(val)));
-    listeners['love'].push(fbListen('love/weekly',   val=>{ renderLove2025(val); renderLoveWeeklyGoal(val); }));
+    listeners['love'].push(fbListen('love/info',           val=>renderLoveInfo(val)));
+    listeners['love'].push(fbListen('love/calmarks',       val=>{ window._loveCalMarks=val||{}; renderLoveCalGrid('love-cal-wrap','2601'); renderLoveCalGrid('love-cal-apr-wrap','2601'); }));
+    listeners['love'].push(fbListen('love/pressrelease',   val=>renderLovePressRelease(val)));
+    listeners['love'].push(fbListen('love/successRate',    val=>renderLoveSuccessRate(val)));
+    listeners['love'].push(fbListen('love/weeklyMusic',    val=>renderLoveWeeklyMusic(val)));
+    listeners['love'].push(fbListen('love/weekly',         val=>renderLoveWeeklyGoal(val)));
   }
 }
 
@@ -3110,10 +3044,11 @@ function renderLoveRoadmap(cur, gridId){
   const grid = document.getElementById(gridId); if(!grid) return;
   cur = parseInt(cur) || 4;
   const stages = [
+    {n:1, label:'ステージ 1', desc:'日常的な会話・挨拶・接点づくり'},
+    {n:2, label:'ステージ 2', desc:'笑いかけてくる・名前を呼ばれる・軽い雑談'},
     {n:3, label:'ステージ 3', desc:'相手発信の会話・ボディータッチ・個人的な共有'},
     {n:4, label:'ステージ 4', desc:'会話量増加・約束・来てほしい発言'},
     {n:5, label:'ステージ 5', desc:'苗字呼び・連絡先交換・プライベートな誘い'},
-    {n:6, label:'ステージ 6', desc:'告白・交際へ'},
   ];
   grid.innerHTML = stages.map((s,i)=>{
     const isCur = s.n === cur;
@@ -3188,33 +3123,26 @@ function renderLoveInfo2610(val){
 // 恋愛タブ内タブ切替
 window.switchLoveInnerTab = function(tab){
   const t2601 = document.getElementById('love-inner-tab-2601');
-  const t2610 = document.getElementById('love-inner-tab-2610');
   const tpr   = document.getElementById('love-inner-tab-pr');
   const c2601 = document.getElementById('love-inner-2601');
-  const c2610 = document.getElementById('love-inner-2610');
   const cpr   = document.getElementById('love-inner-pr');
-  if(!t2601||!t2610||!c2601||!c2610) return;
+  if(!t2601||!c2601) return;
 
-  // 全て非アクティブに
-  [c2601,c2610,cpr].forEach(el=>{ if(el) el.style.display='none'; });
-  [t2601,t2610,tpr].forEach(el=>{
+  [c2601,cpr].forEach(el=>{ if(el) el.style.display='none'; });
+  [t2601,tpr].forEach(el=>{
     if(!el) return;
     el.style.background='rgba(255,255,255,0.02)';
     el.style.opacity='0.7';
   });
   if(t2601) t2601.style.color='rgba(220,60,100,0.4)';
-  if(t2610) t2610.style.color='rgba(160,100,220,0.5)';
   if(tpr)   tpr.style.color='rgba(180,120,100,0.5)';
 
-  if(tab==='2601'){
-    if(c2601) c2601.style.display='block';
-    if(t2601){ t2601.style.background='linear-gradient(135deg,#fff0f5,#ffe0ea)'; t2601.style.color='#c0305a'; t2601.style.opacity='1'; }
-  } else if(tab==='2610'){
-    if(c2610) c2610.style.display='block';
-    if(t2610){ t2610.style.background='linear-gradient(135deg,#f5f0ff,#ece0ff)'; t2610.style.color='#8040b0'; t2610.style.opacity='1'; }
-  } else if(tab==='pr'){
+  if(tab==='pr'){
     if(cpr) cpr.style.display='block';
     if(tpr){ tpr.style.background='linear-gradient(135deg,#fff5f0,#ffece0)'; tpr.style.color='#a04020'; tpr.style.opacity='1'; }
+  } else {
+    if(c2601) c2601.style.display='block';
+    if(t2601){ t2601.style.background='linear-gradient(135deg,#fff0f5,#ffe0ea)'; t2601.style.color='#c0305a'; t2601.style.opacity='1'; }
   }
   localStorage.setItem('love_inner_tab', tab);
 };
@@ -4145,7 +4073,6 @@ async function renderAdminContent(id) {
   if(id==='love'){
     let bgm = null, loveMusic = null, weekly = null, loveInfo = null;
     let loveCurStage = 4, lovePlanImgs = null;
-    let loveCurStage2610 = 0, love2610Started = false;
     let weeklyMusicAdm = null, successRateAdm = null, pressreleaseAdm = null;
     try {
       bgm   = await fbGet('love/bgm');
@@ -4153,10 +4080,7 @@ async function renderAdminContent(id) {
       weekly = await fbGet('love/weekly');
       loveInfo = await fbGet('love/info');
       loveCurStage = (await fbGet('love/currentStage')) || 4;
-      const _cs2610raw = await fbGet('love/currentStage2610');
-      loveCurStage2610 = (_cs2610raw!==null&&_cs2610raw!==undefined)?_cs2610raw:0;
       lovePlanImgs = await fbGet('love/planImages');
-      love2610Started = !!(await fbGet('settings/love2610started'));
       weeklyMusicAdm  = await fbGet('love/weeklyMusic');
       successRateAdm  = await fbGet('love/successRate');
       pressreleaseAdm = await fbGet('love/pressrelease');
@@ -4183,29 +4107,20 @@ async function renderAdminContent(id) {
       <div class="admin-love-card">
         <div class="admin-love-hd">💕 【特別ページ】恋愛 コンテンツ編集</div>
 
-        <!-- ロードマップ現在地 & 計画資料 -->
+        <!-- ロードマップ現在地 & リセット -->
         <div class="admin-love-subsec">
           <div class="admin-love-subsec-title">🗺 ロードマップ現在地</div>
-          <div style="margin-bottom:6px;font-size:0.75rem;color:#d090a8;">💕 恋愛2601</div>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
             <select id="love-cur-stage" style="flex:1;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;">
-              ${[1,2,3,4,5,6].map(n=>'<option value="'+n+'" '+(loveCurStage==n?'selected':'')+'>ステージ '+n+'</option>').join('')}
+              ${[1,2,3,4,5].map(n=>'<option value="'+n+'" '+(loveCurStage==n?'selected':'')+'>ステージ '+n+'</option>').join('')}
             </select>
             <button onclick="adminSaveCurrentStage()" class="love-admin-btn" style="white-space:nowrap;">保存</button>
           </div>
-          <div style="margin-bottom:6px;font-size:0.75rem;color:#9060c0;">💜 恋愛2610</div>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-            <select id="love-cur-stage-2610" style="flex:1;padding:8px 10px;border:1.5px solid rgba(160,100,220,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">
-              ${[{v:0,l:'開始前'},1,2,3,4,5,6].map(x=>{ const v=x.v!==undefined?x.v:x; const l=x.l||x; return '<option value="'+v+'" '+(loveCurStage2610==v?'selected':'')+'>'+l+'</option>'; }).join('')}
-            </select>
-            <button onclick="adminSaveCurrentStage2610()" class="love-admin-btn" style="white-space:nowrap;background:linear-gradient(135deg,#9040ff,#6020c0);">保存</button>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f8f4ff;border:1px solid rgba(160,100,220,0.2);border-radius:8px;">
-            <span style="font-size:0.82rem;color:#6030a0;">恋愛2610 表示</span>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.82rem;color:#6030a0;">
-              <input type="checkbox" id="love2610-started-chk" ${love2610Started?'checked':''} onchange="adminSaveLove2610Started(this.checked)">
-              開始済み（通常表示）
-            </label>
+          <!-- 恋愛データリセット -->
+          <div style="border-top:1px solid rgba(220,60,100,0.15);padding-top:12px;">
+            <div style="font-size:0.75rem;color:#d090a8;font-weight:600;margin-bottom:6px;">🔄 恋愛データリセット</div>
+            <div style="font-size:0.75rem;color:rgba(200,60,80,0.7);margin-bottom:10px;line-height:1.6;">恋の終わり・切り替わり時に使用。<br>投稿・カレンダー・成功率・週報・BGMをリセットします。<br>バナー・PR資料・計画資料は残ります。</div>
+            <button onclick="adminResetLoveData()" style="width:100%;padding:10px;background:linear-gradient(135deg,#c03030,#a02020);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;letter-spacing:0.06em;">❌ 恋愛データを全リセット</button>
           </div>
         </div>
 
@@ -4261,253 +4176,6 @@ async function renderAdminContent(id) {
           </div>
         </div>
 
-        <!-- 2610ステータス編集 -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title" style="color:#8040b0;">📊 ステータスカード編集（💜 恋愛2610）</div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <div style="font-size:0.78rem;color:#9060c0;margin-top:4px;">次の重要日（最大2日）</div>
-            <div style="display:flex;gap:8px;">
-              <input type="text" id="li2610-day1" value="${esc(nextdays2610[0]||'')}" placeholder="例：4/1(水)" maxlength="15"
-                style="flex:1;padding:7px 10px;border:1.5px solid rgba(160,100,220,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">
-              <input type="text" id="li2610-day2" value="${esc(nextdays2610[1]||'')}" placeholder="例：4/5(日)" maxlength="15"
-                style="flex:1;padding:7px 10px;border:1.5px solid rgba(160,100,220,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#f8f4ff;outline:none;">
-            </div>
-            <div style="font-size:0.78rem;color:#9060c0;margin-top:4px;">相手について（3項目）</div>
-            <div style="display:flex;flex-direction:column;gap:6px;">
-              ${about2610.map((r,i)=>`
-              <div style="display:flex;gap:6px;">
-                <input type="text" id="li2610-alabel-${i}" value="${esc(r.label||'')}" placeholder="ラベル" maxlength="10"
-                  style="width:80px;padding:6px 8px;border:1.5px solid rgba(160,100,220,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#f8f4ff;outline:none;">
-                <input type="text" id="li2610-avalue-${i}" value="${esc(r.value||'')}" placeholder="値" maxlength="30"
-                  style="flex:1;padding:6px 8px;border:1.5px solid rgba(160,100,220,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#f8f4ff;outline:none;">
-              </div>`).join('')}
-            </div>
-            <button onclick="adminSaveLoveInfo2610(${about2610.length})" class="love-admin-btn" style="margin-top:4px;background:linear-gradient(135deg,#9040ff,#6020c0);">💾 保存（2610）</button>
-          </div>
-        </div>
-
-        <!-- 恋愛2025 週報 -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">📰 恋愛2025 週報（毎週日曜19時更新）</div>
-          <div style="font-size:0.78rem;color:#d090a8;margin-bottom:8px;">PDFをアップロードすると自動で画像変換して表示します</div>
-
-          <!-- 次週目標・スローガン入力 -->
-          <div style="background:rgba(255,220,235,0.15);border:1px solid rgba(220,60,100,0.15);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
-            <div style="font-size:0.75rem;color:#d090a8;font-weight:600;margin-bottom:8px;">📌 次週目標・スローガン（両タブに表示）</div>
-            <div style="display:flex;flex-direction:column;gap:6px;">
-              <input type="text" id="love-weekly-goal" value="${esc(weekly?.goal||'')}" placeholder="次週目標（例：笑顔で挨拶を返す）" maxlength="60"
-                style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
-              <input type="text" id="love-weekly-headline-this" value="${esc(weekly?.headlineThis||'')}" placeholder="今週の見出し（例：笑顔で視線が合った）" maxlength="60"
-                style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
-              <input type="text" id="love-weekly-headline-next" value="${esc(weekly?.headlineNext||'')}" placeholder="来週の見出し（例：声をかけるタイミングを作る）" maxlength="60"
-                style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
-              <button onclick="adminSaveWeeklyGoal()" class="love-admin-btn" style="margin-top:2px;">💾 保存</button>
-            </div>
-          </div>
-
-          ${weekly ? `
-          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:white;border:1px solid rgba(220,60,100,0.15);border-radius:8px;margin-bottom:8px;">
-            <span style="font-size:1rem;">📰</span>
-            <div style="flex:1;font-size:0.85rem;color:#3a1a28;">${esc(weekly.fileName||'週報PDF')}</div>
-            <span style="font-size:0.72rem;color:#d090a8;">${weekly.updatedAt?new Date(weekly.updatedAt).toLocaleDateString('ja-JP'):''}</span>
-            <button style="background:none;border:none;color:#d090a8;cursor:pointer;font-size:0.9rem;" onclick="adminDelWeekly()">🗑</button>
-          </div>` : '<div style="font-size:0.82rem;color:#d090a8;margin-bottom:8px;">未登録</div>'}
-          <label style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:white;border:2px dashed rgba(220,60,100,0.25);border-radius:10px;cursor:pointer;font-size:0.88rem;color:#c06080;transition:all 0.2s;" onmouseover="this.style.borderColor='#e8406a'" onmouseout="this.style.borderColor='rgba(220,60,100,0.25)'">
-            📷 ${weekly ? '差し替える（画像・最大4枚）' : '週報画像をアップロード（最大4枚）'}
-            <input type="file" accept="image/*" multiple style="display:none" onchange="adminUploadWeekly(this)">
-          </label>
-        </div>
-
-        <!-- BGM -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">🎵 BGMファイル＋音量設定</div>
-          ${bgmCurrentHtml}
-          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,220,235,0.1);border:1px solid rgba(220,60,100,0.12);border-radius:8px;margin-bottom:8px;">
-            <span style="font-size:0.82rem;color:#d090a8;white-space:nowrap;">🔊 音量</span>
-            <input type="range" id="adm-bgm-vol" min="0" max="100" value="${parseInt(localStorage.getItem('bgm_volume'))||70}"
-              oninput="setBgmVolume(this.value);document.getElementById('adm-bgm-vol-label').textContent=this.value+'%'"
-              style="flex:1;accent-color:#e8406a;">
-            <span id="adm-bgm-vol-label" style="font-size:0.82rem;color:#c0305a;font-weight:700;width:36px;text-align:right;">${parseInt(localStorage.getItem('bgm_volume'))||70}%</span>
-            <button onclick="saveBgmVolume()" style="padding:5px 12px;background:linear-gradient(135deg,#e8406a,#c0305a);color:white;border:none;border-radius:8px;font-size:0.78rem;cursor:pointer;white-space:nowrap;">💾 保存</button>
-          </div>
-          <label style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:white;border:2px dashed rgba(220,60,100,0.25);border-radius:10px;cursor:pointer;font-size:0.88rem;color:#c06080;transition:all 0.2s;" onmouseover="this.style.borderColor='#e8406a'" onmouseout="this.style.borderColor='rgba(220,60,100,0.25)'">
-            🎵 ${bgmBtnLabel}
-            <input type="file" accept="audio/*" style="display:none" onchange="adminUploadBgm(this)">
-          </label>
-        </div>
-
-        <!-- 音楽管理 -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">🎵 週間恋音楽（毎週1曲差し替え・20MB以下）</div>
-          ${(()=>{ const wm = typeof weeklyMusicAdm !== 'undefined' ? weeklyMusicAdm : null; return wm ? `
-          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,180,210,0.08);border:1px solid rgba(220,60,100,0.15);border-radius:8px;margin-bottom:8px;">
-            <span style="font-size:1rem;">🎵</span>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:0.85rem;color:#3a1a28;font-weight:500;">${esc(wm.title||'')}</div>
-              ${wm.artist?'<div style="font-size:0.72rem;color:#d090a8;">'+esc(wm.artist)+'</div>':''}
-            </div>
-            <button style="background:none;border:none;color:#d090a8;cursor:pointer;font-size:0.9rem;" onclick="adminDelWeeklyMusic()">🗑</button>
-          </div>` : '<div style="font-size:0.82rem;color:#d090a8;margin-bottom:8px;">未登録</div>'; })()}
-          <div style="background:white;border:1.5px solid rgba(220,60,100,0.2);border-radius:10px;padding:12px;">
-            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
-              <input type="text" id="wm-title" placeholder="曲名 *" maxlength="40"
-                style="padding:7px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;">
-              <input type="text" id="wm-artist" placeholder="アーティスト名（任意）" maxlength="40"
-                style="padding:7px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;">
-              <textarea id="wm-lyrics" placeholder="歌詞（任意）" rows="3"
-                style="padding:7px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;"></textarea>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#c06080;cursor:pointer;background:#fff8fa;white-space:nowrap;">
-                🎵 MP3選択（20MB以下）
-                <input type="file" accept="audio/*" style="display:none" onchange="onWeeklyMusicFile(this)">
-              </label>
-              <span id="wm-fname" style="font-size:0.75rem;color:#e8406a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-              <button onclick="adminSaveWeeklyMusic()" class="love-admin-btn" style="white-space:nowrap;">保存</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">🎵 音楽プレゼント管理（最大3曲）</div>
-          <div style="margin-bottom:10px;">
-            ${loveMusic && Object.keys(loveMusic).length > 0
-              ? Object.entries(loveMusic).map(([k,v])=>`
-                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:white;border:1px solid rgba(220,60,100,0.15);border-radius:8px;margin-bottom:6px;">
-                  <span style="font-size:1rem;">🎵</span>
-                  <div style="flex:1;min-width:0;">
-                    <div style="font-size:0.85rem;color:#3a1a28;font-weight:500;">${esc(v.title||'（タイトルなし）')}</div>
-                    ${v.artist?'<div style="font-size:0.72rem;color:#d090a8;">'+esc(v.artist)+'</div>':''}
-                    <div style="font-size:0.7rem;color:#d090a8;">${v.audioDataUrl?'🎵 音楽あり':'🎵 音楽なし'} ${v.lyrics?'/ 📝 歌詞あり':'/ 📝 歌詞なし'}</div>
-                  </div>
-                  <button style="background:none;border:none;color:#d090a8;cursor:pointer;font-size:0.9rem;" onclick="adminDelLoveMusic('${k}')">🗑</button>
-                </div>`).join('')
-              : '<div style="font-size:0.85rem;color:#d090a8;padding:8px;text-align:center;">曲が登録されていません</div>'
-            }
-          </div>
-          ${!loveMusic || Object.keys(loveMusic).length < 3 ? `
-          <div style="background:white;border:1.5px solid rgba(220,60,100,0.2);border-radius:10px;padding:12px;">
-            <div style="font-size:0.78rem;color:#d090a8;margin-bottom:8px;">＋ 曲を追加</div>
-            <input type="text" id="love-music-title" placeholder="曲名 *" maxlength="40"
-              style="width:100%;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;margin-bottom:6px;box-sizing:border-box;">
-            <input type="text" id="love-music-artist" placeholder="アーティスト名（任意）" maxlength="40"
-              style="width:100%;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;margin-bottom:6px;box-sizing:border-box;">
-            <textarea id="love-music-lyrics" placeholder="歌詞（任意）" rows="4"
-              style="width:100%;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;resize:vertical;line-height:1.6;margin-bottom:6px;box-sizing:border-box;"></textarea>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#c06080;cursor:pointer;background:#fff8fa;white-space:nowrap;">
-                🎵 MP3選択（10MB以下）
-                <input type="file" accept="audio/*" style="display:none" onchange="onLoveMusicFile(this)">
-              </label>
-              <span id="love-music-fname" style="font-size:0.75rem;color:#e8406a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-              <button class="love-admin-btn" onclick="adminAddLoveMusic()">追加</button>
-            </div>
-          </div>` : '<div style="font-size:0.82rem;color:#d090a8;text-align:center;padding:8px;">最大3曲に達しています</div>'}
-        </div>
-
-        <!-- 発展カレンダー管理 -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">📅 発展カレンダー（日付を指定してマーク）</div>
-          <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center;">
-            <select id="love-cal-target" style="padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:white;outline:none;">
-              <option value="2601">💕 恋愛2601</option>
-              <option value="2610">💜 恋愛2610</option>
-            </select>
-            <input type="date" id="love-cal-date" style="flex:1;min-width:110px;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:white;outline:none;">
-            <select id="love-cal-mark" style="flex:1;min-width:90px;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:white;outline:none;">
-              <option value="big">💗 大発展</option>
-              <option value="mid">💕 中発展</option>
-              <option value="small">🌸 小発展</option>
-              <option value="sight">👀 見発展</option>
-              <option value="off">🏖 休暇</option>
-              <option value="none">✕ 削除</option>
-            </select>
-            <button onclick="adminSetCalMark()" class="love-admin-btn" style="white-space:nowrap;">設定</button>
-          </div>
-          <div style="font-size:0.72rem;color:#d090a8;">対象（2601/2610）を選んで日付・マークを設定します。</div>
-        </div>
-
-        <!-- 成功率・可能性 -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">💯 恋愛成功率・可能性</div>
-          <div style="display:flex;gap:8px;margin-bottom:6px;">
-            <div style="flex:1;">
-              <div style="font-size:0.72rem;color:#d090a8;margin-bottom:3px;">成功率（0〜99）</div>
-              <input type="number" id="love-sr-success" min="0" max="99" placeholder="0"
-                style="width:100%;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
-            </div>
-            <div style="flex:1;">
-              <div style="font-size:0.72rem;color:#d090a8;margin-bottom:3px;">可能性（0〜99）</div>
-              <input type="number" id="love-sr-chance" min="0" max="99" placeholder="0"
-                style="width:100%;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;box-sizing:border-box;">
-            </div>
-          </div>
-          <input type="text" id="love-sr-comment" placeholder="コメント（任意）" maxlength="60"
-            style="width:100%;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;margin-bottom:6px;box-sizing:border-box;">
-          <button onclick="adminSaveLoveSuccessRate()" class="love-admin-btn" style="width:100%;">💾 保存</button>
-          <div id="love-sr-current" style="font-size:0.72rem;color:#d090a8;margin-top:6px;text-align:center;"></div>
-        </div>
-
-        <!-- プレスリリース管理 -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">📄 プレスリリース管理</div>
-          <div id="love-pr-list" style="margin-bottom:10px;">読み込み中...</div>
-          <div style="background:white;border:1.5px solid rgba(220,60,100,0.2);border-radius:10px;padding:12px;">
-            <div style="font-size:0.75rem;color:#d090a8;margin-bottom:6px;">＋ 追加（PDF・10MB以下）</div>
-            <input type="text" id="love-pr-title" placeholder="タイトル *" maxlength="50"
-              style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;margin-bottom:6px;box-sizing:border-box;">
-            <input type="date" id="love-pr-date"
-              style="width:100%;padding:7px 10px;border:1.5px solid rgba(220,60,100,0.15);border-radius:8px;font-size:0.85rem;color:#3a1a28;background:#fff8fa;outline:none;margin-bottom:6px;box-sizing:border-box;">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#c06080;cursor:pointer;background:#fff8fa;white-space:nowrap;">
-                📎 PDFを選択
-                <input type="file" accept="application/pdf" style="display:none" onchange="onLovePrFile(this)">
-              </label>
-              <span id="love-pr-fname" style="font-size:0.75rem;color:#e8406a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-              <button onclick="adminSavePressRelease()" class="love-admin-btn" style="white-space:nowrap;">追加</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 接触スコア管理 -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">📊 接触スコア記録（2601 / 2610）</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-<span style="font-size:0.78rem;color:#d090a8;">💕 2603（社内恋愛25）</span>
-            <input type="week" id="love-score-week" style="flex:1;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;">
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-            <label style="font-size:0.78rem;color:#d090a8;white-space:nowrap;">接触回数</label>
-            <input type="number" id="love-score-count" min="0" max="50" placeholder="0" style="width:70px;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;">
-            <label style="font-size:0.78rem;color:#d090a8;white-space:nowrap;">質（1〜5）</label>
-            <select id="love-score-quality" style="padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8fa;outline:none;">
-              ${[1,2,3,4,5].map(n=>`<option value="${n}">${n}</option>`).join('')}
-            </select>
-            <button onclick="adminSaveLoveScore()" class="love-admin-btn" style="white-space:nowrap;">保存</button>
-          </div>
-        </div>
-
-        <!-- チェックリスト管理（ステージごと編集） -->
-        <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">✅ 次の一手チェックリスト（ステージ別編集）</div>
-          <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
-            <label style="font-size:0.78rem;color:#d090a8;white-space:nowrap;">ステージ</label>
-            <select id="love-cl-stage" style="flex:1;padding:6px 8px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;" onchange="adminLoadChecklist()">
-              ${[0,1,2,3,4,5,6].map(n=>`<option value="${n}">${n===0?'開始前':'ステージ '+n}</option>`).join('')}
-            </select>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-            <div>
-              <div style="font-size:0.72rem;color:#3a7a3a;margin-bottom:4px;">✅ やること（1行1項目）</div>
-              <textarea id="love-cl-do" rows="5" placeholder="誠実な会話を継続する&#10;相手の都合を優先する" style="width:100%;padding:7px 8px;border:1.5px solid rgba(60,160,60,0.3);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#f8fff8;outline:none;resize:vertical;box-sizing:border-box;line-height:1.6;"></textarea>
-            </div>
-            <div>
-              <div style="font-size:0.72rem;color:#a03030;margin-bottom:4px;">✗ やらないこと（1行1項目）</div>
-              <textarea id="love-cl-dont" rows="5" placeholder="勢い任せに動く&#10;感情だけで突っ走る" style="width:100%;padding:7px 8px;border:1.5px solid rgba(200,60,60,0.2);border-radius:8px;font-size:0.82rem;color:#3a1a28;background:#fff8f8;outline:none;resize:vertical;box-sizing:border-box;line-height:1.6;"></textarea>
-            </div>
-          </div>
-          <button onclick="adminSaveChecklist()" class="love-admin-btn">💾 保存</button>
-        </div>
 
       </div>`;
 
@@ -5149,7 +4817,28 @@ window.adminSaveNotices = async function(type, idPrefix, max){
 window.adminSaveCurrentStage = async function(){
   const v = parseInt(document.getElementById('love-cur-stage')?.value||4);
   await fbSet('love/currentStage', v);
-  showToast('✓ 恋愛2601のロードマップを保存しました');
+  loveStage = String(v);
+  window._curStage2601 = v;
+  showToast('✓ ステージを保存しました');
+};
+
+window.adminResetLoveData = async function(){
+  if(!confirm('恋愛データをリセットします。\n対象：カレンダー・成功率・週報・BGM・スコア\n（バナー・PR資料・計画資料は残ります）\n\nよろしいですか？')) return;
+  showToast('リセット中...');
+  await Promise.all([
+    fbRemove('love/calmarks'),
+    fbRemove('love/successRate'),
+    fbRemove('love/score2601'),
+    fbRemove('love/checklist2601'),
+    fbRemove('love/weeklyMusic'),
+    fbRemove('love/music'),
+    fbRemove('love/weekly'),
+    fbRemove('love/info'),
+    fbRemove('love/currentStage'),
+  ]);
+  await fbSet('love/currentStage', 1);
+  showToast('✓ 恋愛データをリセットしました');
+  await renderAdminContent('love');
 };
 window.adminLoadChecklist = async function(){
   const stage = document.getElementById('love-cl-stage')?.value;
@@ -5239,11 +4928,6 @@ window.adminSaveLove2610Started = async function(val){
   showToast(val ? '✓ 恋愛2610を通常表示にしました' : '✓ 恋愛2610を半透明にしました');
 };
 
-window.adminSaveCurrentStage2610 = async function(){
-  const v = parseInt(document.getElementById('love-cur-stage-2610')?.value||4);
-  await fbSet('love/currentStage2610', v);
-  showToast('✓ 恋愛2610のロードマップを保存しました');
-};
 
 window.adminUploadLovePlanImages = async function(inp){
   const files = Array.from(inp.files); if(!files.length) return;
