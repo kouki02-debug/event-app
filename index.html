@@ -2331,6 +2331,21 @@ async function renderSamplePanel(){
 async function renderBirthdayPanel() {
   document.getElementById('main').innerHTML=`
     <div class="birthday-bg">
+
+      <!-- お知らせ枠 -->
+      <div style="margin:14px 14px 0;background:linear-gradient(135deg,#fffbe8,#fff8d0);border:2px solid #e8c840;border-radius:14px;padding:15px 18px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#e8c840,#f0a800,#e8c840);"></div>
+        <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#8a7000;letter-spacing:0.15em;margin-bottom:8px;">📢 お知らせ</div>
+        <div style="font-size:0.86rem;color:#3a2800;line-height:1.85;">
+          このサイトは<strong style="color:#a06000;">4月6日(月) 23:59まで</strong>解放しています。<br>
+          4月7日(火) 0時よりサイトは閉鎖されます。<br><br>
+          4月7日(火)以降は下記の「佐藤のページ」で運用をおこないます。<br>
+          <div style="margin:10px 0 6px;background:white;border:1px solid rgba(40,120,220,0.25);border-radius:8px;padding:8px 12px;font-family:monospace;font-size:0.8rem;color:#2060b0;word-break:break-all;user-select:all;">https://event-app-eb4a5.web.app/?tab=sato</div>
+          <span style="font-size:0.78rem;color:#a08000;">※ 現時点でリンクを開いてもエラーメッセージになります。</span><br><br>
+          引き続き birthday0330 は4月6日まで運用していますので、何卒よろしくお願いいたします。
+        </div>
+      </div>
+
       <div class="birthday-hero">
         <div class="birthday-hero-title">${new Date()>=new Date('2026-04-07T00:00:00+09:00')?'🧑 佐藤のページ':'🎂 birthday0330 🎉'}</div>
       </div>
