@@ -2643,21 +2643,25 @@ window.openLyricsPage = async function(fbKey, elId){
 async function renderLovePanel() {
   document.getElementById('main').innerHTML=`
     <div class="love-bg" id="love-bg">
+
+      <!-- ヒーロー：恋愛名称・タイトル -->
       <div class="love-hero">
         <div class="love-hero-title">💕 恋愛 💕</div>
+        <div class="love-hero-sub">Gradual Connection</div>
+        <div style="font-size:0.7rem;color:rgba(208,144,168,0.55);letter-spacing:0.18em;margin-top:4px;">Spring Bloom Link</div>
       </div>
 
       <!-- お知らせ枠 -->
       <div id="love-notices-wrap" style="padding:14px 14px 0;"></div>
 
-      <!-- 計画資料（ロードマップの上） -->
+      <!-- 計画資料 -->
       <div id="love-plan-images-wrap" style="padding:14px 14px 0;"></div>
 
       <!-- 更新日時 -->
-      <div id="love-updated-at" style="padding:6px 18px 0;text-align:right;font-size:0.68rem;color:rgba(208,144,168,0.5);letter-spacing:0.06em;"></div>
+      <div id="love-updated-at" style="padding:4px 18px 0;text-align:right;font-size:0.68rem;color:rgba(208,144,168,0.5);letter-spacing:0.06em;"></div>
 
       <!-- 区切り線 -->
-      <div style="margin:16px 14px 0;display:flex;align-items:center;gap:10px;">
+      <div style="margin:14px 14px 0;display:flex;align-items:center;gap:10px;">
         <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(208,144,168,0.35),transparent);"></div>
         <div style="font-family:'Shippori Mincho',serif;font-size:0.62rem;color:rgba(208,144,168,0.4);letter-spacing:0.2em;white-space:nowrap;">— 恋愛 —</div>
         <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(208,144,168,0.35),transparent);"></div>
@@ -2679,44 +2683,56 @@ async function renderLovePanel() {
 
       <!-- ===== 恋愛2603 コンテンツ ===== -->
       <div id="love-inner-2601" style="display:block;">
-        <div style="margin:14px 14px 0;padding:12px 16px 4px;background:rgba(255,220,235,0.18);border:1.5px solid rgba(220,60,100,0.18);border-radius:14px;">
+        <div style="margin:14px 14px 0;padding:12px 16px 14px;background:rgba(255,220,235,0.18);border:1.5px solid rgba(220,60,100,0.18);border-radius:14px;">
 
           <!-- 次週目標・スローガン -->
           <div id="love-weekly-goal-wrap"></div>
 
+          <!-- ステージロードマップ -->
           <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:8px;">— ステージロードマップ —</div>
-          <div id="love-roadmap-grid" style="display:flex;flex-direction:column;gap:0;margin-bottom:12px;"></div>
+          <div id="love-roadmap-grid" style="display:flex;flex-direction:column;gap:0;margin-bottom:14px;"></div>
 
-          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+          <!-- ステータスカード群 -->
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+
+            <!-- 週次サマリー -->
+            <div style="background:linear-gradient(135deg,rgba(255,220,235,0.5),rgba(255,240,248,0.7));border:1.5px solid rgba(220,60,100,0.2);border-radius:10px;padding:12px 14px;">
+              <div style="font-size:0.68rem;color:rgba(192,48,90,0.7);margin-bottom:6px;letter-spacing:0.08em;font-weight:600;">📋 今週のサマリー</div>
+              <div id="love-weekly-summary" style="font-size:0.84rem;color:#3a1a28;line-height:1.75;">読み込み中...</div>
+            </div>
+
             <!-- 恋期限 -->
             <div style="background:linear-gradient(135deg,#fff0f0,#ffe8e8);border:1.5px solid rgba(200,40,40,0.2);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
               <div style="font-size:1.2rem;">⏳</div>
               <div>
-                <div style="font-size:0.68rem;color:rgba(180,40,40,0.6);margin-bottom:2px;letter-spacing:0.05em;">恋期限</div>
+                <div style="font-size:0.68rem;color:rgba(180,40,40,0.6);margin-bottom:2px;letter-spacing:0.05em;">判断期限</div>
                 <div style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#b02020;font-weight:700;">4月16日（木）</div>
               </div>
             </div>
+
+            <!-- 次の重要日 -->
             <div style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;">
               <div style="font-size:0.68rem;color:#9a8880;margin-bottom:4px;letter-spacing:0.05em;">📅 次の重要日</div>
               <div id="love-info-nextday" style="font-family:'Shippori Mincho',serif;font-size:0.95rem;color:#3a2820;font-weight:700;line-height:1.6;">—</div>
             </div>
+
+            <!-- 相手について -->
             <div id="love-info-about" style="background:#f5f0ee;border:1.5px solid #ddd8d4;border-radius:10px;padding:10px 14px;">
               <div style="font-size:0.68rem;color:#9a8880;margin-bottom:4px;letter-spacing:0.05em;">👤 相手について</div>
               <div style="font-size:0.82rem;color:#3a2820;">読み込み中...</div>
             </div>
           </div>
 
+          <!-- 発展カレンダー（4月のみ） -->
           <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#d090a8;letter-spacing:0.1em;text-align:center;margin-bottom:6px;">📅 発展カレンダー</div>
-          <div id="love-cal-wrap" style="overflow:hidden;width:100%;box-sizing:border-box;"></div>
-
-          <!-- 4月カレンダー -->
-          <div id="love-cal-apr-wrap" style="overflow:hidden;width:100%;box-sizing:border-box;margin-top:8px;"></div>
+          <div id="love-cal-apr-wrap" style="overflow:hidden;width:100%;box-sizing:border-box;"></div>
 
           <!-- 週間恋音楽 -->
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(220,60,100,0.15);">
             <div style="font-family:'Shippori Mincho',serif;font-size:0.82rem;color:#c0305a;margin-bottom:8px;letter-spacing:0.06em;">🎵 週間恋音楽</div>
             <div id="love-weekly-music-wrap"><div style="text-align:center;color:#d090a8;padding:12px;font-size:0.85rem;">読み込み中...</div></div>
-          </div>        </div>
+          </div>
+        </div>
       </div>
 
       <!-- ===== プレスリリース コンテンツ ===== -->
@@ -2729,33 +2745,32 @@ async function renderLovePanel() {
     </div>`;
 
   const [weekly, loveInfo, loveNotices, lovePlanImages,
-         weeklyMusic, successRate, pressrelease] = await Promise.all([
+         weeklyMusic, successRate, pressrelease, loveSummary] = await Promise.all([
     fbGet('love/weekly'),
     fbGet('love/info'), fbGet('settings/loveNotices'), fbGet('love/planImages'),
     fbGet('love/weeklyMusic'), fbGet('love/successRate'),
-    fbGet('love/pressrelease')
+    fbGet('love/pressrelease'), fbGet('love/summary')
   ]);
   renderLoveNotices(loveNotices);
   renderLovePlanImages(lovePlanImages);
   renderLoveUpdatedAt();
-  // 前回のタブを復元（2610廃止のためデフォルトは2601）
   const savedLoveTab = localStorage.getItem('love_inner_tab');
   switchLoveInnerTab((savedLoveTab === 'pr') ? 'pr' : '2601');
 
   // 恋愛2603
   renderLoveWeeklyGoal(weekly);
   renderLoveInfo(loveInfo);
+  renderLoveWeeklySummary(loveSummary);
   const curStage2601 = await fbGet('love/currentStage') || 4;
   renderLoveRoadmap(curStage2601, 'love-roadmap-grid');
+  window._curStage2601 = curStage2601;
+  // 4月カレンダーのみ（3月は削除）
   const calmarks2601 = await fbGet('love/calmarks');
   window._loveCalMarks = calmarks2601 || {};
-  renderLoveCalGrid('love-cal-wrap', '2601');
-  window._curStage2601 = curStage2601;
+  renderLoveCalApr();
   renderLoveSuccessRate(successRate);
   renderLovePressRelease(pressrelease);
   renderLoveWeeklyMusic(weeklyMusic);
-  renderLoveCalApr();
-  await renderLoveCal();
   await initBgm();
 
   if(!listeners['love']){
@@ -2764,11 +2779,12 @@ async function renderLovePanel() {
     listeners['love'].push(fbListen('love/planImages',      val=>renderLovePlanImages(val)));
     listeners['love'].push(fbListen('love/currentStage',   val=>renderLoveRoadmap(val||4,'love-roadmap-grid')));
     listeners['love'].push(fbListen('love/info',           val=>renderLoveInfo(val)));
-    listeners['love'].push(fbListen('love/calmarks',       val=>{ window._loveCalMarks=val||{}; renderLoveCalGrid('love-cal-wrap','2601'); renderLoveCalGrid('love-cal-apr-wrap','2601'); }));
+    listeners['love'].push(fbListen('love/calmarks',       val=>{ window._loveCalMarks=val||{}; renderLoveCalApr(); }));
     listeners['love'].push(fbListen('love/pressrelease',   val=>renderLovePressRelease(val)));
     listeners['love'].push(fbListen('love/successRate',    val=>renderLoveSuccessRate(val)));
     listeners['love'].push(fbListen('love/weeklyMusic',    val=>renderLoveWeeklyMusic(val)));
     listeners['love'].push(fbListen('love/weekly',         val=>renderLoveWeeklyGoal(val)));
+    listeners['love'].push(fbListen('love/summary',        val=>renderLoveWeeklySummary(val)));
   }
 }
 
@@ -3148,6 +3164,16 @@ window.switchLoveInnerTab = function(tab){
 };
 
 // 更新日時表示
+function renderLoveWeeklySummary(val){
+  const el = document.getElementById('love-weekly-summary'); if(!el) return;
+  if(!val || !val.text){
+    el.textContent = '今週のサマリーは準備中です。';
+    return;
+  }
+  el.style.whiteSpace = 'pre-wrap';
+  el.textContent = val.text;
+}
+
 function renderLoveUpdatedAt(){
   const el = document.getElementById('love-updated-at'); if(!el) return;
   const now = new Date();
@@ -4082,6 +4108,7 @@ async function renderAdminContent(id) {
       loveCurStage = (await fbGet('love/currentStage')) || 4;
       lovePlanImgs = await fbGet('love/planImages');
       weeklyMusicAdm  = await fbGet('love/weeklyMusic');
+      summaryAdm      = await fbGet('love/summary');
       successRateAdm  = await fbGet('love/successRate');
       pressreleaseAdm = await fbGet('love/pressrelease');
     } catch(e) {
@@ -4143,7 +4170,17 @@ async function renderAdminContent(id) {
 
         <!-- ステータス情報編集 -->
         <div class="admin-love-subsec">
-          <div class="admin-love-subsec-title">📊 ステータスカード編集（💕 恋愛2601）</div>
+        <!-- 週次サマリー -->
+        <div class="admin-love-subsec">
+          <div class="admin-love-subsec-title">📋 週次サマリー（タブに表示）</div>
+          <textarea id="love-summary-text" rows="4" placeholder="今週のざっくりした状況を入力（閲覧者向け）"
+            style="width:100%;padding:8px 10px;border:1.5px solid rgba(220,60,100,0.2);border-radius:8px;font-size:0.88rem;color:#3a1a28;background:#fff8fa;outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;">${esc(summaryAdm?.text||'')}</textarea>
+          <div style="margin-top:6px;display:flex;justify-content:flex-end;">
+            <button onclick="adminSaveLoveSummary()" class="love-admin-btn">💾 保存</button>
+          </div>
+        </div>
+
+                  <div class="admin-love-subsec-title">📊 ステータスカード編集（💕 恋愛2601）</div>
           <div style="display:flex;flex-direction:column;gap:8px;">
             <div style="display:flex;gap:8px;align-items:center;">
               <label style="font-size:0.78rem;color:#d090a8;width:80px;flex-shrink:0;">現在のステージ</label>
@@ -4820,6 +4857,13 @@ window.adminSaveCurrentStage = async function(){
   loveStage = String(v);
   window._curStage2601 = v;
   showToast('✓ ステージを保存しました');
+};
+
+window.adminSaveLoveSummary = async function(){
+  const text = document.getElementById('love-summary-text')?.value.trim()||'';
+  if(!text){ showToast('テキストを入力してください'); return; }
+  await fbSet('love/summary', {text, ts: Date.now()});
+  showToast('✓ 週次サマリーを保存しました');
 };
 
 window.adminResetLoveData = async function(){
