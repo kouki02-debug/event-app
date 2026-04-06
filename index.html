@@ -205,6 +205,12 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
 .portal-notice-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#e8c840,#f0a800,#e8c840);}
 .portal-notice-title{font-family:'Shippori Mincho',serif;font-size:0.7rem;color:#8a7000;letter-spacing:0.14em;margin-bottom:5px;}
 .portal-notice-body{font-size:0.85rem;color:#3a2800;line-height:1.75;white-space:pre-wrap;}
+/* ANNOUNCEMENTS */
+.announce-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;position:relative;overflow:hidden;}
+.announce-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--accent);}
+.announce-date{font-size:0.7rem;color:var(--ink4);margin-bottom:4px;letter-spacing:0.04em;}
+.announce-title{font-family:'Shippori Mincho',serif;font-size:0.95rem;color:var(--ink);font-weight:600;margin-bottom:6px;line-height:1.4;}
+.announce-body{font-size:0.84rem;color:var(--ink2);line-height:1.75;white-space:pre-wrap;}
 
 /* SESSION TIMEOUT BANNER */
 .timeout-banner{
@@ -868,67 +874,145 @@ function renderTabs() {
 // HOME
 // ============================================================
 async function renderHome() {
-  // サイト設定を取得
-  const cfg = (await fbGet('settings/siteConfig')) || {};
-  const siteName   = cfg.name       || 'イベントページ';
-  const catchCopy  = cfg.catchcopy  || 'アクセスするページを選んでください';
-  const siteIcon   = cfg.icon       || '🏠';
+  // サイト設定・発表データを取得
+  const [cfg, announcements, noticesVal] = await Promise.all([
+    fbGet('settings/siteConfig'),
+    fbGet('settings/homeAnnouncements'),
+    fbGet('settings/homeNotices')
+  ]);
+  const siteCfg  = cfg || {};
+  const siteName  = siteCfg.name      || 'イベントページ';
+  const catchCopy = siteCfg.catchcopy || 'アクセスするページを選んでください';
+  const siteIcon  = siteCfg.icon      || '🏠';
 
-  // 通常タブカード
-  const cards = TABS.filter(t=>!['admin','love','birthday','sato','anniv','sample'].includes(t.id)).map(t=>{
-    const ul = unlocked.includes(t.id);
-    const sn = snCache[t.id]||'';
-    const tabCfg = (cfg.tabs && cfg.tabs[t.id]) || {};
-    const icon = tabCfg.icon || '📋';
-    const desc = tabCfg.desc || (sn || '');
-    return `<div class="portal-link-card${ul?' unlocked':''}" onclick="openTab('${t.id}')">
-      <div class="portal-link-icon">${icon}</div>
-      <div class="portal-link-name">${esc(sn||t.id)}</div>
+  // カテゴリー設定（管理者が設定、デフォルト値あり）
+  const tabCategories = siteCfg.categories || {};
+  // デフォルト割り当て
+  const defaultCat = {A:'通常',B:'通常',sample:'通常',love:'特別',birthday:'期間限定',anniv:'期間限定',sato:'特別'};
+
+  // タブカード生成ヘルパー
+  function makeCard(id, opts={}) {
+    const tc  = (siteCfg.tabs && siteCfg.tabs[id]) || {};
+    const cat = tabCategories[id] || defaultCat[id] || '通常';
+    const icon = opts.icon || tc.icon || '📋';
+    const name = opts.name || tc.name || snCache[id] || id;
+    const desc = opts.desc || tc.desc || '';
+    const ul   = opts.unlocked || unlocked.includes(id);
+    const statusLabel = opts.status || (ul ? '🔓 解錠済み' : '🔒 ロック中');
+    const extraStyle  = opts.style || '';
+    const textColor   = opts.nameColor ? `color:${opts.nameColor};` : '';
+    const statusStyle = opts.statusStyle || '';
+    return `<div class="portal-link-card${ul?' unlocked':''}" onclick="openTab('${id}')" style="${extraStyle}position:relative;overflow:hidden;">
+      ${opts.topBar||''}
+      <div class="portal-link-icon">${esc(icon)}</div>
+      <div class="portal-link-name" style="${textColor}">${esc(name)}</div>
       ${desc?`<div class="portal-link-desc">${esc(desc)}</div>`:''}
-      <div class="portal-link-status">${ul?'🔓 解錠済み':'🔒 ロック中'}</div>
+      <div class="portal-link-status" style="${statusStyle}">${statusLabel}</div>
     </div>`;
-  }).join('');
+  }
 
-  // 特別タブカード（リンク限定）
-  const loveCard = localStorage.getItem('tab_access_love')==='1' ? (() => {
-    const lc = (cfg.tabs && cfg.tabs['love']) || {};
-    return `<div class="portal-link-card unlocked" onclick="openTab('love')" style="grid-column:1/-1;border-color:rgba(220,60,100,0.25);">
-      <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#e8406a,#ffb0c8);"></div>
-      <div class="portal-link-icon">${lc.icon||'💕'}</div>
-      <div class="portal-link-name" style="color:#c0305a;">${esc(lc.name||'恋愛')}</div>
-      ${lc.desc?`<div class="portal-link-desc">${esc(lc.desc)}</div>`:''}
-      <div class="portal-link-status" style="background:rgba(220,60,100,0.08);color:#c0305a;border-color:rgba(220,60,100,0.2);">🔓 アクセス済み</div>
+  // 各カテゴリーのカード配列
+  const normalCards   = [];
+  const limitedCards  = [];
+  const specialCards  = [];
+
+  // 通常タブ（A/B等）
+  TABS.filter(t=>!['admin','love','birthday','sato','anniv','sample'].includes(t.id)).forEach(t=>{
+    const cat = tabCategories[t.id] || defaultCat[t.id] || '通常';
+    const card = makeCard(t.id);
+    if(cat==='期間限定') limitedCards.push(card);
+    else if(cat==='特別') specialCards.push(card);
+    else normalCards.push(card);
+  });
+
+  // love（リンクフラグ済みのみ）
+  if(localStorage.getItem('tab_access_love')==='1'){
+    const lc = (siteCfg.tabs && siteCfg.tabs['love']) || {};
+    const cat = tabCategories['love'] || '特別';
+    const card = makeCard('love',{
+      icon: lc.icon||'💕', name: lc.name||'恋愛', desc: lc.desc||'',
+      unlocked:true, nameColor:'#c0305a',
+      topBar:'<div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#e8406a,#ffb0c8);"></div>',
+      status:'🔓 アクセス済み',
+      statusStyle:'background:rgba(220,60,100,0.08);color:#c0305a;border-color:rgba(220,60,100,0.2);',
+      style:'grid-column:1/-1;border-color:rgba(220,60,100,0.25);'
+    });
+    if(cat==='期間限定') limitedCards.push(card);
+    else if(cat==='通常') normalCards.push(card);
+    else specialCards.push(card);
+  }
+
+  // anniv（期間中のみ）
+  if(isAnnivVisible()){
+    const ac = (siteCfg.tabs && siteCfg.tabs['anniv']) || {};
+    const cat = tabCategories['anniv'] || '期間限定';
+    const card = makeCard('anniv',{
+      icon: ac.icon||'🌸', name: ac.name||'20th Anniversary', desc: ac.desc||'',
+      unlocked:true,
+      nameColor:'#e8d0ff',
+      topBar:'<div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#6020c0,#b060ff,#6020c0);"></div>',
+      status:'🔓 公開中',
+      statusStyle:'background:rgba(180,120,255,0.15);color:rgba(220,180,255,0.85);border-color:rgba(180,120,255,0.3);',
+      style:'grid-column:1/-1;border-color:rgba(180,120,255,0.3);background:linear-gradient(160deg,#1a0a2e,#2d1155,#1a0a2e);'
+    });
+    if(cat==='特別') specialCards.push(card);
+    else if(cat==='通常') normalCards.push(card);
+    else limitedCards.push(card);
+  }
+
+  // birthday（期間中かつフラグ済み）
+  if(isBirthdayVisible() && (localStorage.getItem('tab_access_birthday')==='1'||localStorage.getItem('birthday_access')==='1')){
+    const bc = (siteCfg.tabs && siteCfg.tabs['birthday']) || {};
+    const cat = tabCategories['birthday'] || '期間限定';
+    const card = makeCard('birthday',{
+      icon: bc.icon||'🎂', name: bc.name||'birthday0330', desc: bc.desc||'',
+      unlocked:true, nameColor:'#a06000',
+      topBar:'<div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#ffcc00,#ff9900);"></div>',
+      status:'🔓 アクセス済み',
+      statusStyle:'background:rgba(255,180,0,0.1);color:#a06000;border-color:rgba(255,180,0,0.3);',
+      style:'grid-column:1/-1;border-color:rgba(255,180,0,0.3);'
+    });
+    if(cat==='特別') specialCards.push(card);
+    else if(cat==='通常') normalCards.push(card);
+    else limitedCards.push(card);
+  }
+
+  // sato：4/7以降は通常開放。フラグ済みなら期間前でも表示
+  const satoVisible = isSatoVisible() || localStorage.getItem('tab_access_sato')==='1';
+  if(satoVisible){
+    const sc = (siteCfg.tabs && siteCfg.tabs['sato']) || {};
+    const cat = tabCategories['sato'] || '特別';
+    const isEarlyAccess = !isSatoVisible() && localStorage.getItem('tab_access_sato')==='1';
+    const card = makeCard('sato',{
+      icon: sc.icon||'🌿', name: sc.name||snCache['sato']||'佐藤のページ', desc: sc.desc||'',
+      unlocked:true,
+      topBar:'<div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#4080e0,#60a0ff);"></div>',
+      status: isEarlyAccess ? '🔓 先行アクセス済み' : '🔓 公開中',
+      statusStyle:'background:rgba(40,120,220,0.1);color:#2060b0;border-color:rgba(40,120,220,0.2);',
+      style:'grid-column:1/-1;border-color:rgba(40,120,220,0.25);'
+    });
+    if(cat==='期間限定') limitedCards.push(card);
+    else if(cat==='通常') normalCards.push(card);
+    else specialCards.push(card);
+  }
+
+  // セクション生成ヘルパー
+  const makeSection = (label, cardsArr, colSpan) => {
+    if(!cardsArr.length) return '';
+    return `<div class="portal-section">
+      <div class="portal-section-title">${label}</div>
+      <div class="portal-link-grid">${cardsArr.join('')}</div>
     </div>`;
-  })() : '';
+  };
 
-  const annivCard = isAnnivVisible() ? (() => {
-    const ac = (cfg.tabs && cfg.tabs['anniv']) || {};
-    return `<div class="portal-link-card" onclick="openTab('anniv')" style="grid-column:1/-1;border-color:rgba(180,120,255,0.3);background:linear-gradient(160deg,#1a0a2e,#2d1155,#1a0a2e);">
-      <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#6020c0,#b060ff,#6020c0);"></div>
-      <div class="portal-link-icon">${ac.icon||'🌸'}</div>
-      <div class="portal-link-name" style="color:#e8d0ff;">${esc(ac.name||'20th Anniversary')}</div>
-      ${ac.desc?`<div class="portal-link-desc" style="color:rgba(200,160,255,0.6);">${esc(ac.desc)}</div>`:''}
-      <div class="portal-link-status" style="background:rgba(180,120,255,0.15);color:rgba(220,180,255,0.85);border-color:rgba(180,120,255,0.3);">🔓 公開中</div>
-    </div>`;
-  })() : '';
+  // お知らせ
+  const noticeHtml = buildNoticeHtml(noticesVal);
 
-  const birthdayCard = (isBirthdayVisible() && (localStorage.getItem('tab_access_birthday')==='1'||localStorage.getItem('birthday_access')==='1')) ? (() => {
-    const bc = (cfg.tabs && cfg.tabs['birthday']) || {};
-    return `<div class="portal-link-card unlocked" onclick="openTab('birthday')" style="grid-column:1/-1;border-color:rgba(255,180,0,0.3);">
-      <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#ffcc00,#ff9900);"></div>
-      <div class="portal-link-icon">${bc.icon||'🎂'}</div>
-      <div class="portal-link-name" style="color:#a06000;">${esc(bc.name||'birthday0330')}</div>
-      ${bc.desc?`<div class="portal-link-desc">${esc(bc.desc)}</div>`:''}
-      <div class="portal-link-status" style="background:rgba(255,180,0,0.1);color:#a06000;border-color:rgba(255,180,0,0.3);">🔓 アクセス済み</div>
-    </div>`;
-  })() : '';
-
-  // お知らせHTML
-  const noticeHtml = buildNoticeHtml();
+  // 発表・プレスリリースHTML
+  const announceHtml = buildAnnouncementsHtml(announcements);
 
   document.getElementById('main').innerHTML=`
     <div class="home-view">
-
       <!-- ヒーロー -->
       <div class="portal-hero">
         <div class="portal-site-icon">${esc(siteIcon)}</div>
@@ -937,16 +1021,16 @@ async function renderHome() {
       </div>
 
       <!-- お知らせ -->
-      <div id="home-notices-wrap" style="padding:${noticeHtml?'14px 16px 0':'0'};">
-        ${noticeHtml}
-      </div>
+      <div id="home-notices-wrap" style="padding:${noticeHtml?'14px 16px 0':'0'};">${noticeHtml}</div>
 
-      <!-- アクセスリンク -->
-      <div class="portal-section">
-        <div class="portal-section-title">ページ一覧</div>
-        <div class="portal-link-grid">
-          ${cards}${loveCard}${annivCard}${birthdayCard}
-        </div>
+      <!-- ページ一覧（カテゴリー別） -->
+      ${makeSection('通常', normalCards)}
+      ${makeSection('期間限定', limitedCards)}
+      ${makeSection('特別', specialCards)}
+
+      <!-- 発表・プレスリリース -->
+      <div id="home-announcements-wrap">
+        ${announceHtml}
       </div>
 
       <!-- 管理パネル -->
@@ -958,11 +1042,11 @@ async function renderHome() {
   // リアルタイム反映
   fbListen('settings/homeNotices', val=>{
     const wrap = document.getElementById('home-notices-wrap');
-    if(wrap){
-      const html = buildNoticeHtml(val);
-      wrap.style.padding = html ? '14px 16px 0' : '0';
-      wrap.innerHTML = html;
-    }
+    if(wrap){ const html=buildNoticeHtml(val); wrap.style.padding=html?'14px 16px 0':'0'; wrap.innerHTML=html; }
+  });
+  fbListen('settings/homeAnnouncements', val=>{
+    const wrap = document.getElementById('home-announcements-wrap');
+    if(wrap) wrap.innerHTML = buildAnnouncementsHtml(val);
   });
 }
 
@@ -978,6 +1062,20 @@ function buildNoticeHtml(notices) {
       <div class="portal-notice-title">📢 ${esc(n.title)}</div>
       <div class="portal-notice-body">${String(n.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
     </div>`).join('');
+}
+
+function buildAnnouncementsHtml(val) {
+  if(!val || !Object.keys(val).length) return '';
+  const items = Object.entries(val).map(([k,v])=>({key:k,...v})).sort((a,b)=>b.ts-a.ts);
+  return `<div class="portal-section">
+    <div class="portal-section-title">発表・プレスリリース</div>
+    ${items.map(item=>`
+    <div class="announce-card">
+      ${item.date?`<div class="announce-date">${esc(item.date)}</div>`:''}
+      <div class="announce-title">${esc(item.title||'')}</div>
+      ${item.body?`<div class="announce-body">${String(item.body||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`:''}
+    </div>`).join('')}
+  </div>`;
 }
 
 // ============================================================
@@ -2248,15 +2346,15 @@ async function renderHaisyaView(tabId){
 // 概要バナー → 掲示板 → 配車システム → 割り勘システム → 割り勘明細
 // ============================================================
 async function renderSatoPanel() {
-  // アクセスフラグチェック
+  // 4/7以降は誰でも開放。フラグ済み端末は期間前でも開ける
   const hasFlag = localStorage.getItem('tab_access_sato') === '1';
-  if(!hasFlag || !isSatoVisible()){
+  if(!isSatoVisible() && !hasFlag){
     document.getElementById('main').innerHTML=`
       <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;">
         <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:40px 28px;text-align:center;max-width:320px;width:100%;">
           <div style="font-size:1.8rem;margin-bottom:12px;">🔒</div>
           <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:var(--ink3);font-weight:700;letter-spacing:0.1em;margin-bottom:10px;">アクセスできません</div>
-          <div style="font-size:0.8rem;color:var(--ink4);line-height:1.8;">4月7日(火)以降に<br>専用URLからアクセスしてください。</div>
+          <div style="font-size:0.8rem;color:var(--ink4);line-height:1.8;">4月7日(火)以降に公開されます。</div>
         </div>
       </div>`;
     return;
@@ -3714,10 +3812,30 @@ async function renderAdmin() {
               style="flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:0.88rem;color:var(--ink);background:var(--surface2);outline:none;">
           </div>
           <div style="border-top:1px solid var(--border);margin-top:4px;padding-top:10px;">
-            <div style="font-size:0.75rem;color:var(--ink4);margin-bottom:8px;">各タブのホーム表示設定（アイコン・表示名・説明）</div>
+            <div style="font-size:0.75rem;color:var(--ink4);margin-bottom:8px;">各タブのホーム表示設定（アイコン・表示名・説明・カテゴリー）</div>
             <div id="site-tab-settings" style="display:flex;flex-direction:column;gap:6px;"></div>
           </div>
           <button onclick="adminSaveSiteConfig()" style="padding:8px;background:var(--ink);color:#f0e8d0;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;margin-top:4px;">💾 サイト設定を保存</button>
+        </div>
+      </div>
+
+      <!-- 発表・プレスリリース管理 -->
+      <div class="admin-card">
+        <div class="admin-card-hd">📢 発表・プレスリリース（ホームに表示）</div>
+        <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+          <div id="home-announce-list" style="margin-bottom:6px;"></div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;">
+            <div style="font-size:0.75rem;color:var(--ink4);margin-bottom:8px;">＋ 新規投稿</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <input type="text" id="announce-title" placeholder="タイトル *" maxlength="60"
+                style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:0.88rem;color:var(--ink);background:var(--surface2);outline:none;box-sizing:border-box;">
+              <input type="text" id="announce-date" placeholder="日付（例：2026年4月7日）" maxlength="20"
+                style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:0.88rem;color:var(--ink);background:var(--surface2);outline:none;box-sizing:border-box;">
+              <textarea id="announce-body" rows="3" placeholder="本文（任意・改行可）"
+                style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:0.88rem;color:var(--ink);background:var(--surface2);outline:none;resize:vertical;line-height:1.6;box-sizing:border-box;"></textarea>
+              <button onclick="adminAddAnnouncement()" style="padding:8px;background:var(--ink);color:#f0e8d0;border:none;border-radius:7px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;">💾 投稿</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -3781,18 +3899,47 @@ async function renderAdmin() {
       {id:'love', label:'恋愛'}, {id:'birthday', label:'birthday'},
       {id:'anniv', label:'Anniversary'}, {id:'sato', label:'佐藤のページ'}
     ];
+    const defaultCatMap = {A:'通常',B:'通常',love:'特別',birthday:'期間限定',anniv:'期間限定',sato:'特別'};
     tabSettingsWrap.innerHTML = targetTabs.map(t=>{
       const tc = (sc.tabs && sc.tabs[t.id]) || {};
-      return `<div style="display:flex;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:0.78rem;color:var(--ink2);width:72px;flex-shrink:0;">${esc(t.label)}</span>
-        <input type="text" id="stab-icon-${t.id}" value="${esc(tc.icon||'')}" placeholder="絵文字" maxlength="4"
-          style="width:44px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:1rem;text-align:center;color:var(--ink);background:var(--surface2);outline:none;">
-        <input type="text" id="stab-name-${t.id}" value="${esc(tc.name||'')}" placeholder="表示名" maxlength="20"
-          style="width:80px;padding:4px 7px;border:1px solid var(--border);border-radius:5px;font-size:0.82rem;color:var(--ink);background:var(--surface2);outline:none;">
-        <input type="text" id="stab-desc-${t.id}" value="${esc(tc.desc||'')}" placeholder="説明文（任意）" maxlength="30"
-          style="flex:1;padding:4px 7px;border:1px solid var(--border);border-radius:5px;font-size:0.78rem;color:var(--ink);background:var(--surface2);outline:none;">
+      const curCat = (sc.categories && sc.categories[t.id]) || defaultCatMap[t.id] || '通常';
+      return `<div style="display:flex;flex-direction:column;gap:4px;padding:7px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:0.78rem;color:var(--ink2);width:72px;flex-shrink:0;">${esc(t.label)}</span>
+          <input type="text" id="stab-icon-${t.id}" value="${esc(tc.icon||'')}" placeholder="絵文字" maxlength="4"
+            style="width:44px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:1rem;text-align:center;color:var(--ink);background:var(--surface2);outline:none;">
+          <input type="text" id="stab-name-${t.id}" value="${esc(tc.name||'')}" placeholder="表示名" maxlength="20"
+            style="width:80px;padding:4px 7px;border:1px solid var(--border);border-radius:5px;font-size:0.82rem;color:var(--ink);background:var(--surface2);outline:none;">
+          <select id="stab-cat-${t.id}"
+            style="padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:0.78rem;color:var(--ink);background:var(--surface2);outline:none;">
+            ${['通常','期間限定','特別','非表示'].map(opt=>`<option value="${opt}" ${curCat===opt?'selected':''}>${opt}</option>`).join('')}
+          </select>
+        </div>
+        <div style="display:flex;gap:6px;padding-left:78px;">
+          <input type="text" id="stab-desc-${t.id}" value="${esc(tc.desc||'')}" placeholder="説明文（任意）" maxlength="30"
+            style="flex:1;padding:4px 7px;border:1px solid var(--border);border-radius:5px;font-size:0.78rem;color:var(--ink);background:var(--surface2);outline:none;">
+        </div>
       </div>`;
     }).join('');
+
+    // 発表一覧を更新
+    const announceListWrap = document.getElementById('home-announce-list');
+    const announceData = await fbGet('settings/homeAnnouncements');
+    if(announceListWrap){
+      if(announceData && Object.keys(announceData).length){
+        const items = Object.entries(announceData).map(([k,v])=>({key:k,...v})).sort((a,b)=>b.ts-a.ts);
+        announceListWrap.innerHTML = items.map(item=>`
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.82rem;color:var(--ink);font-weight:500;">${esc(item.title||'')}</div>
+              ${item.date?`<div style="font-size:0.72rem;color:var(--ink4);">${esc(item.date)}</div>`:''}
+            </div>
+            <button onclick="adminDelAnnouncement('${item.key}')" style="background:none;border:none;color:var(--ink4);cursor:pointer;font-size:0.85rem;padding:2px 5px;flex-shrink:0;">🗑</button>
+          </div>`).join('');
+      } else {
+        announceListWrap.innerHTML = '<div style="font-size:0.78rem;color:var(--ink4);padding:4px 0;">投稿なし</div>';
+      }
+    }
   }
 }
 
@@ -5011,15 +5158,35 @@ window.adminSaveSiteConfig = async function(){
   const name     = document.getElementById('site-name')?.value.trim()     || 'イベントページ';
   const catchcopy= document.getElementById('site-catchcopy')?.value.trim()|| '';
   const tabIds   = ['A','B','love','birthday','anniv','sato'];
-  const tabs = {};
+  const tabs = {}, categories = {};
   tabIds.forEach(id=>{
-    const icon = document.getElementById('stab-icon-'+id)?.value.trim()||'';
-    const name = document.getElementById('stab-name-'+id)?.value.trim()||'';
-    const desc = document.getElementById('stab-desc-'+id)?.value.trim()||'';
-    if(icon||name||desc) tabs[id]={icon,name,desc};
+    const i = document.getElementById('stab-icon-'+id)?.value.trim()||'';
+    const n = document.getElementById('stab-name-'+id)?.value.trim()||'';
+    const d = document.getElementById('stab-desc-'+id)?.value.trim()||'';
+    const cat = document.getElementById('stab-cat-'+id)?.value||'通常';
+    if(i||n||d) tabs[id]={icon:i,name:n,desc:d};
+    categories[id] = cat;
   });
-  await fbSet('settings/siteConfig', {icon, name, catchcopy, tabs, updatedAt: Date.now()});
+  await fbSet('settings/siteConfig', {icon, name, catchcopy, tabs, categories, updatedAt: Date.now()});
   showToast('✓ サイト設定を保存しました');
+};
+
+window.adminAddAnnouncement = async function(){
+  const title = document.getElementById('announce-title')?.value.trim()||'';
+  const date  = document.getElementById('announce-date')?.value.trim()||'';
+  const body  = document.getElementById('announce-body')?.value.trim()||'';
+  if(!title){ showToast('タイトルを入力してください'); return; }
+  await fbPush('settings/homeAnnouncements', {title, date, body, ts: Date.now()});
+  ['announce-title','announce-date','announce-body'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  showToast('✓ 発表を投稿しました');
+  await renderAdmin();
+};
+
+window.adminDelAnnouncement = async function(key){
+  if(!confirm('この発表を削除しますか？')) return;
+  await fbRemove('settings/homeAnnouncements/'+key);
+  showToast('✓ 削除しました');
+  await renderAdmin();
 };
 
 window.adminResetLoveData = async function(){
@@ -5387,9 +5554,8 @@ async function init() {
   // アクセス時にlocalStorageへフラグ保存
   if(tabParam && LINK_ONLY_TABS.includes(tabParam)){
     if(tabParam === 'sato'){
-      if(isSatoVisible()){
-        localStorage.setItem('tab_access_sato', '1');
-      }
+      // 常にフラグ保存（4/7以降の通常開放＋フラグ済み端末はホームに表示）
+      localStorage.setItem('tab_access_sato', '1');
     } else {
       localStorage.setItem('tab_access_' + tabParam, '1');
     }
