@@ -977,17 +977,16 @@ async function renderHome() {
     else limitedCards.push(card);
   }
 
-  // sato：4/7以降は通常開放。フラグ済みなら期間前でも表示
-  const satoVisible = isSatoVisible() || localStorage.getItem('tab_access_sato')==='1';
+  // sato：フラグ済み端末のみホームに表示（4/7以降も同様）
+  const satoVisible = localStorage.getItem('tab_access_sato')==='1';
   if(satoVisible){
     const sc = (siteCfg.tabs && siteCfg.tabs['sato']) || {};
     const cat = tabCategories['sato'] || '特別';
-    const isEarlyAccess = !isSatoVisible() && localStorage.getItem('tab_access_sato')==='1';
     const card = makeCard('sato',{
       icon: sc.icon||'🌿', name: sc.name||snCache['sato']||'佐藤のページ', desc: sc.desc||'',
       unlocked:true,
       topBar:'<div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#4080e0,#60a0ff);"></div>',
-      status: isEarlyAccess ? '🔓 先行アクセス済み' : '🔓 公開中',
+      status: '🔓 アクセス済み',
       statusStyle:'background:rgba(40,120,220,0.1);color:#2060b0;border-color:rgba(40,120,220,0.2);',
       style:'grid-column:1/-1;border-color:rgba(40,120,220,0.25);'
     });
@@ -2346,15 +2345,15 @@ async function renderHaisyaView(tabId){
 // 概要バナー → 掲示板 → 配車システム → 割り勘システム → 割り勘明細
 // ============================================================
 async function renderSatoPanel() {
-  // 4/7以降は誰でも開放。フラグ済み端末は期間前でも開ける
+  // 特別URLフラグ済み端末のみアクセス可（4/7以降も同様）
   const hasFlag = localStorage.getItem('tab_access_sato') === '1';
-  if(!isSatoVisible() && !hasFlag){
+  if(!hasFlag){
     document.getElementById('main').innerHTML=`
       <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;">
         <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:40px 28px;text-align:center;max-width:320px;width:100%;">
           <div style="font-size:1.8rem;margin-bottom:12px;">🔒</div>
           <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:var(--ink3);font-weight:700;letter-spacing:0.1em;margin-bottom:10px;">アクセスできません</div>
-          <div style="font-size:0.8rem;color:var(--ink4);line-height:1.8;">4月7日(火)以降に公開されます。</div>
+          <div style="font-size:0.8rem;color:var(--ink4);line-height:1.8;">専用URLからアクセスしてください。</div>
         </div>
       </div>`;
     return;
@@ -2819,7 +2818,7 @@ async function renderLovePanel() {
         <button id="love-inner-tab-2601" onclick="switchLoveInnerTab('2601')"
           style="flex:1;padding:10px 4px;border:none;font-family:'Shippori Mincho',serif;font-size:0.76rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;
                  background:linear-gradient(135deg,#fff0f5,#ffe0ea);color:#c0305a;border-right:1px solid rgba(208,144,168,0.2);">
-          💕 2603
+          💕 Gradual Connection
         </button>
         <button id="love-inner-tab-pr" onclick="switchLoveInnerTab('pr')"
           style="flex:1;padding:10px 4px;border:none;font-family:'Shippori Mincho',serif;font-size:0.76rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;
@@ -4368,7 +4367,7 @@ async function renderAdminContent(id) {
   if(id==='love'){
     let bgm = null, loveMusic = null, weekly = null, loveInfo = null;
     let loveCurStage = 4, lovePlanImgs = null;
-    let weeklyMusicAdm = null, successRateAdm = null, pressreleaseAdm = null;
+    let weeklyMusicAdm = null, successRateAdm = null, pressreleaseAdm = null, summaryAdm = null;
     try {
       bgm   = await fbGet('love/bgm');
       loveMusic = await fbGet('love/music');
