@@ -993,18 +993,24 @@ async function renderHome() {
   });
 }
 
-function buildNoticeHtml(notices) {
+function buildNoticeHtml(firebaseNotices) {
+  // NOTICES_CONFIGのアクティブ分 + Firebase保存分を合わせて表示
   const items = [];
-  if(notices && typeof notices === 'object'){
-    const arr = Array.isArray(notices) ? notices : Object.values(notices);
-    arr.filter(n=>n&&n.text).slice(0,5).forEach(n=>items.push({text:n.text, title:n.title||'お知らせ'}));
+  // コード定義分（表示期間内のみ）
+  getActiveNotices('home').forEach(n=>items.push({title:n.title||'お知らせ', text:n.text}));
+  // Firebase保存分（管理パネルから削除されていないもの）
+  if(firebaseNotices && typeof firebaseNotices === 'object'){
+    const arr = Array.isArray(firebaseNotices) ? firebaseNotices : Object.values(firebaseNotices);
+    arr.filter(n=>n&&n.text).slice(0,5).forEach(n=>items.push({title:n.title||'お知らせ', text:n.text}));
   }
   if(!items.length) return '';
-  return items.map(n=>`
-    <div class="portal-notice-card">
+  return items.map(n=>{
+    const safeText = String(n.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    return `<div class="portal-notice-card">
       <div class="portal-notice-title">📢 ${esc(n.title)}</div>
-      <div class="portal-notice-body">${String(n.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-    </div>`).join('');
+      <div class="portal-notice-body">${safeText}</div>
+    </div>`;
+  }).join('');
 }
 
 function buildAnnouncementsHtml(val) {
@@ -1923,18 +1929,22 @@ function renderLoveUpdatedAt(){
 }
 
 // 恋愛お知らせ表示
-function renderLoveNotices(val){
+function renderLoveNotices(firebaseVal){
   const wrap = document.getElementById('love-notices-wrap'); if(!wrap) return;
-  if(!val) { wrap.innerHTML=''; return; }
-  const arr = Array.isArray(val) ? val : Object.values(val);
-  const items = arr.filter(n=>n&&n.text);
+  // NOTICES_CONFIGのアクティブ分 + Firebase保存分
+  const items = [];
+  getActiveNotices('love').forEach(n=>items.push({title:n.title||'お知らせ', text:n.text}));
+  if(firebaseVal && typeof firebaseVal === 'object'){
+    const arr = Array.isArray(firebaseVal) ? firebaseVal : Object.values(firebaseVal);
+    arr.filter(n=>n&&n.text).forEach(n=>items.push({title:n.title||'お知らせ', text:n.text}));
+  }
   if(!items.length){ wrap.innerHTML=''; return; }
   wrap.innerHTML = items.map(n=>{
     const safeText = String(n.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-    return `<div style="background:linear-gradient(135deg,#fff0f4,#ffe8ee);border:1.5px solid rgba(220,60,100,0.25);border-radius:12px;padding:14px 16px;margin-bottom:10px;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#e8406a,#ffb0c8,#e8406a);"></div>
-      <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#c0305a;letter-spacing:0.12em;margin-bottom:7px;">📣 ${esc(n.title||'お知らせ')}</div>
-      <div style="font-size:0.86rem;color:#3a1a28;line-height:1.85;">${safeText}</div>
+    return `<div style="background:linear-gradient(135deg,#fffbe8,#fff8d0);border:1.5px solid #e8c840;border-radius:12px;padding:14px 16px;margin-bottom:10px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#e8c840,#f0a800,#e8c840);"></div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:0.72rem;color:#8a7000;letter-spacing:0.14em;margin-bottom:7px;">📣 ${esc(n.title||'お知らせ')}</div>
+      <div style="font-size:0.86rem;color:#3a2800;line-height:1.85;">${safeText}</div>
     </div>`;
   }).join('');
 }
@@ -2270,6 +2280,7 @@ async function renderAdmin() {
     fbGet('settings/homeNotices'),fbGet('settings/loveNotices'),
     fbGet('settings/siteConfig')
   ]);
+  // お知らせはコードから管理（fetchは削除用のkey取得のみに使用）
   if(snVal)Object.assign(snCache,snVal);
 
   const homeNotices = homeNoticesRaw ? (Array.isArray(homeNoticesRaw)?homeNoticesRaw:Object.values(homeNoticesRaw)).filter(n=>n&&n.text) : [];
@@ -2333,21 +2344,33 @@ async function renderAdmin() {
     <div class="sec">
       <div class="sec-hd"><h2>⚙️ 管理パネル</h2><div class="sec-line"></div></div>
 
-      <!-- ホームお知らせ編集（最大5件） -->
+      <!-- お知らせ管理（削除のみ） -->
       <div class="admin-card" style="margin-bottom:14px;">
-        <div class="admin-card-hd">📢 ホームお知らせ（最大3件）</div>
-        <div style="padding:10px 12px;">
-          ${noticeRows(homeNotices,'hn',3)}
-          <button onclick="adminSaveNotices('home','hn',3)" style="width:100%;padding:9px;background:var(--ink);color:var(--bg);border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;font-family:'Shippori Mincho',serif;">保存</button>
-        </div>
-      </div>
-
-      <!-- 恋愛お知らせ編集 -->
-      <div class="admin-card" style="margin-bottom:14px;">
-        <div class="admin-card-hd">💕 恋愛ページお知らせ（複数件）</div>
-        <div style="padding:10px 12px;">
-          ${noticeRows(loveNotices,'ln',3)}
-          <button onclick="adminSaveNotices('love','ln',3)" style="width:100%;padding:9px;background:linear-gradient(90deg,#e8406a,#c0305a);color:white;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;font-family:'Shippori Mincho',serif;">保存</button>
+        <div class="admin-card-hd">📢 お知らせ管理（内容はコードから設定）</div>
+        <div style="padding:10px 12px;display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="font-size:0.75rem;color:var(--ink4);margin-bottom:6px;">🏠 ホームお知らせ（現在 ${homeNotices.length}件）</div>
+            ${homeNotices.length ? homeNotices.map((n,i)=>`
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:4px;">
+                <span style="flex:1;font-size:0.82rem;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(n.title||'（タイトルなし）')}</span>
+                <button onclick="adminDeleteNotice('home',${i})" style="background:none;border:none;color:var(--ink4);cursor:pointer;font-size:0.85rem;padding:2px 6px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--ink4)'">🗑</button>
+              </div>`).join('') : '<div style="font-size:0.78rem;color:var(--ink4);">現在お知らせはありません</div>'}
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;">
+            <div style="font-size:0.75rem;color:#c0305a;margin-bottom:6px;">💕 恋愛ページお知らせ（現在 ${loveNotices.length}件）</div>
+            ${loveNotices.length ? loveNotices.map((n,i)=>`
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#fff0f4;border:1px solid rgba(220,60,100,0.15);border-radius:8px;margin-bottom:4px;">
+                <span style="flex:1;font-size:0.82rem;color:#3a1a28;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(n.title||'（タイトルなし）')}</span>
+                <button onclick="adminDeleteNotice('love',${i})" style="background:none;border:none;color:#d090a8;cursor:pointer;font-size:0.85rem;padding:2px 6px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='#d090a8'">🗑</button>
+              </div>`).join('') : '<div style="font-size:0.78rem;color:#d090a8;">現在お知らせはありません</div>'}
+          </div>
+          <div style="font-size:0.72rem;color:var(--ink4);border-top:1px solid var(--border);padding-top:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+            <span>💡 内容・表示期間はコード内の <code>NOTICES_CONFIG</code> から変更</span>
+            <div style="display:flex;gap:6px;">
+              <button onclick="adminRestoreNotice('home')" style="padding:4px 10px;background:none;border:1px solid var(--border);border-radius:6px;font-size:0.75rem;color:var(--ink3);cursor:pointer;">🏠 復元</button>
+              <button onclick="adminRestoreNotice('love')" style="padding:4px 10px;background:none;border:1px solid rgba(220,60,100,0.3);border-radius:6px;font-size:0.75rem;color:#c0305a;cursor:pointer;">💕 復元</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2376,11 +2399,6 @@ async function renderAdmin() {
       <div class="admin-card" id="site-config-card">
         <div class="admin-card-hd">🏠 サイト設定（ホームページ）</div>
         <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
-          <div style="display:flex;gap:8px;align-items:center;">
-            <label style="font-size:0.8rem;color:var(--ink3);width:90px;flex-shrink:0;">アイコン</label>
-            <input type="text" id="site-icon" placeholder="🏠" maxlength="4"
-              style="width:60px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:1.1rem;text-align:center;color:var(--ink);background:var(--surface2);outline:none;">
-          </div>
           <div style="display:flex;gap:8px;align-items:center;">
             <label style="font-size:0.8rem;color:var(--ink3);width:90px;flex-shrink:0;">サイト名</label>
             <input type="text" id="site-name" placeholder="イベントページ" maxlength="30"
@@ -2464,10 +2482,8 @@ async function renderAdmin() {
 
   // サイト設定フォームに現在値を反映
   const sc = siteConfigVal || {};
-  const siEl = document.getElementById('site-icon');
   const snEl = document.getElementById('site-name');
   const scEl = document.getElementById('site-catchcopy');
-  if(siEl) siEl.value = sc.icon || '';
   if(snEl) snEl.value = sc.name || '';
   if(scEl) scEl.value = sc.catchcopy || '';
 
@@ -2693,6 +2709,11 @@ async function renderAdminContent(id) {
             <div style="font-size:0.75rem;color:#d090a8;font-weight:600;margin-bottom:6px;">🔄 恋愛データリセット</div>
             <div style="font-size:0.75rem;color:rgba(200,60,80,0.7);margin-bottom:10px;line-height:1.6;">恋の終わり・切り替わり時に使用。<br>投稿・カレンダー・成功率・週報・BGMをリセットします。<br>バナー・PR資料・計画資料は残ります。</div>
             <button onclick="adminResetLoveData()" style="width:100%;padding:10px;background:linear-gradient(135deg,#c03030,#a02020);color:white;border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.9rem;cursor:pointer;letter-spacing:0.06em;">❌ 恋愛データを全リセット</button>
+            <div style="border-top:1px solid rgba(220,60,100,0.15);margin-top:10px;padding-top:10px;">
+              <div style="font-size:0.75rem;color:#d090a8;font-weight:600;margin-bottom:6px;">🎵 BGM強制削除</div>
+              <div style="font-size:0.75rem;color:rgba(200,60,80,0.7);margin-bottom:8px;line-height:1.5;">Firebaseに残っているBGMファイルを削除します。</div>
+              <button onclick="adminForceDeleteBgm()" style="width:100%;padding:9px;background:none;border:1.5px solid rgba(220,60,100,0.4);border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;color:#c0305a;cursor:pointer;">🗑 BGMを強制削除</button>
+            </div>
           </div>
         </div>
 
@@ -3368,6 +3389,65 @@ window.adminDelLoveMusic = async function(fbKey){
   await renderAdminContent('love');
 };
 
+// ============================================================
+// NOTICES_CONFIG — お知らせ内容・表示期間をここで管理
+// ============================================================
+const NOTICES_CONFIG = {
+  home: [
+    // { title:'タイトル', text:'本文', from:'2026-04-07', to:'2026-12-31' },
+  ],
+  love: [
+    {
+      title: '📣 重要なお知らせ',
+      text: '近々、Gradual Connection のこれからについて発表がございます。\n\n判断期限の4月16日（木）をもって、今後の方針についてご報告します。\n今しばらくお待ちください。',
+      from: '2026-04-07',
+      to: '2026-04-16'
+    }
+  ]
+};
+
+// overrideキャッシュ（管理パネルから非表示にしたインデックス）
+let _noticeOverrideCache = {home:[], love:[]};
+async function loadNoticeOverrides(){
+  const [h,l] = await Promise.all([
+    fbGet('settings/noticeOverride/home'),
+    fbGet('settings/noticeOverride/love')
+  ]);
+  _noticeOverrideCache.home = h ? (Array.isArray(h)?h:Object.values(h)) : [];
+  _noticeOverrideCache.love = l ? (Array.isArray(l)?l:Object.values(l)) : [];
+}
+function getActiveNotices(type) {
+  const now = new Date();
+  const hidden = _noticeOverrideCache[type] || [];
+  const configs = NOTICES_CONFIG[type] || [];
+  return configs.filter((n,i) => {
+    if(hidden.includes(i)) return false;
+    if(!n.text) return false;
+    if(n.from && new Date(n.from) > now) return false;
+    if(n.to   && new Date(n.to+'T23:59:59') < now) return false;
+    return true;
+  });
+}
+
+window.adminDeleteNotice = async function(type, index){
+  if(!confirm('このお知らせを削除しますか？')) return;
+  // NOTICES_CONFIGのものはFirebaseのoverride配列で非表示にする
+  const path = type==='home' ? 'settings/noticeOverride/home' : 'settings/noticeOverride/love';
+  const val = (await fbGet(path)) || [];
+  const arr = Array.isArray(val) ? val : Object.values(val);
+  if(!arr.includes(index)) arr.push(index);
+  await fbSet(path, arr);
+  showToast('✓ お知らせを非表示にしました');
+  await renderAdmin();
+};
+
+window.adminRestoreNotice = async function(type){
+  const path = type==='home' ? 'settings/noticeOverride/home' : 'settings/noticeOverride/love';
+  await fbRemove(path);
+  showToast('✓ お知らせを復元しました');
+  await renderAdmin();
+};
+
 window.adminSaveNotices = async function(type, idPrefix, max){
   const items = [];
   for(let i=0;i<max;i++){
@@ -3423,7 +3503,6 @@ window.adminPreviewTab = async function(tabId){
 };
 
 window.adminSaveSiteConfig = async function(){
-  const icon     = document.getElementById('site-icon')?.value.trim()     || '🏠';
   const name     = document.getElementById('site-name')?.value.trim()     || 'イベントページ';
   const catchcopy= document.getElementById('site-catchcopy')?.value.trim()|| '';
   const tabIds   = ['A','B','love','birthday','anniv','sato'];
@@ -3436,7 +3515,7 @@ window.adminSaveSiteConfig = async function(){
     if(i||n||d) tabs[id]={icon:i,name:n,desc:d};
     categories[id] = cat;
   });
-  await fbSet('settings/siteConfig', {icon, name, catchcopy, tabs, categories, updatedAt: Date.now()});
+  await fbSet('settings/siteConfig', {name, catchcopy, tabs, categories, updatedAt: Date.now()});
   showToast('✓ サイト設定を保存しました');
 };
 
@@ -3678,6 +3757,19 @@ window.adminDelWeekly = async function(){
   if(!confirm('週報を削除しますか？')) return;
   await fbRemove('love/weekly');
   showToast('✓ 週報を削除しました');
+  await renderAdminContent('love');
+};
+
+window.adminForceDeleteBgm = async function(){
+  if(!confirm('Firebase上のBGMデータを完全に削除しますか？')) return;
+  await fbRemove('love/bgm');
+  await fbRemove('love/bgmVolume');
+  // 再生中なら停止
+  const audio = document.getElementById('love-bgm');
+  if(audio){ audio.pause(); audio.src=''; }
+  const bar = document.getElementById('love-bgm-bar');
+  if(bar) bar.classList.remove('show');
+  showToast('✓ BGMを完全削除しました');
   await renderAdminContent('love');
 };
 
@@ -4130,6 +4222,12 @@ async function init() {
     // load stage
     const loveStageVal = await fbGet('love/stage');
     loveStage = (loveStageVal||'').replace(/^ステージ/,'') || '4-1';
+    // 旧Firebaseお知らせデータをクリア（NOTICES_CONFIG方式に移行済み）
+    const oldLoveNotices = await fbGet('settings/loveNotices');
+    if(oldLoveNotices) await fbRemove('settings/loveNotices');
+    // 恋愛BGMを削除
+    await fbRemove('love/bgm');
+    await loadNoticeOverrides();
     setSyncStatus(true);
     fbListen('.info/connected',val=>setSyncStatus(!!val));
     fbListen('love/stage', val=>{ loveStage=(val||'').replace(/^ステージ/,'') || '4-1'; });
