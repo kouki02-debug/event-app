@@ -3692,6 +3692,337 @@ window.adminDelBgm = async function(){
 };
 
 
+// ============================================================
+// WARIKAN
+// ============================================================
+function wkPath(id){ return 'warikan'; }
+
+function renderWarikanView(id, val){
+  const el = document.getElementById('warikan-view-'+id); if(!el) return;
+  const shops = val && val.shops ? Object.entries(val.shops).map(([k,v])=>({key:k,...v})) : [];
+  if(!shops.length){
+    el.innerHTML = '<div class="empty-msg">🧾 まだ割り勘データがありません</div>'; return;
+  }
+  const personTotals = {};
+  shops.forEach(shop=>{
+    (shop.persons||[]).forEach(p=>{
+      const nm = p.name||'?';
+      if(!personTotals[nm]) personTotals[nm]=0;
+      (p.items||[]).forEach(it=>{ personTotals[nm]+=(parseInt(it.price)||0); });
+    });
+  });
+  const shopHtml = shops.map(shop=>{
+    const shopTotal = (shop.persons||[]).reduce((s,p)=>s+(p.items||[]).reduce((ss,it)=>ss+(parseInt(it.price)||0),0),0);
+    const personsHtml = (shop.persons||[]).map(p=>{
+      const sub = (p.items||[]).reduce((s,it)=>s+(parseInt(it.price)||0),0);
+      const itemsHtml = (p.items||[]).filter(it=>it.name||it.price).map(it=>`
+        <div class="wk-item-row">
+          <span class="wk-item-name">${esc(it.name||'')}</span>
+          <span class="wk-item-price">¥${(parseInt(it.price)||0).toLocaleString()}</span>
+        </div>`).join('');
+      return`<div class="wk-person">
+        <div class="wk-person-name">
+          <span>${esc(p.name||'名前なし')}</span>
+          <span class="wk-person-subtotal">¥${sub.toLocaleString()}</span>
+        </div>${itemsHtml}
+      </div>`;
+    }).join('');
+    return`<div class="wk-shop">
+      <div class="wk-shop-hd">
+        <span class="wk-shop-name">🏪 ${esc(shop.name||'店舗')}</span>
+        <span class="wk-shop-total">合計 ¥${shopTotal.toLocaleString()}</span>
+      </div>${personsHtml}
+    </div>`;
+  }).join('');
+  const summaryHtml = Object.entries(personTotals).map(([nm,amt])=>`
+    <div class="wk-summary-row">
+      <span class="wk-summary-name">${esc(nm)}</span>
+      <span class="wk-summary-amount">¥${amt.toLocaleString()}</span>
+    </div>`).join('');
+  const grandTotal = Object.values(personTotals).reduce((s,v)=>s+v,0);
+  el.innerHTML=`
+    <div style="padding:12px 12px 0;">
+      ${shopHtml}
+      <div class="wk-summary">
+        <div style="font-size:0.75rem;color:var(--ink4);letter-spacing:0.08em;margin-bottom:8px;text-align:center;">— 個人別合計 —</div>
+        ${summaryHtml}
+        <div class="wk-summary-row">
+          <span class="wk-summary-grand">総合計</span>
+          <span style="font-size:0.88rem;color:var(--ink3);">¥${grandTotal.toLocaleString()}</span>
+        </div>
+      </div>
+      <button class="wk-dl-btn" onclick="wkDownload('${id}')">⬇️ テキストでダウンロード</button>
+    </div>`;
+}
+
+window.wkDownload = async function(id){
+  const val = await fbGet(wkPath(id));
+  if(!val||!val.shops){ showToast('データがありません'); return; }
+  const shops = Object.values(val.shops);
+  const lines = ['【割り勘計算結果】',''];
+  const totals = {};
+  shops.forEach(shop=>{
+    const st = (shop.persons||[]).reduce((s,p)=>s+(p.items||[]).reduce((ss,it)=>ss+(parseInt(it.price)||0),0),0);
+    lines.push('■ '+(shop.name||'店舗')+'（合計 ¥'+st.toLocaleString()+'）');
+    (shop.persons||[]).forEach(p=>{
+      const sub=(p.items||[]).reduce((s,it)=>s+(parseInt(it.price)||0),0);
+      lines.push('  '+(p.name||'?')+'：¥'+sub.toLocaleString());
+      if(!totals[p.name||'?']) totals[p.name||'?']=0;
+      totals[p.name||'?']+=sub;
+    });
+    lines.push('');
+  });
+  lines.push('■ 個人別合計');
+  Object.entries(totals).forEach(([n,a])=>lines.push('  '+n+'：¥'+a.toLocaleString()));
+  lines.push('  総合計：¥'+Object.values(totals).reduce((s,v)=>s+v,0).toLocaleString());
+  lines.push('','出力日時：'+new Date().toLocaleString('ja-JP'));
+  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='割り勘_'+id+'.txt';
+  a.click();
+};
+
+async function renderAdminWarikan(id, container){
+  if(!container) return;
+  const val = await fbGet(wkPath(id)) || {};
+  const shops = val.shops ? Object.entries(val.shops).map(([k,v])=>({key:k,...v})) : [];
+  const shopsHtml = shops.map((shop,si)=>{
+    const persons = shop.persons||[];
+    const personsHtml = persons.map((p,pi)=>{
+      const items = Array.from({length:15},(_,ii)=>(p.items&&p.items[ii])||{name:'',price:''});
+      const sub = items.reduce((s,it)=>s+(parseInt(it.price)||0),0);
+      return`<div style="padding:10px 12px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:0.78rem;color:var(--ink4);">👤</span>
+          <input type="text" value="${esc(p.name||'')}" placeholder="名前" maxlength="10"
+            style="border:none;border-bottom:1.5px solid var(--border);background:transparent;font-size:0.85rem;color:var(--ink2);outline:none;width:90px;padding:2px 4px;"
+            onchange="wkAdmUpdatePersonName('warikan','${shop.key}',${pi},this.value)">
+          <span style="font-size:0.78rem;color:var(--accent);margin-left:auto;">¥${sub.toLocaleString()}</span>
+          <button onclick="wkAdmDelPerson('warikan','${shop.key}',${pi})" style="background:none;border:none;color:var(--ink4);cursor:pointer;font-size:0.8rem;padding:2px 5px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--ink4)'">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 90px;gap:4px 6px;">
+          ${items.map((it,ii)=>`
+            <input type="text" value="${esc(it.name||'')}" placeholder="商品名${ii+1}"
+              style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;color:var(--ink2);background:var(--bg);outline:none;"
+              onchange="wkAdmUpdateItem('warikan','${shop.key}',${pi},${ii},'name',this.value)">
+            <input type="number" value="${it.price||''}" placeholder="¥" min="0"
+              style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;color:var(--ink2);background:var(--bg);outline:none;"
+              onchange="wkAdmUpdateItem('warikan','${shop.key}',${pi},${ii},'price',this.value)">`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+    const shopTotal = persons.reduce((s,p)=>s+(p.items||[]).reduce((ss,it)=>ss+(parseInt(it.price)||0),0),0);
+    return`<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);">
+        <input type="text" value="${esc(shop.name||'')}" placeholder="店舗名"
+          style="flex:1;border:none;border-bottom:1.5px solid var(--border);background:transparent;font-size:0.92rem;color:var(--ink2);font-weight:600;outline:none;padding:2px 4px;"
+          onchange="wkAdmUpdateShopName('warikan','${shop.key}',this.value)">
+        <span style="font-size:0.82rem;color:var(--accent);">合計 ¥${shopTotal.toLocaleString()}</span>
+        <button onclick="wkAdmDelShop('warikan','${shop.key}')" style="padding:4px 10px;background:none;border:1px solid var(--red);border-radius:6px;font-size:0.78rem;color:var(--red);cursor:pointer;">削除</button>
+      </div>
+      ${personsHtml}
+      <div style="padding:8px 12px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:0.78rem;color:var(--ink4);">メンバー追加：</span>
+        <select id="wk-add-count-${shop.key}" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;color:var(--ink2);background:var(--bg);outline:none;">
+          ${[1,2,3,4,5].map(n=>'<option value="'+n+'">'+n+'人</option>').join('')}
+        </select>
+        <button onclick="wkAdmAddPersons('warikan','${shop.key}')" style="padding:6px 14px;background:var(--bg2);border:1.5px dashed var(--border);border-radius:6px;font-size:0.82rem;color:var(--ink3);cursor:pointer;">＋ 追加</button>
+      </div>
+    </div>`;
+  }).join('');
+  const totals = {};
+  shops.forEach(shop=>{
+    (shop.persons||[]).forEach(p=>{
+      const nm=p.name||'名前なし';
+      if(!totals[nm])totals[nm]=0;
+      (p.items||[]).forEach(it=>{ totals[nm]+=(parseInt(it.price)||0); });
+    });
+  });
+  const grandTotal = Object.values(totals).reduce((s,v)=>s+v,0);
+  container.innerHTML=`
+    <div style="padding:0 0 8px;">${shopsHtml}</div>
+    <div style="padding:8px 12px 12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="wkAdmAddShopWithCount()" style="flex:1;padding:9px 16px;background:var(--ink);color:var(--bg);border:none;border-radius:8px;font-family:'Shippori Mincho',serif;font-size:0.88rem;cursor:pointer;">＋ 店舗を追加</button>
+      <button onclick="downloadWarikanPDF('warikan')" style="padding:9px 16px;background:linear-gradient(135deg,#4a7fc1,#2a5fa0);color:white;border:none;border-radius:8px;font-size:0.82rem;cursor:pointer;">📄 PDF</button>
+      <button onclick="wkAdmResetAll('warikan')" style="padding:9px 16px;background:none;border:1px solid var(--red);border-radius:8px;font-size:0.82rem;color:var(--red);cursor:pointer;">全リセット</button>
+    </div>`;
+}
+
+window.wkAdmUpdateShopName = async function(id, shopKey, name){
+  const val = await fbGet(wkPath(id)) || {};
+  if(val.shops&&val.shops[shopKey]) val.shops[shopKey].name=name;
+  await fbSet(wkPath(id), val);
+};
+window.wkAdmUpdatePersonName = async function(id, shopKey, pi, name){
+  const val = await fbGet(wkPath(id)) || {};
+  if(val.shops&&val.shops[shopKey]&&val.shops[shopKey].persons[pi])
+    val.shops[shopKey].persons[pi].name=name;
+  await fbSet(wkPath(id), val);
+};
+window.wkAdmUpdateItem = async function(id, shopKey, pi, ii, field, value){
+  const val = await fbGet(wkPath(id)) || {};
+  if(val.shops&&val.shops[shopKey]&&val.shops[shopKey].persons[pi]){
+    if(!val.shops[shopKey].persons[pi].items) val.shops[shopKey].persons[pi].items=[];
+    if(!val.shops[shopKey].persons[pi].items[ii]) val.shops[shopKey].persons[pi].items[ii]={};
+    val.shops[shopKey].persons[pi].items[ii][field]=value;
+  }
+  await fbSet(wkPath(id), val);
+};
+window.wkAdmDelShop = async function(id, shopKey){
+  if(!confirm('この店舗を削除しますか？'))return;
+  const val = await fbGet(wkPath(id)) || {};
+  if(val.shops&&val.shops[shopKey]) delete val.shops[shopKey];
+  await fbSet(wkPath(id), val);
+  showToast('✓ 削除しました');
+  await renderAdminContent('warikan');
+};
+window.wkAdmDelPerson = async function(id, shopKey, pi){
+  if(!confirm('このメンバーを削除しますか？'))return;
+  const val = await fbGet(wkPath(id)) || {};
+  if(val.shops&&val.shops[shopKey]&&val.shops[shopKey].persons)
+    val.shops[shopKey].persons.splice(pi,1);
+  await fbSet(wkPath(id), val);
+  await renderAdminContent('warikan');
+};
+window.wkAdmAddPersons = async function(id, shopKey){
+  const sel = document.getElementById('wk-add-count-'+shopKey);
+  const count = parseInt(sel?.value||1);
+  const val = await fbGet(wkPath(id)) || {};
+  if(!val.shops||!val.shops[shopKey]) return;
+  val.shops[shopKey].persons = val.shops[shopKey].persons||[];
+  for(let i=0;i<count;i++)
+    val.shops[shopKey].persons.push({name:'',items:Array(15).fill({name:'',price:''})});
+  await fbSet(wkPath(id), val);
+  await renderAdminContent('warikan');
+};
+window.wkAdmAddShopWithCount = async function(){
+  const val = await fbGet('warikan') || {};
+  if(!val.shops) val.shops={};
+  const key='shop'+Date.now();
+  val.shops[key]={name:'',persons:[{name:'',items:Array(15).fill({name:'',price:''})}]};
+  await fbSet('warikan', val);
+  showToast('✓ 店舗を追加しました');
+  await renderAdminContent('warikan');
+};
+window.wkAdmResetAll = async function(id){
+  if(!confirm('割り勘データをすべてリセットしますか？'))return;
+  await fbRemove('warikan');
+  showToast('✓ リセットしました');
+  await renderAdminContent('warikan');
+};
+window.downloadWarikanPDF = async function(id){
+  const val = await fbGet('warikan');
+  if(!val||!val.shops){ showToast('データがありません'); return; }
+  const shops = Object.entries(val.shops).map(([k,v])=>({key:k,...v}));
+  const totals = {};
+  shops.forEach(shop=>{
+    (shop.persons||[]).forEach(p=>{
+      const nm=p.name||'名前なし';
+      if(!totals[nm])totals[nm]=0;
+      (p.items||[]).forEach(it=>{ totals[nm]+=(parseInt(it.price)||0); });
+    });
+  });
+  const grandTotal = Object.values(totals).reduce((s,v)=>s+v,0);
+  const dateStr = new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+  const shopsHtml = shops.map(shop=>{
+    const shopTotal = (shop.persons||[]).reduce((s,p)=>s+(p.items||[]).reduce((ss,it)=>ss+(parseInt(it.price)||0),0),0);
+    const personsHtml = (shop.persons||[]).map(p=>{
+      const sub = (p.items||[]).reduce((s,it)=>s+(parseInt(it.price)||0),0);
+      const itemsHtml = (p.items||[]).filter(it=>it.name||it.price).map(it=>
+        '<tr><td style="padding:4px 8px;border:1px solid #ddd;font-size:13px;">'+it.name+'</td>'
+        +'<td style="padding:4px 8px;border:1px solid #ddd;text-align:right;font-size:13px;">¥'+(parseInt(it.price)||0).toLocaleString()+'</td></tr>').join('');
+      return '<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;background:#f5f5f5;padding:6px 8px;border-radius:4px;margin-bottom:4px;">'
+        +'<strong style="font-size:14px;">👤 '+p.name+'</strong>'
+        +'<span style="font-size:14px;">小計 ¥'+sub.toLocaleString()+'</span></div>'
+        +(itemsHtml?'<table style="width:100%;border-collapse:collapse;margin-left:12px;width:calc(100% - 12px);">'+itemsHtml+'</table>':'')
+        +'</div>';
+    }).join('');
+    return '<div style="margin-bottom:20px;border:1px solid #ccc;border-radius:6px;overflow:hidden;">'
+      +'<div style="background:#4a7fc1;color:white;padding:8px 12px;display:flex;justify-content:space-between;">'
+      +'<span style="font-size:15px;font-weight:bold;">🏪 '+shop.name+'</span>'
+      +'<span style="font-size:14px;">合計 ¥'+shopTotal.toLocaleString()+'</span></div>'
+      +'<div style="padding:10px 12px;">'+personsHtml+'</div></div>';
+  }).join('');
+  const html = '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>割り勘明細</title>'
+    +'<style>body{font-family:Meiryo,sans-serif;max-width:700px;margin:0 auto;padding:24px;color:#222;}'
+    +'@media print{button{display:none;}}</style></head><body>'
+    +'<button onclick="window.print()" style="float:right;padding:8px 18px;background:#4a7fc1;color:white;border:none;border-radius:6px;cursor:pointer;">🖨 印刷</button>'
+    +'<h1 style="font-size:20px;color:#2a5fa0;">🧮 割り勘明細</h1>'
+    +'<div style="font-size:12px;color:#888;margin-bottom:20px;">'+dateStr+' 総合計：¥'+grandTotal.toLocaleString()+'</div>'
+    +shopsHtml+'</body></html>';
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='割り勘明細.html'; a.click();
+  showToast('✓ HTMLをダウンロードしました');
+};
+
+// ============================================================
+// SATO PANEL
+// ============================================================
+async function renderSatoPanel() {
+  const hasFlag = localStorage.getItem('tab_access_sato') === '1';
+  if(!hasFlag){
+    document.getElementById('main').innerHTML=`
+      <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;">
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:40px 28px;text-align:center;max-width:320px;width:100%;">
+          <div style="font-size:1.8rem;margin-bottom:12px;">🔒</div>
+          <div style="font-family:'Shippori Mincho',serif;font-size:1rem;color:var(--ink3);font-weight:700;letter-spacing:0.1em;margin-bottom:10px;">アクセスできません</div>
+          <div style="font-size:0.8rem;color:var(--ink4);line-height:1.8;">専用URLからアクセスしてください。</div>
+        </div>
+      </div>`;
+    return;
+  }
+  const titleLabel = document.getElementById('tab-title-label');
+  const titleBar   = document.getElementById('tab-title-bar');
+  if(titleLabel) titleLabel.textContent = '📋 ' + tabDisplayLabel('sato');
+  if(titleBar)   titleBar.style.display = 'block';
+  attachListeners('sato');
+  const bannerVal = await fbGet('settings/banners/sato');
+  const makeBannerHtml = (bv) => (bv && bv.text) ? `
+    <div id="banner-sato" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:4px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4080e0,#60a0ff);"></div>
+      <div style="font-family:'Shippori Mincho',serif;font-size:0.78rem;color:var(--ink3);letter-spacing:0.1em;margin-bottom:8px;">📌 ${esc(bv.title||'概要')}</div>
+      <div style="font-size:0.88rem;color:var(--ink);line-height:1.9;white-space:pre-wrap;word-break:break-word;">${esc(bv.text)}</div>
+    </div>` : '';
+  document.getElementById('main').innerHTML=`
+    <div class="sec">
+      <div class="sec-hd"><h2>🚗 集合リアルタイム</h2><div class="sec-line"></div></div>
+      <div id="haisya-view-sato"><div class="empty-msg">読み込み中…</div></div>
+    </div>
+    <div class="sec">
+      <div id="banner-wrap-sato">${makeBannerHtml(bannerVal)}</div>
+      <div class="sec-hd"><h2>📋 掲示板</h2><div class="sec-line"></div></div>
+      <div class="post-list" id="pl-sato"><div class="empty-msg">読み込み中…</div></div>
+      <div class="post-form">
+        <textarea id="pt-sato" placeholder="投稿を入力…"></textarea>
+        <div class="post-form-ft">
+          <label class="img-lbl">📎 画像・PDF<input type="file" accept="image/*,application/pdf" onchange="onImg('sato',this)"></label>
+          <span class="img-fname" id="ifn-sato"></span>
+          <button class="post-sub" onclick="submitPost('sato')">投稿</button>
+        </div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-hd"><h2>🧮 割り勘</h2><div class="sec-line"></div></div>
+      <div id="warikan-view-sato"><div class="empty-msg">読み込み中…</div></div>
+    </div>`;
+  const [pv, wv] = await Promise.all([
+    fbGet('tabs/sato/posts'),
+    fbGet('warikan')
+  ]);
+  renderPostsFromData('sato', pv);
+  renderWarikanView('sato', wv);
+  renderHaisyaView('sato');
+  if(!listeners['sato']) attachListeners('sato');
+  fbListen('warikan', val=>renderWarikanView('sato', val));
+  fbListen('haisya/sato', ()=>renderHaisyaView('sato'));
+  fbListen('settings/banners/sato', bv=>{
+    const wrap = document.getElementById('banner-wrap-sato');
+    if(wrap) wrap.innerHTML = makeBannerHtml(bv);
+  });
+}
+
+
 window.copyTxt=function(t){navigator.clipboard.writeText(t).then(()=>showToast('コピーしました'));};
 
 // ============================================================
