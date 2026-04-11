@@ -310,6 +310,36 @@ main{max-width:760px;margin:0 auto;padding:22px 16px;}
 }
 .love-hero-sub{font-size:0.78rem;color:var(--gc-ink3);letter-spacing:0.12em;line-height:1.8;}
 .love-hero-season{font-size:0.65rem;color:var(--gc-gold);letter-spacing:0.2em;margin-top:6px;opacity:0.65;}
+.love-announcement-banner{
+  margin:0;padding:14px 18px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#2a1018 0%,#3d1828 50%,#2a1018 100%);
+  border-bottom:1px solid rgba(160,120,64,0.3);
+}
+.love-announcement-banner::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gc-gold),#e8d4a0,var(--gc-gold),transparent);
+}
+.love-announcement-banner::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(160,120,64,0.4),transparent);
+}
+.love-ann-eyebrow{font-size:0.6rem;color:var(--gc-gold);letter-spacing:0.28em;margin-bottom:8px;opacity:0.8;}
+.love-ann-title{font-family:'Shippori Mincho',serif;font-size:1.05rem;color:#f0e8d0;font-weight:700;letter-spacing:0.08em;margin-bottom:6px;line-height:1.5;}
+.love-ann-body{font-size:0.82rem;color:rgba(240,220,200,0.7);line-height:1.75;}
+.love-ann-date{font-size:0.65rem;color:rgba(160,120,64,0.6);margin-top:8px;letter-spacing:0.06em;text-align:right;}
+.love-update-card{
+  margin:0 16px 0;padding:12px 14px;
+  background:rgba(255,252,248,0.9);border:1px solid var(--gc-border2);border-radius:10px;
+  position:relative;overflow:hidden;
+}
+.love-update-card::before{
+  content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--gc-gold),var(--gc-rose));border-radius:3px 0 0 3px;
+}
+.love-update-row{display:flex;align-items:baseline;gap:10px;padding:5px 0 5px 10px;border-bottom:1px solid rgba(160,120,64,0.1);}
+.love-update-row:last-child{border-bottom:none;}
+.love-update-date{font-size:0.65rem;color:var(--gc-gold);letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;}
+.love-update-text{font-size:0.82rem;color:var(--gc-ink2);line-height:1.6;}
 .love-section{padding:20px 16px 0;}
 .love-section-title{
   font-family:'Shippori Mincho',serif;font-size:0.68rem;color:var(--gc-gold);
@@ -1435,8 +1465,35 @@ async function renderLovePanel() {
         <div class="love-hero-season">2026 前期 / April</div>
       </div>
 
+      <!-- 予告バナー（上部固定） -->
+      <div class="love-announcement-banner">
+        <div class="love-ann-eyebrow">ANNOUNCEMENT</div>
+        <div class="love-ann-title">4月16日（木）― 発表予定</div>
+        <div class="love-ann-body">Gradual Connection のこれからについて、4月16日をもって正式な発表をおこないます。今期の歩みと、次のステージについて。</div>
+        <div class="love-ann-date">発表予定日 2026.04.16</div>
+      </div>
+
+      <!-- アップデート・週次レポートお知らせ -->
+      <div style="padding:14px 16px 0;">
+        <div class="love-update-card">
+          <div style="font-size:0.62rem;color:var(--gc-gold);letter-spacing:0.16em;margin-bottom:8px;padding-left:10px;">UPDATE LOG</div>
+          <div class="love-update-row">
+            <span class="love-update-date">2026.04.09</span>
+            <span class="love-update-text">週次レポート更新 ― 4/7〜4/9分（確認接触12回 / ステージ3後半→4手前）</span>
+          </div>
+          <div class="love-update-row">
+            <span class="love-update-date">2026.04.07</span>
+            <span class="love-update-text">ページ全体をリニューアルアップデート</span>
+          </div>
+          <div class="love-update-row">
+            <span class="love-update-date">2026.04.06</span>
+            <span class="love-update-text">4月16日予告プレスリリースを公開</span>
+          </div>
+        </div>
+      </div>
+
       <!-- お知らせ -->
-      <div id="love-notices-wrap" style="padding:16px 16px 0;"></div>
+      <div id="love-notices-wrap" style="padding:14px 16px 0;"></div>
 
       <!-- KPIサマリー -->
       <div class="love-section">
