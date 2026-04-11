@@ -1493,39 +1493,8 @@ async function renderLovePanel() {
         <div class="love-ann-date">作成日 2026.04.11 ／ 発表予定日 2026.04.16</div>
       </div>
 
-      <!-- アップデート・週次レポートお知らせ -->
-      <div style="padding:14px 16px 0;">
-        <div class="love-update-card">
-          <div style="font-size:0.62rem;color:var(--gc-gold);letter-spacing:0.16em;margin-bottom:8px;padding-left:10px;">UPDATE LOG</div>
-          <div class="love-update-row">
-            <span class="love-update-date">2026.04.09</span>
-            <span class="love-update-text">週次レポート更新 ― 4/7〜4/9分（確認接触12回 / ステージ3後半→4手前）</span>
-          </div>
-          <div class="love-update-row">
-            <span class="love-update-date">2026.04.07</span>
-            <span class="love-update-text">ページ全体をリニューアルアップデート</span>
-          </div>
-          <div class="love-update-row">
-            <span class="love-update-date">2026.04.11</span>
-            <span class="love-update-text">予告プレスリリース更新 ― 一次判定・環境変化前観測締めについて</span>
-          </div>
-          <div class="love-update-row">
-            <span class="love-update-date">2026.04.09</span>
-            <span class="love-update-text">週次レポート更新 ― 4/7〜4/9分（確認接触12回 / ステージ3後半→4手前）</span>
-          </div>
-          <div class="love-update-row">
-            <span class="love-update-date">2026.04.07</span>
-            <span class="love-update-text">ページ全体リニューアル</span>
-          </div>
-          <div class="love-update-row">
-            <span class="love-update-date">2026.04.06</span>
-            <span class="love-update-text">予告プレスリリース（初版）公開</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- お知らせ -->
-      <div id="love-notices-wrap" style="padding:14px 16px 0;"></div>
+      <!-- お知らせ（非表示・システム用） -->
+      <div id="love-notices-wrap" style="display:none;"></div>
 
       <!-- KPIサマリー -->
       <div class="love-section">
@@ -1564,45 +1533,7 @@ async function renderLovePanel() {
         <div id="love-roadmap-grid" style="display:none;"></div>
       </div>
 
-      <!-- 今週のハイライト -->
-      <div class="love-section">
-        <div class="love-section-title">今週のハイライト</div>
 
-        <div class="love-highlight">
-          <div class="love-highlight-date">4月7日（火）</div>
-          <div class="love-highlight-text">発信してくれた。自然な流れで、温かい空気が続いた。</div>
-          <span class="love-highlight-tag" style="color:var(--gc-rose);background:rgba(139,34,82,0.07);border-color:var(--gc-border);">「また来週で」が現実になった日</span>
-        </div>
-
-        <div class="love-highlight" style="border-color:var(--gc-rose);border-width:1.5px;">
-          <div class="love-highlight-date" style="color:var(--gc-rose);">4月8日（水）― 今週最大の前進</div>
-          <div class="love-highlight-text">「帰っちゃだめ」「19時まで残って」</div>
-          <span class="love-highlight-tag" style="color:var(--gc-rose);background:rgba(139,34,82,0.08);border-color:rgba(139,34,82,0.25);">感情が言葉になった</span>
-        </div>
-
-        <div class="love-highlight">
-          <div class="love-highlight-date">4月9日（木）</div>
-          <div class="love-highlight-text">「筋肉ついた？」――業務ではなく、あなた個人を見ていた。</div>
-          <span class="love-highlight-tag" style="color:var(--gc-rose);background:rgba(139,34,82,0.07);border-color:var(--gc-border);">小さな観察が積み重なった日</span>
-        </div>
-      </div>
-
-      <!-- 強いサイン -->
-      <div class="love-section">
-        <div class="love-section-title">今週の強いサイン</div>
-        <div class="love-signal">
-          <div class="love-signal-dot"></div>
-          <div class="love-signal-text"><strong style="color:var(--gc-rose);font-size:0.82rem;">終業時間を共有している</strong><br>仕事終わりの時間を、互いに意識し合っている。</div>
-        </div>
-        <div class="love-signal">
-          <div class="love-signal-dot"></div>
-          <div class="love-signal-text"><strong style="color:var(--gc-rose);font-size:0.82rem;">「よし」が何度も返ってくる</strong><br>一緒にいられる時間への、小さな喜びが続いている。</div>
-        </div>
-        <div class="love-signal">
-          <div class="love-signal-dot"></div>
-          <div class="love-signal-text"><strong style="color:var(--gc-rose);font-size:0.82rem;">業務ではなく、あなた個人を見ている</strong><br>言葉がこちらの行動ではなく、こちら自身に向いてきた。</div>
-        </div>
-      </div>
 
       <!-- 4/16 シミュレーション -->
       <div class="love-section">
@@ -2005,7 +1936,12 @@ const LOVE_TIMELINE_EVENTS = [
     icon: '📊',
     title: '週次レポート更新',
     desc: '4/7〜4/9分。確認接触12回。ステージ3後半→4手前。',
-    tag: 'WEEKLY REPORT'
+    tag: 'WEEKLY REPORT',
+    highlights: [
+      { date: '4月7日（火）', text: '発信してくれた。自然な流れで、温かい空気が続いた。', tag: '「また来週で」が現実になった日' },
+      { date: '4月8日（水）― 今週最大の前進', text: '「帰っちゃだめ」「19時まで残って」', tag: '感情が言葉になった', strong: true },
+      { date: '4月9日（木）', text: '「筋肉ついた？」――業務ではなく、あなた個人を見ていた。', tag: '小さな観察が積み重なった日' }
+    ]
   },
   {
     date: '2026.04.07',
@@ -2036,16 +1972,25 @@ const LOVE_TIMELINE_EVENTS = [
 function renderLoveTimeline(){
   const wrap = document.getElementById('love-timeline-wrap'); if(!wrap) return;
   if(!LOVE_TIMELINE_EVENTS.length){ wrap.innerHTML=''; return; }
-  wrap.innerHTML = LOVE_TIMELINE_EVENTS.map(ev=>`
-    <div class="love-timeline-item">
+  wrap.innerHTML = LOVE_TIMELINE_EVENTS.map(ev=>{
+    // ハイライト詳細（週次レポートの下に展開）
+    const highlightsHtml = ev.highlights ? ev.highlights.map(h=>`
+      <div style="margin-top:8px;padding:9px 12px;border-radius:8px;border:${h.strong?'1.5px solid var(--gc-rose)':'1px solid var(--gc-border)'};background:${h.strong?'rgba(139,34,82,0.04)':'rgba(255,252,252,0.7)'};">
+        <div style="font-size:0.63rem;color:${h.strong?'var(--gc-rose)':'var(--gc-gold)'};letter-spacing:0.06em;margin-bottom:3px;">${h.date}</div>
+        <div style="font-size:0.82rem;color:var(--gc-ink);line-height:1.65;">${h.text}</div>
+        <span style="font-size:0.6rem;color:var(--gc-rose);background:rgba(139,34,82,0.06);border:1px solid var(--gc-border);border-radius:20px;padding:1px 8px;display:inline-block;margin-top:4px;">${h.tag}</span>
+      </div>`).join('') : '';
+    return `<div class="love-timeline-item">
       <div class="love-timeline-dot ${ev.type}">${ev.icon}</div>
       <div class="love-timeline-content">
         <div class="love-timeline-date">${ev.date}</div>
         <div class="love-timeline-title">${ev.title}</div>
         <div class="love-timeline-desc">${ev.desc}</div>
         <span class="love-timeline-tag">${ev.tag}</span>
+        ${highlightsHtml}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderLoveCalApr(){
